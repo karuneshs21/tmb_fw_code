@@ -306,8 +306,6 @@
 	parameter MXCNTVME		=	30;					// VME counter width
 	parameter MXASERR		=	6;					// Number of ALCT structure error counters 
 
-	`include "firmware_version.v"
-
 //-----------------------------------------------------------------------------------------------------------------
 // Ports
 //-----------------------------------------------------------------------------------------------------------------
@@ -1462,7 +1460,6 @@
 	wire alct_ena = alct_wr;					// Only enable port A during alct writes
 	wire vme_enb  = !alct_ena;					// Enable port B when A is not busy over-writing it
 
-`ifdef VIRTEX2
 	initial $display("alct: generating Virtex2 RAMB16_S18_S18 u0");
 
 	RAMB16_S18_S18 #(
@@ -1488,47 +1485,8 @@
 	.DIB				(vme_wdata[15:0]),		// Port B 16-bit Data Input
 	.DIPB				(vme_wdata[17:16]),		// Port-B 2-bit parity Input
 	.DOB				(vme_rdata[15:0]),		// Port B 16-bit Data Output
-	.DOPB				(vme_rdata[17:16]));	// Port B 2-bit Parity Output
-
-`elsif VIRTEX6
-	initial $display("alct: generating Virtex6 RAMB18E1_S18_S18 u0");
-	assign dopa=0;
-
-	RAMB18E1 #(									// Virtex6
-	.RAM_MODE			("TDP"),				// SDP or TDP
- 	.READ_WIDTH_A		(0),					// 0,1,2,4,9,18,36 Read/write width per port
-	.WRITE_WIDTH_A		(18),					// 0,1,2,4,9,18
-	.READ_WIDTH_B		(18),					// 0,1,2,4,9,18
-	.WRITE_WIDTH_B		(18),					// 0,1,2,4,9,18,36
-	.WRITE_MODE_A		("READ_FIRST"),			// WRITE_FIRST, READ_FIRST, or NO_CHANGE
-	.WRITE_MODE_B		("READ_FIRST"),
-	.SIM_COLLISION_CHECK("ALL")					// ALL, WARNING_ONLY, GENERATE_X_ONLY or NONE)
-	) u0 (
-	.WEA				({2{alct_wr}}),			//  2-bit A port write enable input
-	.ENARDEN			(alct_ena),				//  1-bit A port enable/Read enable input
-	.RSTRAMARSTRAM		(1'b0),					//  1-bit A port set/reset input
-	.RSTREGARSTREG		(1'b0),					//  1-bit A port register set/reset input
-	.REGCEAREGCE		(1'b0),					//  1-bit A port register enable/Register enable input
-	.CLKARDCLK			(clock),				//  1-bit A port clock/Read clock input
-	.ADDRARDADDR		({alct_adr[9:0],4'hF}),	// 14-bit A port address/Read address input 18b->[13:4]
-	.DIADI				(alct_wdata[15:0]),		// 16-bit A port data/LSB data input
-	.DIPADIP			(alct_wdata[17:16]),	//  2-bit A port parity/LSB parity input
-	.DOADO				(),						// 16-bit A port data/LSB data output
-	.DOPADOP			(),						//  2-bit A port parity/LSB parity output
-
-	.WEBWE				({4{vme_wr}}),			//  4-bit B port write enable/Write enable input
-	.ENBWREN			(vme_enb),				//  1-bit B port enable/Write enable input
-	.REGCEB				(1'b0),					//  1-bit B port register enable input
-	.RSTRAMB			(1'b0),					//  1-bit B port set/reset input
-	.RSTREGB			(1'b0),					//  1-bit B port register set/reset input
-	.CLKBWRCLK			(clock),				//  1-bit B port clock/Write clock input
-	.ADDRBWRADDR		({vme_adr[9:0],4'hF}),	// 14-bit B port address/Write address input 18b->[13:4]
-	.DIBDI				(vme_wdata[15:0]),		// 16-bit B port data/MSB data input
-	.DIPBDIP			(vme_wdata[17:16]),		//  2-bit B port parity/MSB parity input
-	.DOBDO				(vme_rdata[15:0]),		// 16-bit B port data/MSB data output
-	.DOPBDOP			(vme_rdata[17:16]));	//  2-bit B port parity/MSB parity output
-`endif
-
+	.DOPB				(vme_rdata[17:16])		// Port B 2-bit Parity Output
+	);
 //-----------------------------------------------------------------------------------------------------------------
 //	ALCT Transmitter Section:
 //		Map signal names

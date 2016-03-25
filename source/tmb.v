@@ -416,9 +416,6 @@
 	parameter MXMPCPIPE		=	16;				// Number clocks to delay mpc response
 	parameter MXMPCDLY		=	4;				// MPC delay time bits
 
-// RAM type
-	`include "firmware_version.v"
-
 //------------------------------------------------------------------------------------------------------------------
 //Ports
 //------------------------------------------------------------------------------------------------------------------
@@ -1535,7 +1532,6 @@
 //  Port A: rw 16 bits x 2 words via VME
 //  Port B: ro 32 bits x 1 word  via inj SM
 //------------------------------------------------------------------------------------------------------------------
-`ifdef VIRTEX2
 	initial $display("tmb: generating Virtex2 RAMB16_S18_S36 uinjram01 and uinjram23");
 	wire injdum0=0;
 	wire injdum1=0;
@@ -1591,129 +1587,6 @@
 	.DIPB				(4'h0),							// Port-B 4-bit parity Input
 	.DOB				({mpc1_inj1,mpc1_inj0}),		// Port B 32-bit Data Output
 	.DOPB				());							// Port B 4-bit Parity Output
-
-`elsif VIRTEX6
-	initial $display("tmb: generating Virtex6 RAMB36E1_S18_S36 uinjram01 and uinjram23");
-
-	wire [15:0] injram01_adra, injram23_adra;
-	wire [15:0] injram01_adrb, injram23_adrb;
-	wire [15:0] injdum0,       injdum1;
-
-	assign injram01_adra[3:0]  = 4'hF;		// Port A data=18, adr=11, valid adr bits [14:4]
-	assign injram01_adra[14:4] = {2'h0,vme_adr[7:0],bank01};
-	assign injram01_adra[15]   = 1'b1;
-
-	assign injram01_adrb[4:0]  = 5'h1F;		// Port B data=36, adr=10, valid adr bits [14:5]
-	assign injram01_adrb[14:5] = {2'h0,mpc_inj_adr[7:0]};
-	assign injram01_adrb[15]   = 1'b1;
-
-	assign injram23_adra[3:0]  = 4'hF;		// Port A data=18, adr=11, valid adr bits [14:4]
-	assign injram23_adra[14:4] = {2'h0,vme_adr[7:0],bank23};
-	assign injram23_adra[15]   = 1'b1;
-
-	assign injram23_adrb[4:0]  = 5'h1F;		// Port B data=36, adr=10, valid adr bits [14:5]
-	assign injram23_adrb[14:5] = {2'h0,mpc_inj_adr[7:0]};
-	assign injram23_adrb[15]   = 1'b1;
-
-// MPC Injector RAM: first muon
-	RAMB36E1 #(
-	.RAM_MODE			("TDP"),						// "SDP" or "TDP"
-	.READ_WIDTH_A		(18),							// 0, 1, 2, 4, 9, 18, 36 or 72
-	.WRITE_WIDTH_A		(18),							// 0, 1, 2, 4, 9, 18, 36
-	.READ_WIDTH_B		(36),							// 0, 1, 2, 4, 9, 18, 36
-	.WRITE_WIDTH_B		(0),							// 0, 1, 2, 4, 9, 18, 36 or 72
-	.WRITE_MODE_A		(("READ_FIRST")),				// ("READ_FIRST"), "READ_FIRST", or "NO_CHANGE"
-	.WRITE_MODE_B		(("READ_FIRST")),
-	.SIM_COLLISION_CHECK("ALL"),						// "ALL", "WARNING_ONLY", "GENERATE_X_ONLY" or "NONE"
-	) uinjram01 (
-	.WEA				({4{wea01}}),					//  4-bit A port write enable input
-	.ENARDEN			(1'b1),							//  1-bit A port enable/Read enable input
-	.REGCEAREGCE		(1'b0),							//  1-bit A port register enable/Register enable input
-	.RSTRAMARSTRAM		(1'b0),							//  1-bit A port set/reset input
-	.RSTREGARSTREG		(1'b0),							//  1-bit A port register set/reset input
-	.CLKARDCLK			(clock),						//  1-bit A port clock/Read clock input
-	.ADDRARDADDR		(injram01_adra[15:0]),			// 16-bit A port address/Read address input 18b->[14:4]
-	.DIADI				({16'h0000,mpc_wdata[15:0]}),	// 32-bit A port data/LSB data input
-	.DIPADIP			(),								//  4-bit A port parity/LSB parity input
-	.DOADO				({injdum0,mpc_rdata_01[15:0]}),	// 32-bit A port data/LSB data output
-	.DOPADOP			(),								//  4-bit A port parity/LSB parity output
-
-	.WEBWE				(),								//  8-bit B port write enable/Write enable input
-	.ENBWREN			(1'b1),							//  1-bit B port enable/Write enable input
-	.REGCEB				(1'b0),							//  1-bit B port register enable input
-	.RSTRAMB			(1'b0),							//  1-bit B port set/reset input
-	.RSTREGB			(1'b0),							//  1-bit B port register set/reset input
-	.CLKBWRCLK			(clock),						//  1-bit B port clock/Write clock input
-	.ADDRBWRADDR		(injram01_adrb[15:0]),			// 16-bit B port address/Write address input  36b->[14:5]
-	.DIBDI				(),								// 32-bit B port data/MSB data input
-	.DIPBDIP			(),								//  4-bit B port parity/MSB parity input
-	.DOBDO				({mpc0_inj1,mpc0_inj0}),		// 32-bit B port data/MSB data output
-	.DOPBDOP			(),								//  4-bit B port parity/MSB parity output
-
-	.CASCADEINA			(),								//  1-bit A port cascade input
-	.CASCADEINB			(),								//  1-bit B port cascade input
-	.CASCADEOUTA		(),								//  1-bit A port cascade output
-	.CASCADEOUTB		(),								//  1-bit B port cascade output
-	.INJECTDBITERR		(),								//  1-bit Inject a double bit error
-	.INJECTSBITERR		(),								//  1-bit Inject a single bit error
-	.DBITERR			(),								//  1-bit double bit error status output
-	.ECCPARITY			(),								//  8-bit generated error correction parity
-	.RDADDRECC			(),								//  9-bit ECC read address
-	.SBITERR			()								//  1-bit Single bit error status output
-	);
-
-// MPC Injector RAM: second muon
-	RAMB36E1 #(
-	.RAM_MODE			("TDP"),						// "SDP" or "TDP"
-	.READ_WIDTH_A		(18),							// 0, 1, 2, 4, 9, 18, 36 or 72
-	.WRITE_WIDTH_A		(18),							// 0, 1, 2, 4, 9, 18, 36
-	.READ_WIDTH_B		(36),							// 0, 1, 2, 4, 9, 18, 36
-	.WRITE_WIDTH_B		(0),							// 0, 1, 2, 4, 9, 18, 36 or 72
-	.WRITE_MODE_A		(("READ_FIRST")),				// ("READ_FIRST"), "READ_FIRST", or "NO_CHANGE"
-	.WRITE_MODE_B		(("READ_FIRST")),
-	.SIM_COLLISION_CHECK("ALL"),						// "ALL", "WARNING_ONLY", "GENERATE_X_ONLY" or "NONE"
-	) uinjram23 (
-	.WEA				({4{wea23}}),					//  4-bit A port write enable input
-	.ENARDEN			(1'b1),							//  1-bit A port enable/Read enable input
-	.REGCEAREGCE		(1'b0),							//  1-bit A port register enable/Register enable input
-	.RSTRAMARSTRAM		(1'b0),							//  1-bit A port set/reset input
-	.RSTREGARSTREG		(1'b0),							//  1-bit A port register set/reset input
-	.CLKARDCLK			(clock),						//  1-bit A port clock/Read clock input
-	.ADDRARDADDR		(injram23_adra[15:0]),			// 16-bit A port address/Read address input 36b->[14:5]
-	.DIADI				({16'h0000,mpc_wdata[15:0]}),	// 32-bit A port data/LSB data input
-	.DIPADIP			(),								//  4-bit A port parity/LSB parity input
-	.DOADO				({injdum1,mpc_rdata_23[15:0]}),	// 32-bit A port data/LSB data output
-	.DOPADOP			(),								//  4-bit A port parity/LSB parity output
-
-	.WEBWE				(),								//  8-bit B port write enable/Write enable input
-	.ENBWREN			(1'b1),							//  1-bit B port enable/Write enable input
-	.REGCEB				(1'b0),							//  1-bit B port register enable input
-	.RSTRAMB			(1'b0),							//  1-bit B port set/reset input
-	.RSTREGB			(1'b0),							//  1-bit B port register set/reset input
-	.CLKBWRCLK			(clock),						//  1-bit B port clock/Write clock input
-	.ADDRBWRADDR		(injram23_adrb[15:0]),			// 16-bit B port address/Write address input  18b->[14:5]
-	.DIBDI				(),								// 32-bit B port data/MSB data input
-	.DIPBDIP			(),								//  4-bit B port parity/MSB parity input
-	.DOBDO				({mpc1_inj1,mpc1_inj0}),		// 32-bit B port data/MSB data output
-	.DOPBDOP			(),								//  4-bit B port parity/MSB parity output
-
-	.CASCADEINA			(),								//  1-bit A port cascade input
-	.CASCADEINB			(),								//  1-bit B port cascade input
-	.CASCADEOUTA		(),								//  1-bit A port cascade output
-	.CASCADEOUTB		(),								//  1-bit B port cascade output
-	.INJECTDBITERR		(),								//  1-bit Inject a double bit error
-	.INJECTSBITERR		(),								//  1-bit Inject a single bit error
-	.DBITERR			(),								//  1-bit double bit error status output
-	.ECCPARITY			(),								//  8-bit generated error correction parity
-	.RDADDRECC			(),								//  9-bit ECC read address
-	.SBITERR			()								//  1-bit Single bit error status output
-	);
-`else
-	initial begin
-	$display ("tmb: Virtex Undefined. Halting.");
-	$finish
-	end
-`endif
 
 // Initialize MPC Injector muon 0
 //	Frame                          "FFFFEEEEDDDDCCCCBBBBAAAA9999888877776666555544443333222211110000"
@@ -1819,7 +1692,6 @@
 
 	assign	mpc_accept_rdata[3:0] =	mpcacc_rdata[3:0];
 
-`ifdef VIRTEX2
 	initial $display("tmb: generating Virtex2 RAMB16_S18_S18 umpcacc");
 
 	RAMB16_S18_S18 # (
@@ -1847,44 +1719,6 @@
 	.DOB				(),								// Port B 16-bit Data Output
 	.DOPB				()								// Port B 2-bit Parity Output
 	);
-`elsif VIRTEX6
-	initial $display("tmb: generating Virtex6 RAMB18E1_S18_S18 umpcacc");
-
-	RAMB18E1 #(											// Virtex6
-	.RAM_MODE			("TDP"),						// SDP or TDP
- 	.READ_WIDTH_A		(18),							// 0,1,2,4,9,18,36 Read/write width per port
-	.WRITE_WIDTH_A		(0),							// 0,1,2,4,9,18
-	.READ_WIDTH_B		(0),							// 0,1,2,4,9,18
-	.WRITE_WIDTH_B		(18),							// 0,1,2,4,9,18,36
-	.WRITE_MODE_A		("READ_FIRST"),					// Must be same for both ports in SDP mode: WRITE_FIRST, READ_FIRST, or NO_CHANGE)
-	.WRITE_MODE_B		("READ_FIRST"),
-	.SIM_COLLISION_CHECK("ALL")							// ALL, WARNING_ONLY, GENERATE_X_ONLY or NONE)
-	) uram (
-	.WEA				(),								//  2-bit A port write enable input
-	.ENARDEN			(1'b1),							//  1-bit A port enable/Read enable input
-	.RSTRAMARSTRAM		(1'b0),							//  1-bit A port set/reset input
-	.RSTREGARSTREG		(1'b0),							//  1-bit A port register set/reset input
-	.REGCEAREGCE		(1'b0),							//  1-bit A port register enable/Register enable input
-	.CLKARDCLK			(clock),						//  1-bit A port clock/Read clock input
-	.ADDRARDADDR		({2'h0,vme_adr[7:0],4'hF}),		// 14-bit A port address/Read address input 18b->[13:4]
-	.DIADI				(),								// 16-bit A port data/LSB data input
-	.DIPADIP			(),								//  2-bit A port parity/LSB parity input
-	.DOADO				(mpcacc_rdata[15:0]),			// 16-bit A port data/LSB data output
-	.DOPADOP			(),								//  2-bit A port parity/LSB parity output
-
-	.WEBWE				({4{mpc_sm==injecting}}),		//  4-bit B port write enable/Write enable input
-	.ENBWREN			(1'b1),							//  1-bit B port enable/Write enable input
-	.REGCEB				(1'b0),							//  1-bit B port register enable input
-	.RSTRAMB			(1'b0),							//  1-bit B port set/reset input
-	.RSTREGB			(1'b0),							//  1-bit B port register set/reset input
-	.CLKBWRCLK			(clock),						//  1-bit B port clock/Write clock input
-	.ADDRBWRADDR		({2'h0,mpc_inj_adr[7:0],4'hF}),	// 14-bit B port address/Write address input 18b->[13:4]
-	.DIBDI				(mpcacc_wdata[15:0]),			// 16-bit B port data/MSB data input
-	.DIPBDIP			(),								//  2-bit B port parity/MSB parity input
-	.DOBDO				(),								// 16-bit B port data/MSB data output
-	.DOPBDOP			()								//  2-bit B port parity/MSB parity output
-	);
-`endif
 
 //------------------------------------------------------------------------------------------------------------------
 // Sump

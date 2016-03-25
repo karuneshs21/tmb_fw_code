@@ -3,11 +3,13 @@
 //------------------------------------------------------------------------------------------------------------------
 // Process Parity Errors
 //
-//	11/18/08 Add pulsed output sequencer perr counter
-//	11/18/08 Mod perr enable to wait for raw hits rams to write parity to all 2K addresses
-//	11/26/08 Add ram error map
-//	04/30/09 Add miniscope ram parity
-//	08/17/10 Port to ise 12
+//	11/18/2008	Add pulsed output sequencer perr counter
+//	11/18/2008	Mod perr enable to wait for raw hits rams to write parity to all 2K addresses
+//	11/26/2008	Add ram error map
+//	04/30/2009	Add miniscope ram parity
+//	08/17/2010	Port to ISE 12
+//	02/21/2013	Expand to 7 CFEBs
+//	03/13/2013	Mod for 5 CFEB Virtex-2
 //------------------------------------------------------------------------------------------------------------------
 	module parity
 	(
@@ -72,7 +74,7 @@
 	input	[MXLY-1:0]		parity_err_cfeb4;		// CFEB raw hits RAM parity errors
 	input	[4:0]			parity_err_rpc;			// RPC  raw hits RAM parity errors
 	input	[1:0]			parity_err_mini;		// Miniscope     RAM parity errors
-	
+
 // Raw hits RAM control
 	input					fifo_wen;				// 1=Write enable FIFO RAM
 
@@ -88,7 +90,7 @@
 	output					perr_rpc_ff;			// RPC  RAM parity error, latched
 	output					perr_mini_ff;			// Mini RAM parity error, latches
 	output					perr_ff;				// Parity error summary,  latched
-	output	[36:0]			perr_ram_ff;			// Mapped bad parity RAMs, 30 cfebs and 5 rpcs
+	output	[48:0]			perr_ram_ff;			// Mapped bad parity RAMs, 42 cfebs + 5 rpcs + 2 mini
 
 // Debug
 `ifdef DEBUG_PARITY
@@ -97,6 +99,7 @@
 	output					fifo_wadr_done;
 	output					reset;
 `endif
+
 //------------------------------------------------------------------------------------------------------------------
 // Continuous parity error calculation
 //------------------------------------------------------------------------------------------------------------------
@@ -159,8 +162,8 @@
 	perr_pulse <= perr & perr_en;
 	end
 
-// Map bad parity RAMs, 30 cfebs and 5 rpcs and 2 miniscope
-	reg [36:0] perr_ram_ff=0;
+// Map bad parity RAMs, 6x7=42 cfebs and 5 rpcs and 2 miniscope
+	reg [48:0] perr_ram_ff=0;
 
 	wire reset_perr_ram = reset || !perr_en;
 
@@ -172,8 +175,10 @@
 	perr_ram_ff[17:12]	<= perr_ram_ff[17:12] | parity_err_cfeb2[5:0];	// cfeb2 rams
 	perr_ram_ff[23:18]	<= perr_ram_ff[23:18] | parity_err_cfeb3[5:0];	// cfeb3 rams
 	perr_ram_ff[29:24]	<= perr_ram_ff[29:24] | parity_err_cfeb4[5:0];	// cfeb4 rams
-	perr_ram_ff[34:30]	<= perr_ram_ff[34:30] | parity_err_rpc[4:0];	// rpc   rams
-	perr_ram_ff[36:35]	<= perr_ram_ff[36:35] | parity_err_mini[1:0];	// mini  rams
+	perr_ram_ff[35:30]	<= {6{global_reset}};							// cfeb5 rams
+	perr_ram_ff[41:36]	<= {6{global_reset}};							// cfeb6 rams
+	perr_ram_ff[46:42]	<= perr_ram_ff[46:42] | parity_err_rpc[4:0];	// rpc   rams
+	perr_ram_ff[48:47]	<= perr_ram_ff[48:47] | parity_err_mini[1:0];	// mini  rams
 	end
 	end
 

@@ -4,8 +4,8 @@
 // Firmware version global definitions
 	`define FIRMWARE_TYPE		04'hC		// C=Normal CLCT/TMB, D=Debug PCB loopback version
 	`define VERSION				04'hE		// Version revision number, A=TMB2004 and earlier, E=TMB2005E production
-	`define MONTHDAY			16'h0817	// Version date
-	`define YEAR				16'h2012	// Version date
+	`define MONTHDAY			16'h0501	// Version date
+	`define YEAR				16'h2013	// Version date
 
 	`define AUTO_VME			01'h1		// Automatically initialize VME registers from PROM data,   0=do not
 	`define AUTO_JTAG			01'h1		// Automatically initialize JTAG chain from PROM data,      0=do not
@@ -21,11 +21,6 @@
 	`define MEZCARD				04'hC		// Mezzanine Card: A=V23K, B=V24K prototype, C=V24K production
 	`define ISE_VERSION			16'h0823	// ISE Compiler version 8.2i sp3 or 10.1i sp3
 	`define FPGAID				16'h4000	// FPGA Type 4000 XC2V4000
-
-//	`define VIRTEX6				04'h6		// FPGA type is Virtex6
-//	`define MEZCARD				04'hD		// Mezzanine Card: D=Virtex6
-//	`define ISE_VERSION			16'h1230	// ISE Compiler version 12.3 sp0
-//	`define FPGAID				16'h6195	// FPGA Type 6195 XC6VLX195T
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 // Conditional compile flags: Enable only one CSC_TYPE
@@ -244,6 +239,8 @@
 //	08/16/2012	Replace startup-wait timer with a separate module and state machine to sequence with vme load from prom
 //	08/17/2012	Increase Spartan-6 startup delay 1ms for comfort
 //	08/17/2012	Change VME adr ADR_JTAGSM0[2] to read|write jsm_sel, formerly it was vsm_jtag_auto already readable in vmesm0
+//	03/12/2013	Virtex-2 only
+//	05/01/2013	Archive compile
 //---------------------------------------------------------------------------------------------------------------------------------------
 //	End TMB2005E Global Definitions
 //---------------------------------------------------------------------------------------------------------------------------------------

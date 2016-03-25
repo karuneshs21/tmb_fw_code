@@ -129,10 +129,6 @@
 	initial	$display("scope160: NPRESTORE =%d",NPRESTORE);
 	initial	$display("scope160: NPRESTOREB=%d",NPRESTOREB);
 
-	`include "firmware_version.v"
-	`ifdef VIRTEX2 initial $display ("scope160: VIRTEX2   =%H",`VIRTEX2); `endif	// Virtex 2 RAMs
-	`ifdef VIRTEX6 initial $display ("scope160: VIRTEX6   =%H",`VIRTEX6); `endif	// Virtex 6 RAMs
-
 //--------------------------------------------------------------------------------------------------------------------
 // Ports
 //--------------------------------------------------------------------------------------------------------------------
@@ -416,7 +412,6 @@
 	wire [MXCH-1:0] doa;
 	genvar i;
 
-`ifdef VIRTEX2
 	initial $display("scope160: generating Virtex2 RAMB16_S36_S36");
 	generate
 	for (i=0; i<MXCH; i=i+32) begin: ram
@@ -447,54 +442,6 @@
 	.DOPB	());								// Port B  4-bit Parity Output
 	end
 	endgenerate
-
-`elsif VIRTEX6
-	initial $display("scope160: generating Virtex6 RAMB18E1");
-	generate
-	for (i=0; i<MXCH; i=i+32) begin: ram
-
-	RAMB18E1 #(									// Virtex6
-	.RAM_MODE			("SDP"),				// SDP or TDP
- 	.READ_WIDTH_A		(36),					// 0,1,2,4,9,18,36 Read/write width per port
-	.READ_WIDTH_B		(0),					// 0,1,2,4,9,18
-	.WRITE_WIDTH_A		(0),					// 0,1,2,4,9,18
-	.WRITE_WIDTH_B		(36),					// 0,1,2,4,9,18,36
-	.WRITE_MODE_A		("READ_FIRST"),			// Must be same for both ports in SDP mode: WRITE_FIRST, READ_FIRST, or NO_CHANGE)
-	.WRITE_MODE_B		("READ_FIRST"),
-	.SIM_COLLISION_CHECK("ALL")					// Colision check: Values (ALL, WARNING_ONLY, GENERATE_X_ONLY or NONE)
-	) uram (
-	.WEA				(),						//  2-bit A port write enable input
-	.ENARDEN			(1'b1),					//  1-bit A port enable/Read enable input
-	.RSTRAMARSTRAM		(1'b0),					//  1-bit A port set/reset input
-	.RSTREGARSTREG		(1'b0),					//  1-bit A port register set/reset input
-	.REGCEAREGCE		(1'b0),					//  1-bit A port register enable/Register enable input
-	.CLKARDCLK			(clock),				//  1-bit A port clock/Read clock input
-	.ADDRARDADDR		({radr_mux[8:0],5'h1F}),// 14-bit A port address/Read address input
-	.DIADI				(ch_ff[i+15:i]),		// 16-bit A port data/LSB data input
-	.DIPADIP			(),						//  2-bit A port parity/LSB parity input
-	.DOADO				(doa[i+15:i]),			// 16-bit A port data/LSB data output
-	.DOPADOP			(),						//  2-bit A port parity/LSB parity output
-
-	.WEBWE				({4{web}}),				//  4-bit B port write enable/Write enable input
-	.ENBWREN			(1'b1),					//  1-bit B port enable/Write enable input
-	.REGCEB				(1'b0),					//  1-bit B port register enable input
-	.RSTRAMB			(1'b0),					//  1-bit B port set/reset input
-	.RSTREGB			(1'b0),					//  1-bit B port register set/reset input
-	.CLKBWRCLK			(clock),				//  1-bit B port clock/Write clock input
-	.ADDRBWRADDR		({wadr[8:0],5'h1F}),	// 14-bit B port address/Write address input
-	.DIBDI				(ch_ff[i+31:i+16]),		// 16-bit B port data/MSB data input
-	.DIPBDIP			(),						//  2-bit B port parity/MSB parity input
-	.DOBDO				(doa[i+31:i+16]),		// 16-bit B port data/MSB data output
-	.DOPBDOP			()						//  2-bit B port parity/MSB parity output
-	);
-	end
-	endgenerate
-`else
-	initial begin
-	$display ("scope160: Virtex Undefined. Halting.");
-	$finish
-	end
-`endif
 
 // Multiplex RAM output data
 	reg [15:0] rdata;

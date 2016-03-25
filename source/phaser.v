@@ -44,11 +44,7 @@
 //-----------------------------------------------------------------------------------------------------------------
 // Firmware type determines phase port and counter widths
 //-----------------------------------------------------------------------------------------------------------------
-	`include "firmware_version.v"
-
-	`ifdef VIRTEX2 parameter MXPHASE=6;  `endif
-	`ifdef VIRTEX6 parameter MXPHASE=11; `endif
-
+	parameter MXPHASE=6;
 	initial	$display("phaser: MXPHASE=%d",MXPHASE);
 
 //-----------------------------------------------------------------------------------------------------------------
@@ -163,8 +159,7 @@
 	end
 
 // Track current phase value presumed inside DCM
-	`ifdef VIRTEX2 parameter phase_offset=32; `endif	// Virtex2 DLL resets to 0 phase shift, corresponds to 32 in the 0-63 range
-	`ifdef VIRTEX6 parameter phase_offset=0;  `endif	// Virtex6 PLL resets to 0 phase shift
+	parameter phase_offset=32;	// Virtex2 DLL resets to 0 phase shift, corresponds to 32 in the 0-63 range
 	
 	reg [MXPHASE-1:0] current_phase=phase_offset;
 

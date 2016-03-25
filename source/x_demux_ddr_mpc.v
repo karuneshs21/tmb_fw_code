@@ -1,53 +1,3 @@
-`include "firmware_version.v"
-
-`ifdef VIRTEX6
-`timescale 1ns / 1ps
-//--------------------------------------------------------------------------------------------------------
-// Virtex6: 1-to-2 De-multiplexer converts 80MHz data to 40MHz
-//--------------------------------------------------------------------------------------------------------
-//	07/21/10 Port to ise 12
-//	07/22/10 Use same_edge_pipelined to give same timing as virtex 2 version
-//	11/30/10 Add virtex2|6 selection
-//--------------------------------------------------------------------------------------------------------
-	module x_demux_ddr_mpc (clock,set,din,dout1st,dout2nd);
-
-// Generic
-	parameter WIDTH = 8;
-	initial	$display("x_demux_ddr_mpc: WIDTH=%d",WIDTH);
-
-// Ports
-	input				clock;
-	input				set;
-	input	[WIDTH-1:0]	din;
-	output	[WIDTH-1:0]	dout1st;
-	output	[WIDTH-1:0]	dout2nd;
-
-// Generate array of input DDRs, pipepline stage adds 1bx which matches extra legacy delay FFs in virtex 2 version
-	genvar i;
-	generate
-	for (i=0; i<=WIDTH-1; i=i+1) begin: iddr_gen
-	IDDR #(
-	.DDR_CLK_EDGE	("SAME_EDGE_PIPELINED"),	// "OPPOSITE_EDGE", "SAME_EDGE" or "SAME_EDGE_PIPELINED" 
-	.INIT_Q1		(1'b1),						// Initial value of Q1: 1'b0 or 1'b1
-	.INIT_Q2		(1'b1),						// Initial value of Q2: 1'b0 or 1'b1
-	.SRTYPE			("SYNC")					// Set/Reset type: "SYNC" or "ASYNC" 
-	) u0 (
-	.C	(clock),			// 1-bit clock input
-	.CE	(1'b1),				// 1-bit clock enable input
-	.R	(1'b0),				// 1-bit reset
-	.S	(set),				// 1-bit set
-	.D	(din[i]),			// 1-bit DDR data input
-	.Q1	(dout1st[i]),		// 1-bit output for positive edge of clock 
-	.Q2	(dout2nd[i]));		// 1-bit output for negative edge of clock
-	end
-	endgenerate
-
-//--------------------------------------------------------------------------------------------------------
-	endmodule
-//--------------------------------------------------------------------------------------------------------
-
-
-`elsif VIRTEX2
 `timescale 1ns / 1ps
 //--------------------------------------------------------------------------------------------------------
 // Virtex2: 1-to-2 De-multiplexer converts 80MHz data to 40MHz
@@ -107,5 +57,3 @@
 //--------------------------------------------------------------------------------------------------------
 	endmodule
 //--------------------------------------------------------------------------------------------------------
-
-`endif

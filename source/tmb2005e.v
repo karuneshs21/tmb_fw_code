@@ -293,6 +293,7 @@
 //	05/31/2011	Mod vme to tri-state during write cycles
 //	08/16/2012	Add ALCT Spartan-6 startup wait status to meztp
 //	08/17/2012	Increase Spartan-6 startup delay 1ms for comfort
+//	05/01/2013	Archive compile
 //
 //-------------------------------------------------------------------------------------------------------------------
 //	Port Declarations
@@ -616,6 +617,7 @@
 	`ifdef FPGAID 				initial	$display ("FPGAID        %H", `FPGAID       );	`endif
 	`ifdef ISE_VERSION			initial	$display ("ISE_VERSION   %H", `ISE_VERSION  );	`endif
 	`ifdef MEZCARD				initial	$display ("MEZCARD       %H", `MEZCARD      );	`endif
+	`ifdef VIRTEX2				initial $display ("VIRTEX2       %H", `VIRTEX2      );	`endif
 
 	`ifdef AUTO_VME 			initial	$display ("AUTO_VME      %H", `AUTO_VME     );	`endif
 	`ifdef AUTO_JTAG			initial	$display ("AUTO_JTAG     %H", `AUTO_JTAG    );	`endif
@@ -623,9 +625,6 @@
 
 	`ifdef ALCT_MUONIC			initial	$display ("ALCT_MUONIC   %H", `ALCT_MUONIC  );	`endif
 	`ifdef CFEB_MUONIC			initial	$display ("CFEB_MUONIC   %H", `CFEB_MUONIC  );	`endif
-
-	`ifdef VIRTEX2				initial $display ("VIRTEX2       %H", `VIRTEX2      );	`endif
-	`ifdef VIRTEX6				initial $display ("VIRTEX6       %H", `VIRTEX6      );	`endif
 
 	`ifdef CSC_TYPE_A			initial	$display ("CSC_TYPE_A    %H", `CSC_TYPE_A   );	`endif			
 	`ifdef CSC_TYPE_B			initial	$display ("CSC_TYPE_B    %H", `CSC_TYPE_B   );	`endif			
@@ -972,6 +971,8 @@
 	wire	[MXCNTVME-1:0]	event_counter61;
 	wire	[MXCNTVME-1:0]	event_counter62;
 	wire	[MXCNTVME-1:0]	event_counter63;
+	wire	[MXCNTVME-1:0]	event_counter64;
+	wire	[MXCNTVME-1:0]	event_counter65;
 
 // ALCT Structure Error Counters
 	wire	[7:0]			alct_err_counter0;			// Error counter 1D remap
@@ -1645,7 +1646,7 @@
 // Parity errors
 	wire	[MXCFEB-1:0]	perr_cfeb;
 	wire	[MXCFEB-1:0]	perr_cfeb_ff;
-	wire	[36:0]			perr_ram_ff;
+	wire	[48:0]			perr_ram_ff;
 
 // VME debug register latches
 	wire	[MXBADR-1:0]	deb_wr_buf_adr;			// Buffer write address at last pretrig
@@ -2123,6 +2124,8 @@
 	.event_counter61		(event_counter61[MXCNTVME-1:0]),	// Out
 	.event_counter62		(event_counter62[MXCNTVME-1:0]),	// Out
 	.event_counter63		(event_counter63[MXCNTVME-1:0]),	// Out
+	.event_counter64		(event_counter64[MXCNTVME-1:0]),	// Out
+	.event_counter65		(event_counter65[MXCNTVME-1:0]),	// Out
 
 // Header Counters
 	.hdr_clear_on_resync	(hdr_clear_on_resync),				// In	Clear header counters on ttc_resync
@@ -2491,7 +2494,7 @@
 	.perr_rpc_ff		(perr_rpc_ff),					// Out	RPC  RAM parity error, latched
 	.perr_mini_ff		(perr_mini_ff),					// Out	Mini RAM parity error, latched
 	.perr_ff			(perr_ff),						// Out	Parity error summary,  latched
-	.perr_ram_ff		(perr_ram_ff[36:0])				// Out	Mapped bad parity RAMs, 30 cfebs, 5 rpcs, 2 miniscope
+	.perr_ram_ff		(perr_ram_ff[48:0])				// Out	Mapped bad parity RAMs, 30 cfebs, 5 rpcs, 2 miniscope
 	);
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -3450,6 +3453,8 @@
 	.event_counter61		(event_counter61[MXCNTVME-1:0]),	// In
 	.event_counter62		(event_counter62[MXCNTVME-1:0]),	// In
 	.event_counter63		(event_counter63[MXCNTVME-1:0]),	// In
+	.event_counter64		(event_counter64[MXCNTVME-1:0]),	// In
+	.event_counter65		(event_counter65[MXCNTVME-1:0]),	// In
 
 // Header Counter Ports
 	.hdr_clear_on_resync	(hdr_clear_on_resync),				// Out	Clear header counters on ttc_resync
@@ -3499,7 +3504,7 @@
 	.perr_rpc_ff			(perr_rpc_ff),						// In	RPC  RAM parity error, latched
 	.perr_mini_ff			(perr_mini_ff),						// In	Mini RAM parity error, latched
 	.perr_ff				(perr_ff),							// In	Parity error summary,  latched
-	.perr_ram_ff			(perr_ram_ff[36:0]),				// In	Mapped bad parity RAMs, 30 cfebs, 5 rpcs, 2 miniscope
+	.perr_ram_ff			(perr_ram_ff[48:0]),				// In	Mapped bad parity RAMs, 30 cfebs, 5 rpcs, 2 miniscope
 
 // VME debug register latches
 	.deb_wr_buf_adr			(deb_wr_buf_adr[MXBADR-1:0]),		// In	Buffer write address at last pretrig

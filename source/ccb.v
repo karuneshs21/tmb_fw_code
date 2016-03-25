@@ -171,7 +171,6 @@
 // Constants:
 //------------------------------------------------------------------------------------------------------------------
 	parameter MXBXN		=	12;					// Number BXN bits, LHC bunchs numbered 0 to 3563
-	`include "firmware_version.v"
 
 //------------------------------------------------------------------------------------------------------------------
 // CCB Ports
@@ -702,7 +701,6 @@
 	ccb_tx_ff[26:22]	<=	~tmb_reserved_in[4:0];
 	end
 
-	`ifdef VIRTEX6 (*KEEP="true"*) `endif
 	wire [1:0] ccb_status_noe = ~{ccb_status_oe_lcl,ccb_status_oe_lcl};		//xsynthesis attribute KEEP of ccb_status_noe is "true"
 	
 	assign _ccb_tx[17:0] = (ccb_status_noe) ? {18{1'bz}} : ccb_tx_ff[17:0];	// ORs !ccb_status_oe_lcl to prevent packing err in ilogic for ise 12

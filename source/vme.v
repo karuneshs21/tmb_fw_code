@@ -2,276 +2,14 @@
 //------------------------------------------------------------------------------------------------------------------
 //	VME Section:
 //------------------------------------------------------------------------------------------------------------------
-//	09/20/2001	Initial
-//	09/25/2001	Added register write ability
-//	10/01/2001	Added C to VME ID reg
-//	10/04/2001	Added LED flashes
-//	10/18/2001	New port names, removed v_dffs
-//	11/28/2001	Mods for alct connection
-//	01/08/2002	Updates from bdtest.v
-//	02/04/2002	Separated from tmb2001a.v main
-//	02/06/2002	ID register data now passed from caller, removed mpc
-//	03/12/2002	Bolted onto tmb2001a
-//	03/13/2002	Connected tmb2001a registers
-//	03/14/2002	New ALCT registers
-//	03/17/2002	New phos4.v interface
-//	03/20/2002	New ALCT injector registers
-//	03/21/2002	Changed scl[0] to match scl[1]
-//	03/26/2002	Chaged default to pattern trigger
-//	03/27/2002	Added sequencer state readback, changed ccb_status_oe to drive to ccb
-//	03/28/2002	Added alct word count in FIFO
-//	03/29/2002	Added ccb status enables, removed led_fp flashes, they are done in sequencer
-//	03/29/2002	New ccb trigger control signals
-//	04/01/2002	Changed defaults
-//	04/02/2002	Made loop register read-only, but still powers up with defaults
-//	04/03/2002	Defaults set for OSU CFEB tests, powers up with only CFEB0 enabled and ALCT off
-//	04/04/2002	Added clct0_vme, clct1_vme and latched tmb words
-//	04/09/2002	Added dmb_rx_ff
-//	04/24/2002	Added scint_veto_clr
-//	04/25/2002	Added clct_ext_dly
-//	04/26/2002	Added allow_match
-//	04/30/2002	Changed l1a delay default from h75 to h78
-//	05/01/2002	Added adb_pulse_sync trigger mode
-//	05/07/2002	Scint_veto readback
-//	05/08/2002	Internal l1a delay changed from 113 to 114
-//	05/22/2002	Fixed clct_ext_dly
-//	06/05/2002	Added revcode
-//	06/06/2002	New trigger registers
-//	06/07/2002	Changed revcode + added trig_source readback
-//	06/12/2002	Fixed trigger delay registers stuck at default
-//	06/13/2002	Added clct pattern trigger delay
-//	06/24/2002	Removed clct_pat_trig_dly, added match_pat_trig_en, increased trig_vector to 7:0
-//	06/25/2002	Tuned alct injector delay
-//	07/02/2002	Tuned scintillator delay
-//	07/08/2002	Added mpc delay to tmb config register
-//	07/24/2002	tmb.v stores mpc_accept in RAM
-//	08/01/2002	add ttc_mpc_inj_en
-//	10/16/2002	phos4 gets new sm_reset
-//	01/23/2003	added scope
-//	03/12/2003	e-version has cylon instantiated here
-//	03/13/2003	New e-version registers
-//	03/14/2003	Finish new e-version registers, add cfeb existence readback
-//	03/15/2003	Onboard LEDs power up displaying buffer status
-//	03/16/2003	Fixed triad_persist rw, change enabled CFEBs to 5 at powerup
-//	03/17/2003	Fix srlresq, adjcfeb_mask_ds, add phos4_busy_done to lock bit
-//	03/19/2003	Bring cfeb_exists in from top level
-//	04/29/2003	Add lhc_cycle register
-//	05/08/2003	New scope64 assignments
-//	05/13/2003	New scope96 assignments
-//	05/14/2003	Add alct_raw_sync
-//	05/16/2003	Mods for scope96, sequencer_state
-//	05/22/2003	Mod usr_jtag to match boot register, swap tdi tdo port directions
-//	05/27/2003	Add nrams to scope
-//	06/03/2003	Add led_flash_rate
-//	09/12/2003	Add allowpretrignoflush
-//	10/06/2003	Tmb2003 mods, cylon9
-//	03/11/2004	New ddd.v, new dsn.v
-//	03/12/2004	Add rpc raw hits RAM control
-//	03/16/2004	Move rat control to former dummy adr for bdtest compat
-//	03/16/2004	Make tmb_loop rw for front/rear bit
-//	04/26/2004	Rename gbl_reset
-//	05/10/2004	New RPC registers, changed nrams to last ram (i.e. scp_lastram=7 reads 8 rams)
-//	05/18/2004	Change injector masks
-//	05/19/2004	Add RPC exists
-//	05/20/2004	Add RPC raw hits registers
-//	05/24/2004	New RPC defaults
-//	05/25/2004	Tuning RPC readout
-//	06/04/2004	Mod csc_id power up default
-//	06/10/2004	Add mpc_tx_delay, change mpc_delay to mpc_rx_delay
-//	06/17/2004	Bypass ga_ff for board ID at power up, use ga input directly instead, add scope trigger channel
-//	08/02/2004	Add counter registers
-//	08/06/2004	Add MPC accept counters
-//	08/18/2004	Change alct_ccb_ext_trig_en default to 0
-//	08/23/2004	Add alct registers for alct board debug firmware
-//	08/25/2004	Add alct_clock_en_vme to bypass ccb_clock40_enable
-//	08/26/2004	Add counter stop if any overflows
-//	08/31/2004	Add cnt_alct_lct_err counter
-//	10/04/2004	Poobah demands ttc_bx0 sent to mpc instead of bx0_local
-//	11/15/2004	New power-up defaults for RAT2004A, enable rear alct, alct rx tx delays for lab rat
-//	06/09/2005	New signal assignments for TMB2005
-//	06/15/2005	Made alct_rxoe, alct_txoe readonly
-//	08/05/2005	Change default alct_status_en and clct_status_en to off for multi-TMB-in-crate
-//	08/05/2005	Fix cnt_tmb_nol1a no connected
-//	03/17/2006	Float usr jtag io after hard reset so u76 device-type can be detected
-//	04/18/2006	Add jtag state machine to read alct prom
-//	05/19/2006	Add cfeb_affen to block disabled cfebs from triggering tmb
-//	07/26/2006	Add vmesm state machine
-//	07/27/2006	Add uptimer
-//	08/07/2006	Mod ddd waits for vme state machine to finish
-//	08/28/2006	Add ddd_rat for RAT module, rename ddd to ddd_tmb
-//	08/30/2006	Add bxn readout for alct and clct
-//	09/11/2006	Mods beco xst compiler can't tolerate a reg on an inout signal
-//	09/12/2006	Mods for xst
-//	09/18/2006	Triad persistence is no longer -1
-//	09/29/2006	x_flash(11) becomes x_flashsm(19) for same 13ms flash
-//	10/02/2006	Put tmb_reserved_in into ccb_cfg_wr, not used yet
-//	10/02/2006	Set rpc_loop_tmb=0 during power_up because its used in logic and not an iob
-//	10/04/2006	Power-up mods for xst
-//	10/06/2006	Add ise version register
-//	10/11/2006	Set reg jen=0, xst was replacing it with logic 1
-//	10/16/2006	Temporarily revert triad persistence to 6-1=5 for software compatibility
-//	10/16/2006	Unrevert, so persitence is now 6=6
-//	04/06/2007	Reduce RPC arrays from 2 to 4
-//	04/09/2007	Add mpc_oe
-//	04/27/2007	Add ignore ttc_start/stop expand fmm_state
-//	05/22/2007	Reduce to just one vme clct separation parameter
-//	05/22/2007	Clear triad one-shots if persistence is changed
-//	06/20/2007	Replace adjcfeb masks with distance parameter
-//	06/21/2007	Add bit to block writes to adr 10 to allow parallel download of selected alcts
-//	07/05/2007	Increase adjcfeb_dist to 6 bits to span full cfeb, copy dmb_thresh_pretrig default from hit_thresh_pretrig default
-//	07/23/2007	Extend scope from 256 to 512 tbins
-//	08/13/2007	Add buffer reset counter
-//	08/22/2007	Uptime now comes from sequencer orbit counter
-//	08/30/2007	Mod revcode years field
-//	08/31/2007	Expand vme counter width
-//	09/04/2007	Consolidate counter widths
-//	09/07/2007	Add event counters
-//	09/10/2007	Add tmb match counters
-//	09/13/2007	Add no alct counter
-//	09/19/2007	Increase rpc_inj_rwadr width
-//	11/02/2007	Replace timeout counters with phase reply counters
-//	12/14/2007	New buffer status signals
-//	01/24/2008	Add l1a internal window position
-//	02/01/2008	Add raw hits RAM parity error detection
-//	02/04/2008	Move parity to separate module
-//	04/18/2008	Rename clct_width, add clct_throttle
-//	04/22/2008	Increase default alct_delay 1bx because alct pipeline is now 1bx faster in tmb.v
-//	04/24/2008	Add independent fifo_tbins for rpc, add bx0 delays
-//	04/28/2008	Reoragnize counters, block clct-unblanking unless non-standard trigger and L1A modes are enabled
-//	05/12/2008	Add mpc bx0 injectors, change alct_bx0 enabled by default
-//	05/23/2008	Add  clock lock lost
-//	05/29/2008	Add alct structure error counters, remove alct readout sync
-//	05/30/2008	Add vme-driven ccb signals, change default ccb_status_oe to 0
-//	06/26/2008	Replace alct jtag machine with compact-data version
-//	07/11/2008	Mods to adr F0, F4, add ro signals
-//	07/14/2008	Add non-triggering event counter
-//	08/01/2008	Make stagger_csc readonly
-//	08/19/2008	Add jtagsm mux to allow both old and new versions to coexist
-//	08/19/2008	Make stagger_csc write-read again for contingency firmware version
-//	08/20/2008	Add me1a/b orientation ports
-//	08/27/2008	Add ccb pll lock status
-//	09/18/2008	Add scp_nowrite
-//	09/24/2008	Add 2 clct me1a discard counters
-//	09/24/2008	Restructure scope control registers
-//	11/14/2008	Add sync error counter
-//	11/16/2008	Add bxn at l1a register
-//	11/18/2008	Add parity error counter
-//	11/26/2008	Add parity err ram map
-//	12/02/2008	Add l1a look back
-//	12/08/2008	Add sequencer debug register
-//	01/13/2009	Expand alct_seq_cmd to 4 bits, take 1 from alct_reserved_in[4]
-//	01/26/2009	Mod alct sync mode ports
-//	03/02/2009	Add alct sync mode ecc error syndrom and ecc enable
-//	03/06/2009	Add alct ecc rx err counter, add 5 individual cfeb pretrigger counters, change alct tx delay  default 1/2bx
-//	03/11/2009	Add counters for all ecc syndrome cases
-//	03/30/2009	Add alct posneg
-//	04/30/2009	Restructure parity register FA
-//	05/01/2009	Add miniscope register
-//	05/11/2009	Expand miniscope tbins, force tbin count to be even
-//	05/12/2009	Remove old alct signals seq_status[1:0],seu_status[1:0],reserved_out[3:0],reserved_in[3:0]
-//	05/14/2009	Add bx0=vpf test mode for bx0 alignment tests
-//	05/28/2009	Add muonic alct receive data signals
-//	05/29/2009	Add random pipeline fixed pre-delay to adr 104, compensate for 2bx muonic symc
-//	06/05/2009	Remove non-muonic clock option
-//	06/11/2009	Add phaser registers and IOB constraints
-//	06/16/2009	Remove digital phase shifter registers
-//	06/18/2009	Add muonic flags
-//	06/25/2009	Add digital phase shifter registers for ALCT and CFEBs
-//	06/29/2009	Remove digital phase shifters for cfebs, certain cfeb IOBs can not have 2 clock domains
-//	07/10/2009	Return digital phase shifters for cfebs, mod ucf to move 5 IOB DDRs to fabric
-//	07/22/2009	Replace cylon modules with 1x clock versions, remove Adr28 flash_rate
-//	07/22/2009	Replace dsn modules with 1x clock versions
-//	08/07/2009	Revert to 10mhz vme clock
-//	08/11/2009	Convert cylons and dsns back to 40MHz clock
-//	08/13/2009	Put alct receiver posneg back
-//	08/14/2009	Take alct posneg back out, can not pass timing in par
-//	08/20/2009	Put alct posneg back in
-//	08/21/2009	Add cfeb posneg
-//	09/03/2009	Rename cfeb0_delay_is to cfeb0_rxd_int_delay, rename alct_txd_delay to alct_txd_int_delay
-//	09/08/2009	Add phaser autostart
-//	09/14/2009	Add sync error control
-//	09/16/2009	Move tmb sync err enable to new sync error control register
-//	09/25/2009	Mod step and loop register inits to set before fpga io config release
-//	10/14/2009	Add alct err counter for 2 identical alcts
-//	12/11/2009	Add cfeb bad bit registers
-//	01/06/2009	Mod cfeb bad bit reg[15]
-//	01/07/2009	Mod revcode to work for 2010
-//	01/08/2009	Mod revcode to work for 2010-2017, remove revcode power up mux
-//	04/27/2010	Add bx0 emulator enable
-//	05/07/2010	Load registers presets at power up instead of on 1st clock
-//	05/10/2010	Add explict width to address parameter constants
-//	05/10/2010	Pass constants from top level via defparam mechanism
-//	05/12/2010	Add bx0 defparam
-//	06/25/2010	Add l1a window priority enable
-//	06/30/2010	Mod injector RAM for alct and l1a bits
-//	07/01/2010	Add counter for events lost from readout due to L1A window prioritizing
-//	07/07/2010	Revert to discrete ren, wen, move injector msbs to l1a lookback register
-//	08/24/2010	Port to ise 12
-//	08/26/2010	Update sump signals
-//	08/26/2010	Push vme bus signal inversion to ff qbar outputs
-//	08/27/2010	Move geo[6] out of iob ffs due to clock domain conflict
-//	09/02/2010	Fix sel_fpga mux tri-state
-//	09/30/2010	Add seq l1a preset
-//	10/28/2010	Add virtex6 ddr
-//	11/18/2010	Add dsn dummies to sump
-//	11/18/2010	Restructure digital phase shifter signals into arrays
-//	11/19/2010	Resolve iob issues for dtack, ready, tmb_cfg_done
-//	11/24/2010	Add shadow ff for dtack
-//	12/16/2010	Separate rat and tmb dsn modules
-//	05/31/2011	Mod to tri-state vme bus during write cycles
-//	08/15/2012	Add startup timer to prevent JTAG to ALCT before Spartan-6 finishes loading
-//	08/16/2012	Replace startup-wait timer with a separate module and state machine to sequence with vme load from prom
-//	08/16/2012	Add alct_startup_delay register and status register for Spartan-6 on ALCT mez
-//	08/16/2012	Gate tck_fpga to prevent ISE from trying to push 2 jtag_sm FFs into 1 IOB
-//	08/17/2012	Increase Spartan-6 startup delay 1ms for comfort
-//	08/17/2012	Change VME adr ADR_JTAGSM0[2] to read|write jsm_sel, formerly it was vsm_jtag_auto already readable in vmesm0
-//
-//------------------------------------------------------------------------------------------------------------------
-//
-//	VME Address Format
-//
-//	Binary Address					HexAdr	Description
-//
-//  2222 1111 1111 1100 0000 0000
-//	3210 9876 5432 1098 7654 3210	Hex	
-//
-//	GGGG G111 XXXX XXXX XXXX XXXX	G70000	Bootstrap Register [in TMB hardware]
-//	GGGG G000 0000 0000 0000 0000	G00000	ID Register 0
-//	GGGG G000 0000 0000 0000 0010	G00002	ID Register 1
-//	GGGG G000 0000 0000 0000 0100	G00004	ID Register 2
-//	GGGG G000 0000 0000 0000 0110	G00006	ID Register 3
-//
-//	GGGG G000 0000 0000 0000 000X
-//
-//	G=Geographic board address from backplane, a[23:19]=ga[4:0]
-//	X=Don't care
-//	Hex column shows ga[0]=0 for clarity
-//	Byte addressing is not supported, so a[0]=0 is assumed
-//
-//
-//	Bootstrap Register:
-//	-------------------
-//
-//	Bit	 Dir	Signal				Description
-//	[ 0] R/W	jtag_vme1 			1=vme tdi
-//	[ 1] R/W	jtag_vme2 			1=vme tms
-//	[ 2] R/W	jtag_vme3			1=vme tck
-//	[ 3] R/W	sel_vme0			00XX ALCT JTAG Chain
-//	[ 4] R/W	sel_vme1			01XX TMB Mezzanine FPGA + FPGA PROMs JTAG chain
-//	[ 5] R/W	sel_vme2			10XX TMB User PROMs JTAG chain
-//	[ 6] R/W	sel_vme3			11XX TMB FPGA User JTAG chain
-//	[ 7] R/W	vme/usr_en			1=JTAG sourced by Bootstrap Register, 0= from FPGA
-//	[ 8] R/W	hard_reset_alct_vme	1=Hard reset to ALCT FPGA
-//	[ 9] R/W	hard_reset_tmb_vme	1=Hard reset to TMB FPGA
-//	[10] R/W	/en_fpga_reset_alct	0=Allow FPGA to hard reset ALCT
-//	[11] R/W	/fpga_vme_en		0=Allow FPGA to issue VME commands
-//	[12] R/W	/mez_enable			0=Enable mezzanine 40MHz clock
-//	[13] R/W	hard_reset_rpc		1=Hard reset to RPC FPGA
-//	[14] R		vme_ready			1=FPGA vme logic indicates ready
-//	[15] R		jtag_vme0 (tdo)		1=vme tdo
-//
-//	[14] W		Unassigned			x=No connection on PCB
-//	[15] W		Unassigned			x=No connection on PCB
+//	09/13/2012	Add Virtex-6 GTX receiver registers
+//	09/14/2012	Mod 8 new VME registers for Virtex 6 GTX optical receivers and QPLL
+//	09/23/2012	Add sysmon
+//	12/04/2012	Add sysmon RAM sump
+//	02/20/2013	Mod for 7 cfebs
+//	02/25/2013	Add 2 event counters for dcfeb[6:5]
+//	03/05/2013	New registers for 7-dcfebs
+//	03/12/2013	Virtex-2 version
 //------------------------------------------------------------------------------------------------------------------
 	module vme
 	(
@@ -942,6 +680,8 @@
 	event_counter61,
 	event_counter62,
 	event_counter63,
+	event_counter64,
+	event_counter65,
 
 // Header Counters
 	hdr_clear_on_resync,
@@ -1080,8 +820,6 @@
 	parameter CCB_BX0_EMULATOR	=  1'b0;			// Turns on bx0 emulator at power up, must be 0 for all CERN versions
 
 	`include "firmware_version.v"
-	`ifdef VIRTEX2 initial $display ("vme.VIRTEX2   =%H",`VIRTEX2); `endif	// Virtex 2 Mezzanine card
-	`ifdef VIRTEX6 initial $display ("vme.VIRTEX6   =%H",`VIRTEX6); `endif	// Virtex 6 Mezzanine card
 
 	initial begin
 	$display ("vme.FIRMWARE_TYPE    = %H",FIRMWARE_TYPE);
@@ -1101,12 +839,11 @@
 //------------------------------------------------------------------------------------------------------------------
 // Bus Parameters
 //------------------------------------------------------------------------------------------------------------------
-	parameter MXCFEB		= 5;			// Number of CFEBs on CSC
+	parameter MXCFEB		= 5;			// Number of CFEBs  on CSC
 	parameter MXLY			= 6;			// Number Layers in CSC
 	parameter MXHS			= 32;			// Number of 1/2-Strips per layer
 	parameter MXKEYB		= 5;			// Number of key bits
 	parameter MXDS			= 8;			// Number of DiStrips per layer
-	parameter MXFEB			= 5;			// Number of CFEBs
 	parameter MXBDID		= 5;			// Number TMB Board ID bits
 	parameter MXCSC			= 4;			// Number CSC Chamber ID bits
 	parameter MXRID			= 4;			// Number Run ID bits
@@ -1128,8 +865,9 @@
 	parameter MXBUF			= 8;			// Number of buffers
 	parameter MXBUFB		= 3;			// Buffer address width
 	parameter MXFLUSH		= 4;			// Number bits needed for flush counter
-	parameter MXTHROTTLE	= 8;			// Number bits needed for throttle counte
-
+	parameter MXTHROTTLE	= 8;			// Number bits needed for throttle counter
+	parameter MXDPS			= 7;			// Number of digital phase shifters 2 ALCT + 5 CFEB
+	
 	parameter MXRPC			= 2;			// Number RPCs
 	parameter MXRPCB		= 1;			// Number RPC ID bits
 	parameter MXRPCPAD		= 16;			// Number RPC pads per link board
@@ -1153,172 +891,172 @@
 //------------------------------------------------------------------------------------------------------------------
 // VME Addresses
 //------------------------------------------------------------------------------------------------------------------
-	parameter ADR_TMB_GLOBAL	= 'd26;		// Slot number to address all TMBs in parallel
-	parameter ADR_BROADCAST		= 'd27;		// Slot number to address all peripheral crate modules
+	parameter ADR_TMB_GLOBAL			= 'd26;		// Slot number to address all TMBs in parallel
+	parameter ADR_BROADCAST				= 'd27;		// Slot number to address all peripheral crate modules
 
-	parameter ADR_IDREG0		= 9'h00;	// ID Register 0
-	parameter ADR_IDREG1		= 9'h02;	// ID Register 1
-	parameter ADR_IDREG2		= 9'h04;	// ID Register 2
-	parameter ADR_IDREG3		= 9'h06;	// ID Register 3
+	parameter ADR_IDREG0				= 9'h00;	// ID Register 0
+	parameter ADR_IDREG1				= 9'h02;	// ID Register 1
+	parameter ADR_IDREG2				= 9'h04;	// ID Register 2
+	parameter ADR_IDREG3				= 9'h06;	// ID Register 3
 
-	parameter ADR_VME_STATUS	= 9'h08;	// VME Status Register
-	parameter ADR_VME_ADR0		= 9'h0A;	// VME Address read-back
-	parameter ADR_VME_ADR1		= 9'h0C;	// VME Address read-back
+	parameter ADR_VME_STATUS			= 9'h08;	// VME Status Register
+	parameter ADR_VME_ADR0				= 9'h0A;	// VME Address read-back
+	parameter ADR_VME_ADR1				= 9'h0C;	// VME Address read-back
 
-	parameter ADR_LOOPBK		= 9'h0E;	// Loop-back Register
-	parameter ADR_USR_JTAG		= 9'h10;	// User JTAG
-	parameter ADR_PROM			= 9'h12;	// PROM
+	parameter ADR_LOOPBK				= 9'h0E;	// Loop-back Register
+	parameter ADR_USR_JTAG				= 9'h10;	// User JTAG
+	parameter ADR_PROM					= 9'h12;	// PROM
 
-	parameter ADR_DDDSM			= 9'h14;	// 3D3444 State Machine Register + Clock DCMs
-	parameter ADR_DDD0			= 9'h16;	// 3D3444 chip 0
-	parameter ADR_DDD1			= 9'h18;	// 3D3444 chip 1
-	parameter ADR_DDD2			= 9'h1A;	// 3D3444 chip 2
-	parameter ADR_DDDOE			= 9'h1C;	// 3D3444 channel enables
-	parameter ADR_RATCTRL		= 9'h1E;	// RAT Module control
+	parameter ADR_DDDSM					= 9'h14;	// 3D3444 State Machine Register + Clock DCMs
+	parameter ADR_DDD0					= 9'h16;	// 3D3444 chip 0
+	parameter ADR_DDD1					= 9'h18;	// 3D3444 chip 1
+	parameter ADR_DDD2					= 9'h1A;	// 3D3444 chip 2
+	parameter ADR_DDDOE					= 9'h1C;	// 3D3444 channel enables
+	parameter ADR_RATCTRL				= 9'h1E;	// RAT Module control
 
-	parameter ADR_STEP			= 9'h20;	// Step Register
-	parameter ADR_LED			= 9'h22;	// Front Panel LEDs
-	parameter ADR_ADC			= 9'h24;	// ADCs
-	parameter ADR_DSN			= 9'h26;	// Digital Serials
+	parameter ADR_STEP					= 9'h20;	// Step Register
+	parameter ADR_LED					= 9'h22;	// Front Panel LEDs
+	parameter ADR_ADC					= 9'h24;	// ADCs
+	parameter ADR_DSN					= 9'h26;	// Digital Serials
 
-	parameter ADR_MOD_CFG		= 9'h28;	// TMB Configuration
-	parameter ADR_CCB_CFG		= 9'h2A;	// CCB Configuration
-	parameter ADR_CCB_TRIG		= 9'h2C;	// CCB Trigger Control
-	parameter ADR_CCB_STAT0		= 9'h2E;	// CCB Status
+	parameter ADR_MOD_CFG				= 9'h28;	// TMB Configuration
+	parameter ADR_CCB_CFG				= 9'h2A;	// CCB Configuration
+	parameter ADR_CCB_TRIG				= 9'h2C;	// CCB Trigger Control
+	parameter ADR_CCB_STAT0				= 9'h2E;	// CCB Status
 
-	parameter ADR_ALCT_CFG		= 9'h30;	// ALCT Configuration
-	parameter ADR_ALCT_INJ		= 9'h32;	// ALCT Injector Control
-	parameter ADR_ALCT0_INJ		= 9'h34;	// ALCT Injected ALCT0
-	parameter ADR_ALCT1_INJ		= 9'h36;	// ALCT Injected ALCT1
-	parameter ADR_ALCT_STAT		= 9'h38;	// ALCT Status
-	parameter ADR_ALCT0_RCD		= 9'h3A;	// ALCT Latched LCT0
-	parameter ADR_ALCT1_RCD		= 9'h3C;	// ALCT Latched LCT1
-	parameter ADR_ALCT_FIFO0	= 9'h3E;	// ALCT FIFO word count
+	parameter ADR_ALCT_CFG				= 9'h30;	// ALCT Configuration
+	parameter ADR_ALCT_INJ				= 9'h32;	// ALCT Injector Control
+	parameter ADR_ALCT0_INJ				= 9'h34;	// ALCT Injected ALCT0
+	parameter ADR_ALCT1_INJ				= 9'h36;	// ALCT Injected ALCT1
+	parameter ADR_ALCT_STAT				= 9'h38;	// ALCT Status
+	parameter ADR_ALCT0_RCD				= 9'h3A;	// ALCT Latched LCT0
+	parameter ADR_ALCT1_RCD				= 9'h3C;	// ALCT Latched LCT1
+	parameter ADR_ALCT_FIFO0			= 9'h3E;	// ALCT FIFO word count
 
-	parameter ADR_DMB_MON		= 9'h40;	// DMB Monitored signals
+	parameter ADR_DMB_MON				= 9'h40;	// DMB Monitored signals
 
-	parameter ADR_CFEB_INJ		= 9'h42;	// CFEB Injector Control
-	parameter ADR_CFEB_INJ_ADR	= 9'h44;	// CFEB Injector RAM address
-	parameter ADR_CFEB_INJ_WDATA= 9'h46;	// CFEB Injector Write Data
-	parameter ADR_CFEB_INJ_RDATA= 9'h48;	// CFEB Injector Read  Data
+	parameter ADR_CFEB_INJ				= 9'h42;	// CFEB Injector Control
+	parameter ADR_CFEB_INJ_ADR			= 9'h44;	// CFEB Injector RAM address
+	parameter ADR_CFEB_INJ_WDATA		= 9'h46;	// CFEB Injector Write Data
+	parameter ADR_CFEB_INJ_RDATA		= 9'h48;	// CFEB Injector Read  Data
 
-	parameter ADR_HCM001		= 9'h4A;	// CFEB0 Ly0,Ly1 Hot Channel Mask
-	parameter ADR_HCM023		= 9'h4C;	// CFEB0 Ly2,Ly3 Hot Channel Mask
-	parameter ADR_HCM045		= 9'h4E;	// CFEB0 Ly4,Ly5 Hot Channel Mask
-	parameter ADR_HCM101		= 9'h50;	// CFEB1 Ly0,Ly1 Hot Channel Mask
-	parameter ADR_HCM123		= 9'h52;	// CFEB1 Ly2,Ly3 Hot Channel Mask
-	parameter ADR_HCM145		= 9'h54;	// CFEB1 Ly4,Ly5 Hot Channel Mask
-	parameter ADR_HCM201		= 9'h56;	// CFEB2 Ly0,Ly1 Hot Channel Mask
-	parameter ADR_HCM223		= 9'h58;	// CFEB2 Ly2,Ly3 Hot Channel Mask
-	parameter ADR_HCM245		= 9'h5A;	// CFEB2 Ly4,Ly5 Hot Channel Mask
-	parameter ADR_HCM301		= 9'h5C;	// CFEB3 Ly0,Ly1 Hot Channel Mask
-	parameter ADR_HCM323		= 9'h5E;	// CFEB3 Ly2,Ly3 Hot Channel Mask
-	parameter ADR_HCM345		= 9'h60;	// CFEB3 Ly4,Ly5 Hot Channel Mask
-	parameter ADR_HCM401		= 9'h62;	// CFEB4 Ly0,Ly1 Hot Channel Mask
-	parameter ADR_HCM423		= 9'h64;	// CFEB4 Ly2,Ly3 Hot Channel Mask
-	parameter ADR_HCM445		= 9'h66;	// CFEB4 Ly4,Ly5 Hot Channel Mask
+	parameter ADR_HCM001				= 9'h4A;	// CFEB0 Ly0,Ly1 Hot Channel Mask
+	parameter ADR_HCM023				= 9'h4C;	// CFEB0 Ly2,Ly3 Hot Channel Mask
+	parameter ADR_HCM045				= 9'h4E;	// CFEB0 Ly4,Ly5 Hot Channel Mask
+	parameter ADR_HCM101				= 9'h50;	// CFEB1 Ly0,Ly1 Hot Channel Mask
+	parameter ADR_HCM123				= 9'h52;	// CFEB1 Ly2,Ly3 Hot Channel Mask
+	parameter ADR_HCM145				= 9'h54;	// CFEB1 Ly4,Ly5 Hot Channel Mask
+	parameter ADR_HCM201				= 9'h56;	// CFEB2 Ly0,Ly1 Hot Channel Mask
+	parameter ADR_HCM223				= 9'h58;	// CFEB2 Ly2,Ly3 Hot Channel Mask
+	parameter ADR_HCM245				= 9'h5A;	// CFEB2 Ly4,Ly5 Hot Channel Mask
+	parameter ADR_HCM301				= 9'h5C;	// CFEB3 Ly0,Ly1 Hot Channel Mask
+	parameter ADR_HCM323				= 9'h5E;	// CFEB3 Ly2,Ly3 Hot Channel Mask
+	parameter ADR_HCM345				= 9'h60;	// CFEB3 Ly4,Ly5 Hot Channel Mask
+	parameter ADR_HCM401				= 9'h62;	// CFEB4 Ly0,Ly1 Hot Channel Mask
+	parameter ADR_HCM423				= 9'h64;	// CFEB4 Ly2,Ly3 Hot Channel Mask
+	parameter ADR_HCM445				= 9'h66;	// CFEB4 Ly4,Ly5 Hot Channel Mask
 
-	parameter ADR_SEQ_TRIG_EN	= 9'h68;	// Sequencer Trigger Source Enables
-	parameter ADR_SEQ_TRIG_DLY0	= 9'h6A;	// Sequencer Trigger Source Delays
-	parameter ADR_SEQ_TRIG_DLY1	= 9'h6C;	// Sequencer Trigger Source Delays
-	parameter ADR_SEQ_ID		= 9'h6E;	// Sequencer ID info
+	parameter ADR_SEQ_TRIG_EN			= 9'h68;	// Sequencer Trigger Source Enables
+	parameter ADR_SEQ_TRIG_DLY0			= 9'h6A;	// Sequencer Trigger Source Delays
+	parameter ADR_SEQ_TRIG_DLY1			= 9'h6C;	// Sequencer Trigger Source Delays
+	parameter ADR_SEQ_ID				= 9'h6E;	// Sequencer ID info
 
-	parameter ADR_SEQ_CLCT		= 9'h70;	// Sequencer CLCT Configuration
-	parameter ADR_SEQ_FIFO		= 9'h72;	// Sequencer FIFO Configuration
-	parameter ADR_SEQ_L1A		= 9'h74;	// Sequencer L1A  Configuration
-	parameter ADR_SEQ_OFFSET0	= 9'h76;	// Sequencer Counter Offsets
+	parameter ADR_SEQ_CLCT				= 9'h70;	// Sequencer CLCT Configuration
+	parameter ADR_SEQ_FIFO				= 9'h72;	// Sequencer FIFO Configuration
+	parameter ADR_SEQ_L1A				= 9'h74;	// Sequencer L1A  Configuration
+	parameter ADR_SEQ_OFFSET0			= 9'h76;	// Sequencer Counter Offsets
 
-	parameter ADR_SEQ_CLCT0		= 9'h78;	// CLCT Latched LCT0
-	parameter ADR_SEQ_CLCT1		= 9'h7A;	// CLCT Latched LCT1
-	parameter ADR_SEQ_TRIG_SRC	= 9'h7C;	// Sequencer Trigger source read
+	parameter ADR_SEQ_CLCT0				= 9'h78;	// CLCT Latched LCT0
+	parameter ADR_SEQ_CLCT1				= 9'h7A;	// CLCT Latched LCT1
+	parameter ADR_SEQ_TRIG_SRC			= 9'h7C;	// Sequencer Trigger source read
 
-	parameter ADR_DMB_RAM_ADR	= 9'h7E;	// Sequencer RAM Address
-	parameter ADR_DMB_RAM_WDATA	= 9'h80;	// Sequencer RAM Write Data
-	parameter ADR_DMB_RAM_WDCNT	= 9'h82;	// Sequencer RAM Word Count
-	parameter ADR_DMB_RAM_RDATA	= 9'h84;	// Sequencer RAM Read Data
+	parameter ADR_DMB_RAM_ADR			= 9'h7E;	// Sequencer RAM Address
+	parameter ADR_DMB_RAM_WDATA			= 9'h80;	// Sequencer RAM Write Data
+	parameter ADR_DMB_RAM_WDCNT			= 9'h82;	// Sequencer RAM Word Count
+	parameter ADR_DMB_RAM_RDATA			= 9'h84;	// Sequencer RAM Read Data
 
-	parameter ADR_TMB_TRIG		= 9'h86;	// TMB Trigger Configuration
+	parameter ADR_TMB_TRIG				= 9'h86;	// TMB Trigger Configuration
 
-	parameter ADR_MPC0_FRAME0	= 9'h88;	// MPC0 Frame 0 Data sent to MPC
-	parameter ADR_MPC0_FRAME1	= 9'h8A;	// MPC0 Frame 1 Data sent to MPC
-	parameter ADR_MPC1_FRAME0	= 9'h8C;	// MPC1 Frame 0 Data sent to MPC
-	parameter ADR_MPC1_FRAME1	= 9'h8E;	// MPC1 Frame 1 Data sent to MPC
+	parameter ADR_MPC0_FRAME0			= 9'h88;	// MPC0 Frame 0 Data sent to MPC
+	parameter ADR_MPC0_FRAME1			= 9'h8A;	// MPC0 Frame 1 Data sent to MPC
+	parameter ADR_MPC1_FRAME0			= 9'h8C;	// MPC1 Frame 0 Data sent to MPC
+	parameter ADR_MPC1_FRAME1			= 9'h8E;	// MPC1 Frame 1 Data sent to MPC
 
-	parameter ADR_MPC_INJ		= 9'h90;	// MPC Injector Control
-	parameter ADR_MPC_RAM_ADR	= 9'h92;	// MPC Injector RAM address
-	parameter ADR_MPC_RAM_WDATA	= 9'h94;	// MPC Injector RAM Write Data
-	parameter ADR_MPC_RAM_RDATA	= 9'h96;	// MPC Injector RAM Read  Data
+	parameter ADR_MPC_INJ				= 9'h90;	// MPC Injector Control
+	parameter ADR_MPC_RAM_ADR			= 9'h92;	// MPC Injector RAM address
+	parameter ADR_MPC_RAM_WDATA			= 9'h94;	// MPC Injector RAM Write Data
+	parameter ADR_MPC_RAM_RDATA			= 9'h96;	// MPC Injector RAM Read  Data
 
-	parameter ADR_SCP_CTRL		= 9'h98;	// Scope control
-	parameter ADR_SCP_RDATA		= 9'h9A;	// Scope read data
+	parameter ADR_SCP_CTRL				= 9'h98;	// Scope control
+	parameter ADR_SCP_RDATA				= 9'h9A;	// Scope read data
 
-	parameter ADR_CCB_CMD		= 9'h9C;	// CCB TTC Command
-	parameter ADR_BUF_STAT0		= 9'h9E;	// Buffer Status
-	parameter ADR_BUF_STAT1		= 9'hA0;	// Buffer Status
-	parameter ADR_BUF_STAT2		= 9'hA2;	// Buffer Status
-	parameter ADR_BUF_STAT3		= 9'hA4;	// Buffer Status
-	parameter ADR_BUF_STAT4		= 9'hA6;	// Buffer Status
+	parameter ADR_CCB_CMD				= 9'h9C;	// CCB TTC Command
+	parameter ADR_BUF_STAT0				= 9'h9E;	// Buffer Status
+	parameter ADR_BUF_STAT1				= 9'hA0;	// Buffer Status
+	parameter ADR_BUF_STAT2				= 9'hA2;	// Buffer Status
+	parameter ADR_BUF_STAT3				= 9'hA4;	// Buffer Status
+	parameter ADR_BUF_STAT4				= 9'hA6;	// Buffer Status
 	
-	parameter ADR_ALCTFIFO1		= 9'hA8;	// ALCT Raw hits RAM Control
-	parameter ADR_ALCTFIFO2		= 9'hAA;	// ALCT Raw hits RAM data
+	parameter ADR_ALCTFIFO1				= 9'hA8;	// ALCT Raw hits RAM Control
+	parameter ADR_ALCTFIFO2				= 9'hAA;	// ALCT Raw hits RAM data
 
-	parameter ADR_SEQMOD		= 9'hAC;	// Sequencer Trigger Modifiers
-	parameter ADR_SEQSM			= 9'hAE;	// Sequencer Machine State
-	parameter ADR_SEQCLCTM		= 9'hB0;	// Sequencer CLCT msbs
-	parameter ADR_TMBTIM		= 9'hB2;	// TMB Timing
-	parameter ADR_LHC_CYCLE		= 9'hB4;	// LHC Cycle, max BXN
+	parameter ADR_SEQMOD				= 9'hAC;	// Sequencer Trigger Modifiers
+	parameter ADR_SEQSM					= 9'hAE;	// Sequencer Machine State
+	parameter ADR_SEQCLCTM				= 9'hB0;	// Sequencer CLCT msbs
+	parameter ADR_TMBTIM				= 9'hB2;	// TMB Timing
+	parameter ADR_LHC_CYCLE				= 9'hB4;	// LHC Cycle, max BXN
 
-	parameter ADR_RPC_CFG		= 9'hB6;	// RPC Configuration
-	parameter ADR_RPC_RDATA		= 9'hB8;	// RPC sync mode read data
-	parameter ADR_RPC_RAW_DELAY	= 9'hBA;	// RPC raw hits delay
-	parameter ADR_RPC_INJ		= 9'hBC;	// RPC injector control
-	parameter ADR_RPC_INJ_ADR	= 9'hBE;	// RPC injector RAM addresses
-	parameter ADR_RPC_INJ_WDATA	= 9'hC0;	// RPC injector RAM write data
-	parameter ADR_RPC_INJ_RDATA	= 9'hC2;	// RPC injector RAM read  data
-	parameter ADR_RPC_TBINS		= 9'hC4;	// RPC Time bins
-	parameter ADR_RPC0_HCM		= 9'hC6;	// RPC hot channel mask
-	parameter ADR_RPC1_HCM		= 9'hC8;	// RPC hot channel mask
+	parameter ADR_RPC_CFG				= 9'hB6;	// RPC Configuration
+	parameter ADR_RPC_RDATA				= 9'hB8;	// RPC sync mode read data
+	parameter ADR_RPC_RAW_DELAY			= 9'hBA;	// RPC raw hits delay
+	parameter ADR_RPC_INJ				= 9'hBC;	// RPC injector control
+	parameter ADR_RPC_INJ_ADR			= 9'hBE;	// RPC injector RAM addresses
+	parameter ADR_RPC_INJ_WDATA			= 9'hC0;	// RPC injector RAM write data
+	parameter ADR_RPC_INJ_RDATA			= 9'hC2;	// RPC injector RAM read  data
+	parameter ADR_RPC_TBINS				= 9'hC4;	// RPC Time bins
+	parameter ADR_RPC0_HCM				= 9'hC6;	// RPC hot channel mask
+	parameter ADR_RPC1_HCM				= 9'hC8;	// RPC hot channel mask
 
-	parameter ADR_BX0_DELAY		= 9'hCA;	// BX0 to MPC delays
-	parameter ADR_NON_TRIG_RO	= 9'hCC;	// Non-triggering readout
+	parameter ADR_BX0_DELAY				= 9'hCA;	// BX0 to MPC delays
+	parameter ADR_NON_TRIG_RO			= 9'hCC;	// Non-triggering readout
 
-	parameter ADR_SCP_TRIG		= 9'hCE;	// Scope trigger source channel
+	parameter ADR_SCP_TRIG				= 9'hCE;	// Scope trigger source channel
 
-	parameter ADR_CNT_CTRL		= 9'hD0;	// Counter control
-	parameter ADR_CNT_RDATA		= 9'hD2;	// Counter data
+	parameter ADR_CNT_CTRL				= 9'hD0;	// Counter control
+	parameter ADR_CNT_RDATA				= 9'hD2;	// Counter data
 
-	parameter ADR_JTAGSM0		= 9'hD4;	// JTAG state machine
-	parameter ADR_JTAGSM1		= 9'hD6;
-	parameter ADR_JTAGSM2		= 9'hD8;
+	parameter ADR_JTAGSM0				= 9'hD4;	// JTAG state machine
+	parameter ADR_JTAGSM1				= 9'hD6;
+	parameter ADR_JTAGSM2				= 9'hD8;
 
-	parameter ADR_VMESM0		= 9'hDA;	// VME state machine
-	parameter ADR_VMESM1		= 9'hDC;
-	parameter ADR_VMESM2		= 9'hDE;
-	parameter ADR_VMESM3		= 9'hE0;
-	parameter ADR_VMESM4		= 9'hE2;
+	parameter ADR_VMESM0				= 9'hDA;	// VME state machine
+	parameter ADR_VMESM1				= 9'hDC;
+	parameter ADR_VMESM2				= 9'hDE;
+	parameter ADR_VMESM3				= 9'hE0;
+	parameter ADR_VMESM4				= 9'hE2;
 
-	parameter ADR_DDDRSM		= 9'hE4;	// RAT 3D3444 State Machine Register
-	parameter ADR_DDDR0			= 9'hE6;	// RAT 3D3444 chip 0
+	parameter ADR_DDDRSM				= 9'hE4;	// RAT 3D3444 State Machine Register
+	parameter ADR_DDDR0					= 9'hE6;	// RAT 3D3444 chip 0
 
-	parameter ADR_UPTIME		= 9'hE8;	// Uptime counter
-	parameter ADR_BDSTATUS		= 9'hEA;	// Board status summary
+	parameter ADR_UPTIME				= 9'hE8;	// Uptime counter
+	parameter ADR_BDSTATUS				= 9'hEA;	// Board status summary
 
-	parameter ADR_BXN_CLCT		= 9'hEC;	// CLCT bxn at pretrigger
-	parameter ADR_BXN_ALCT		= 9'hEE;	// ALCT bxn at alct valid pattern flag
+	parameter ADR_BXN_CLCT				= 9'hEC;	// CLCT bxn at pretrigger
+	parameter ADR_BXN_ALCT				= 9'hEE;	// ALCT bxn at alct valid pattern flag
 
-	parameter ADR_LAYER_TRIG	= 9'hF0;	// Layer trigger mode
+	parameter ADR_LAYER_TRIG			= 9'hF0;	// Layer trigger mode
 
-	parameter ADR_ISE_VERSION	= 9'hF2;	// ISE Compiler version
-	parameter ADR_TEMP0			= 9'hF4;	// Temporary
-	parameter ADR_TEMP1			= 9'hF6;	// Temporary
-	parameter ADR_TEMP2			= 9'hF8;	// Temporary
-	parameter ADR_PARITY		= 9'hFA;	// Parity errors
+	parameter ADR_ISE_VERSION			= 9'hF2;	// ISE Compiler version
+	parameter ADR_TEMP0					= 9'hF4;	// Temporary
+	parameter ADR_TEMP1					= 9'hF6;	// Temporary
+	parameter ADR_TEMP2					= 9'hF8;	// Temporary
+	parameter ADR_PARITY				= 9'hFA;	// Parity errors
 
-	parameter ADR_CCB_STAT1		= 9'hFC;	// CCB Status
+	parameter ADR_CCB_STAT1				= 9'hFC;	// CCB Status
 
-	parameter ADR_BXN_L1A		= 9'hFE;	// CLCT bxn at L1A
-	parameter ADR_L1A_LOOKBACK	= 9'h100;	// L1A look back
-	parameter ADR_SEQ_DEBUG		= 9'h102;	// Sequencer debug latches
+	parameter ADR_BXN_L1A				= 9'hFE;	// CLCT bxn at L1A
+	parameter ADR_L1A_LOOKBACK			= 9'h100;	// L1A look back
+	parameter ADR_SEQ_DEBUG				= 9'h102;	// Sequencer debug latches
 
 	parameter ADR_ALCT_SYNC_CTRL		= 9'h104;	// ALCT sync mode control
 	parameter ADR_ALCT_SYNC_TXDATA_1ST	= 9'h106;	// ALCT sync mode transmit data, 1st in time
@@ -1365,6 +1103,41 @@
 	parameter ADR_ALCT_STARTUP_DELAY	= 9'h144;	// ALCT startup delay milliseconds for Spartan-6
 	parameter ADR_ALCT_STARTUP_STATUS	= 9'h146;	// ALCT startup delay machine status
 
+// Virtex-6 Only
+	parameter ADR_V6_SNAP12_QPLL		= 9'h148;	// Virtex-6 SNAP12 Serial interface + QPLL
+	parameter ADR_V6_GTX_RX_ALL			= 9'h14A;	// Virtex-6 GTX  common control
+	parameter ADR_V6_GTX_RX0			= 9'h14C;	// Virtex-6 GTX0 control and status
+	parameter ADR_V6_GTX_RX1			= 9'h14E;	// Virtex-6 GTX1 control and status
+	parameter ADR_V6_GTX_RX2			= 9'h150;	// Virtex-6 GTX2 control and status
+	parameter ADR_V6_GTX_RX3			= 9'h152;	// Virtex-6 GTX3 control and status
+	parameter ADR_V6_GTX_RX4			= 9'h154;	// Virtex-6 GTX4 control and status
+	parameter ADR_V6_GTX_RX5			= 9'h156;	// Virtex-6 GTX5 control and status
+	parameter ADR_V6_GTX_RX6			= 9'h158;	// Virtex-6 GTX6 control and status
+
+	parameter ADR_V6_SYSMON				= 9'h15A;	// Virtex-6 Sysmon ADC
+
+	parameter ADR_V6_CFEB_BADBITS_CTRL	= 9'h15C;	// CFEB  Bad Bit Control/Status
+	parameter ADR_V6_CFEB5_BADBITS_LY01	= 9'h15E;	// CFEB5 Bad Bit Array
+	parameter ADR_V6_CFEB5_BADBITS_LY23	= 9'h160;	// CFEB5 Bad Bit Array
+	parameter ADR_V6_CFEB5_BADBITS_LY45	= 9'h162;	// CFEB5 Bad Bit Array
+
+	parameter ADR_V6_CFEB6_BADBITS_LY01	= 9'h164;	// CFEB6 Bad Bit Array
+	parameter ADR_V6_CFEB6_BADBITS_LY23	= 9'h166;	// CFEB6 Bad Bit Array
+	parameter ADR_V6_CFEB6_BADBITS_LY45	= 9'h168;	// CFEB6 Bad Bit Array
+
+	parameter ADR_V6_PHASER7			= 9'h16A;	// Phaser 7 cfeb5_rxd phase
+	parameter ADR_V6_PHASER8			= 9'h16C;	// Phaser 8 cfeb6_rxd phase
+
+	parameter ADR_V6_HCM501				= 9'h16E;	// CFEB5 Ly0,Ly1 Hot Channel Mask
+	parameter ADR_V6_HCM523				= 9'h170;	// CFEB5 Ly2,Ly3 Hot Channel Mask
+	parameter ADR_V6_HCM545				= 9'h172;	// CFEB5 Ly4,Ly5 Hot Channel Mask
+
+	parameter ADR_V6_HCM601				= 9'h174;	// CFEB6 Ly0,Ly1 Hot Channel Mask
+	parameter ADR_V6_HCM623				= 9'h176;	// CFEB6 Ly2,Ly3 Hot Channel Mask
+	parameter ADR_V6_HCM645				= 9'h178;	// CFEB6 Ly4,Ly5 Hot Channel Mask
+
+	parameter ADR_V6_EXTEND				= 9'h17A;	// DCFEB 7-bit extensions
+
 //------------------------------------------------------------------------------------------------------------------
 // Ports
 //------------------------------------------------------------------------------------------------------------------
@@ -1377,7 +1150,7 @@
 	output					global_reset_en;		// Enable global reset on lock_lost
 
 // Firmware Version Ports
-	input	[MXFEB-1:0]		cfeb_exists;			// CFEBs instantiated in this version
+	input	[MXCFEB-1:0]	cfeb_exists;			// CFEBs instantiated in this version
 	output	[14:0]			revcode;				// Firmware revision code
 
 // VME Bus Input Port Map
@@ -1630,9 +1403,9 @@
 	output	[4:0]			dmb_tx_reserved;		// DMB backplane reserved
 
 // CFEB Ports: Injector Control
-	output	[MXFEB-1:0]		mask_all;				// 1=Enable, 0=Turn off all CFEB inputs	
+	output	[MXCFEB-1:0]	mask_all;				// 1=Enable, 0=Turn off all CFEB inputs	
 	output	[11:0]			inj_last_tbin;			// Last tbin, may wrap past 1024 ram adr
-	output	[MXFEB-1:0]		inj_febsel;				// 1=Select CFEBn for RAM read/write
+	output	[MXCFEB-1:0]	inj_febsel;				// 1=Select CFEBn for RAM read/write
 	output	[2:0]			inj_wen;				// 1=Write enable injector RAM
 	output	[9:0]			inj_rwadr;				// Injector RAM read/write address
 	output	[17:0]			inj_wdata;				// Injector RAM write data
@@ -1689,9 +1462,9 @@
 
 // Bad CFEB rx bit detection
 	output					bcb_read_enable;		// Enable blocked bits in dmb readout
-	output	[4:0]			cfeb_badbits_reset;		// Reset bad cfeb bits FFs on ith CFEB
-	output	[4:0]			cfeb_badbits_block;		// Allow bad bits to block triads on ith CFEB
-	input	[4:0]			cfeb_badbits_found;		// CFEB[n] has at least 1 bad bit
+	output	[MXCFEB-1:0]	cfeb_badbits_reset;		// Reset bad cfeb bits FFs on ith CFEB
+	output	[MXCFEB-1:0]	cfeb_badbits_block;		// Allow bad bits to block triads on ith CFEB
+	input	[MXCFEB-1:0]	cfeb_badbits_found;		// CFEB[n] has at least 1 bad bit
 	output					cfeb_badbits_blocked;	// A CFEB had bad bits that were blocked
 	output	[15:0]			cfeb_badbits_nbx;		// Cycles a bad bit must be continuously high
 
@@ -1741,7 +1514,7 @@
 	output					layer_trig_en;			// Allow layer-wide pre-triggering
 	output					all_cfebs_active;		// Make all CFEBs active when pre-triggered
 	output					vme_ext_trig;			// External pre-trigger from VME
-	output	[MXFEB-1:0]		cfeb_en;				// Enables CFEBs for triggering and active feb flag
+	output	[MXCFEB-1:0]	cfeb_en;				// Enables CFEBs for triggering and active feb flag
 	output					active_feb_src;			// Active cfeb flag source, 0=pretrig, 1=tmb-matching ~8bx later
 
 // Sequencer Ports: Trigger Modifiers
@@ -1764,7 +1537,7 @@
 
 // Sequencer Ports: CLCT/RPC/RAT Pattern Injector
 	output					inj_trig_vme;			// Start pattern injector
-	output	[MXFEB-1:0]		injector_mask_cfeb;		// Enable CFEB(n) for injector trigger
+	output	[MXCFEB-1:0]	injector_mask_cfeb;		// Enable CFEB(n) for injector trigger
 	output					ext_trig_inject;		// Changes clct_ext_trig to fire pattern injector
 	output					injector_mask_rat;		// Enable RAT for injector trigger
 	output					injector_mask_rpc;		// Enable RPC for injector trigger
@@ -2039,6 +1812,8 @@
 	input	[MXCNTVME-1:0]	event_counter61;
 	input	[MXCNTVME-1:0]	event_counter62;
 	input	[MXCNTVME-1:0]	event_counter63;
+	input	[MXCNTVME-1:0]	event_counter64;
+	input	[MXCNTVME-1:0]	event_counter65;
 
 // Header Counters
 	output					hdr_clear_on_resync;	// Clear header counters on ttc_resync
@@ -2092,7 +1867,7 @@
 	input					perr_rpc_ff;			// RPC  RAM parity error, latched
 	input					perr_mini_ff;			// Mini RAM parity error, latches
 	input					perr_ff;				// Parity error summary,  latched
-	input	[36:0]			perr_ram_ff;			// Mapped bad parity RAMs, 30 cfebs and 5 rpcs
+	input	[48:0]			perr_ram_ff;			// Mapped bad parity RAMs, 6x7=42 cfebs + 5 rpcs + 2 miniscope
 
 // VME debug register latches
 	input	[MXBADR-1:0]	deb_wr_buf_adr;			// Buffer write address at last pretrig
@@ -2111,10 +1886,10 @@
 	output					cfeb4_rxd_posneg;		// CFEB cfeb-to-tmb inter-stage clock select 0 or 180 degrees
 
 // Phaser VME control/status ports
-	output	[6:0]			dps_fire;				// Set new phase
-	output	[6:0]			dps_reset;				// VME Reset current phase
-	input	[6:0]			dps_busy;				// Phase shifter busy
-	input	[6:0]			dps_lock;				// PLL lock status
+	output	[MXDPS-1:0]		dps_fire;				// Set new phase
+	output	[MXDPS-1:0]		dps_reset;				// VME Reset current phase
+	input	[MXDPS-1:0]		dps_busy;				// Phase shifter busy
+	input	[MXDPS-1:0]		dps_lock;				// PLL lock status
 
 	output	[7:0]			dps0_phase;				// Phase to set, 0-255
 	output	[7:0]			dps1_phase;				// Phase to set, 0-255
@@ -2159,7 +1934,7 @@
 	input					alct_ecc_tx_err_ff;		// ALCT uncorrected ECC error in data ALCT transmitted to TMB
 	input					bx0_match_err_ff;		// ALCT alct_bx0 != clct_bx0
 	input					clock_lock_lost_err_ff;	// 40MHz main clock lost lock
-	
+
 // Sump
 	output					vme_sump;				// Unused signals
 
@@ -2685,6 +2460,7 @@
 	wire			wr_cfeb_badbits_ctrl;
 	wire			wr_cfeb_badbits_nbx;
 	wire			wr_alct_startup_delay;
+
 	wire			wr_adr_cap;
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -2978,89 +2754,88 @@
 	ADR_BX0_DELAY:		data_out	<=	bx0_delay_rd;
 	ADR_NON_TRIG_RO:	data_out	<=	non_trig_ro_rd;
 
-	ADR_SCP_TRIG:		data_out	<=	scp_trigger_ch_rd;
+	ADR_SCP_TRIG:				data_out <=	scp_trigger_ch_rd;
 
-	ADR_CNT_CTRL:		data_out	<=	cnt_ctrl_rd;
-	ADR_CNT_RDATA:		data_out	<=	cnt_rdata_rd;
+	ADR_CNT_CTRL:				data_out <=	cnt_ctrl_rd;
+	ADR_CNT_RDATA:				data_out <=	cnt_rdata_rd;
 	
-	ADR_JTAGSM0:		data_out	<=	jtagsm0_rd;
-	ADR_JTAGSM1:		data_out	<=	jtagsm1_rd;
-	ADR_JTAGSM2:		data_out	<=	jtagsm2_rd;
+	ADR_JTAGSM0:				data_out <=	jtagsm0_rd;
+	ADR_JTAGSM1:				data_out <=	jtagsm1_rd;
+	ADR_JTAGSM2:				data_out <=	jtagsm2_rd;
 
-	ADR_VMESM0:			data_out	<=	vmesm0_rd;
-	ADR_VMESM1:			data_out	<=	vmesm1_rd;
-	ADR_VMESM2:			data_out	<=	vmesm2_rd;
-	ADR_VMESM3:			data_out	<=	vmesm3_rd;
-	ADR_VMESM4:			data_out	<=	vmesm4_rd;
+	ADR_VMESM0:					data_out <=	vmesm0_rd;
+	ADR_VMESM1:					data_out <=	vmesm1_rd;
+	ADR_VMESM2:					data_out <=	vmesm2_rd;
+	ADR_VMESM3:					data_out <=	vmesm3_rd;
+	ADR_VMESM4:					data_out <=	vmesm4_rd;
 
-	ADR_DDDRSM:			data_out	<=	dddrsm_rd;
-	ADR_DDDR0:			data_out	<=	dddr_rd;
+	ADR_DDDRSM:					data_out <=	dddrsm_rd;
+	ADR_DDDR0:					data_out <=	dddr_rd;
 
-	ADR_UPTIME:			data_out	<=	uptime_rd;
-	ADR_BDSTATUS:		data_out	<=	bd_status_rd;
+	ADR_UPTIME:					data_out <=	uptime_rd;
+	ADR_BDSTATUS:				data_out <=	bd_status_rd;
 
-	ADR_BXN_CLCT:		data_out	<=	bxn_clct_rd;
-	ADR_BXN_ALCT:		data_out	<=	bxn_alct_rd;
+	ADR_BXN_CLCT:				data_out <=	bxn_clct_rd;
+	ADR_BXN_ALCT:				data_out <=	bxn_alct_rd;
 
-	ADR_LAYER_TRIG:		data_out	<=	layer_trig_rd;
+	ADR_LAYER_TRIG:				data_out <=	layer_trig_rd;
 
-	ADR_ISE_VERSION:	data_out	<=	ise_version_rd;
-	ADR_TEMP0:			data_out	<=	temp0_rd;
-	ADR_TEMP1:			data_out	<=	temp1_rd;
-	ADR_TEMP2:			data_out	<=	temp2_rd;
-	ADR_PARITY:			data_out	<=	parity_rd;
+	ADR_ISE_VERSION:			data_out <=	ise_version_rd;
+	ADR_TEMP0:					data_out <=	temp0_rd;
+	ADR_TEMP1:					data_out <=	temp1_rd;
+	ADR_TEMP2:					data_out <=	temp2_rd;
+	ADR_PARITY:					data_out <=	parity_rd;
 	
-	ADR_CCB_STAT1:		data_out	<=	ccb_stat1_rd;
-	ADR_BXN_L1A:		data_out	<=	bxn_l1a_rd;
-	ADR_L1A_LOOKBACK:	data_out	<=	l1a_lookback_rd;
-	ADR_SEQ_DEBUG:		data_out	<=	seqdeb_rd;
+	ADR_CCB_STAT1:				data_out <=	ccb_stat1_rd;
+	ADR_BXN_L1A:				data_out <=	bxn_l1a_rd;
+	ADR_L1A_LOOKBACK:			data_out <=	l1a_lookback_rd;
+	ADR_SEQ_DEBUG:				data_out <=	seqdeb_rd;
 
-	ADR_ALCT_SYNC_CTRL:			data_out	<=	alct_sync_ctrl_rd;
-	ADR_ALCT_SYNC_TXDATA_1ST:	data_out	<=	alct_sync_txdata_1st_rd;
-	ADR_ALCT_SYNC_TXDATA_2ND:	data_out	<=	alct_sync_txdata_2nd_rd;
+	ADR_ALCT_SYNC_CTRL:			data_out <=	alct_sync_ctrl_rd;
+	ADR_ALCT_SYNC_TXDATA_1ST:	data_out <=	alct_sync_txdata_1st_rd;
+	ADR_ALCT_SYNC_TXDATA_2ND:	data_out <=	alct_sync_txdata_2nd_rd;
 
-	ADR_SEQ_OFFSET1:	data_out	<=	seq_offset1_rd;
-	ADR_MINISCOPE:		data_out	<=	miniscope_rd;
+	ADR_SEQ_OFFSET1:			data_out <=	seq_offset1_rd;
+	ADR_MINISCOPE:				data_out <=	miniscope_rd;
 
-	ADR_PHASER0:		data_out	<=	phaser0_rd;
-	ADR_PHASER1:		data_out	<=	phaser1_rd;
-	ADR_PHASER2:		data_out	<=	phaser2_rd;
-	ADR_PHASER3:		data_out	<=	phaser3_rd;
-	ADR_PHASER4:		data_out	<=	phaser4_rd;
-	ADR_PHASER5:		data_out	<=	phaser5_rd;
-	ADR_PHASER6:		data_out	<=	phaser6_rd;
+	ADR_PHASER0:				data_out <=	phaser0_rd;
+	ADR_PHASER1:				data_out <=	phaser1_rd;
+	ADR_PHASER2:				data_out <=	phaser2_rd;
+	ADR_PHASER3:				data_out <=	phaser3_rd;
+	ADR_PHASER4:				data_out <=	phaser4_rd;
+	ADR_PHASER5:				data_out <=	phaser5_rd;
+	ADR_PHASER6:				data_out <=	phaser6_rd;
 
-	ADR_DELAY0_INT:		data_out	<=	delay0_int_rd;
-	ADR_DELAY1_INT:		data_out	<=	delay1_int_rd;
-	ADR_SYNC_ERR_CTRL:	data_out	<=	sync_err_ctrl_rd;
+	ADR_DELAY0_INT:				data_out <=	delay0_int_rd;
+	ADR_DELAY1_INT:				data_out <=	delay1_int_rd;
+	ADR_SYNC_ERR_CTRL:			data_out <=	sync_err_ctrl_rd;
 	
-	ADR_CFEB_BADBITS_CTRL:	data_out	<=	cfeb_badbits_ctrl_rd;
-	ADR_CFEB_BADBITS_TIMER:	data_out	<=	cfeb_badbits_nbx_rd;
+	ADR_CFEB_BADBITS_CTRL:		data_out <=	cfeb_badbits_ctrl_rd;
+	ADR_CFEB_BADBITS_TIMER:		data_out <=	cfeb_badbits_nbx_rd;
 
-	ADR_CFEB0_BADBITS_LY01:	data_out	<=	cfeb0_badbits_ly01_rd;
-	ADR_CFEB0_BADBITS_LY23:	data_out	<=	cfeb0_badbits_ly23_rd;
-	ADR_CFEB0_BADBITS_LY45:	data_out	<=	cfeb0_badbits_ly45_rd;
+	ADR_CFEB0_BADBITS_LY01:		data_out <=	cfeb0_badbits_ly01_rd;
+	ADR_CFEB0_BADBITS_LY23:		data_out <=	cfeb0_badbits_ly23_rd;
+	ADR_CFEB0_BADBITS_LY45:		data_out <=	cfeb0_badbits_ly45_rd;
 
-	ADR_CFEB1_BADBITS_LY01:	data_out	<=	cfeb1_badbits_ly01_rd;
-	ADR_CFEB1_BADBITS_LY23:	data_out	<=	cfeb1_badbits_ly23_rd;
-	ADR_CFEB1_BADBITS_LY45:	data_out	<=	cfeb1_badbits_ly45_rd;
+	ADR_CFEB1_BADBITS_LY01:		data_out <=	cfeb1_badbits_ly01_rd;
+	ADR_CFEB1_BADBITS_LY23:		data_out <=	cfeb1_badbits_ly23_rd;
+	ADR_CFEB1_BADBITS_LY45:		data_out <=	cfeb1_badbits_ly45_rd;
 
-	ADR_CFEB2_BADBITS_LY01:	data_out	<=	cfeb2_badbits_ly01_rd;
-	ADR_CFEB2_BADBITS_LY23:	data_out	<=	cfeb2_badbits_ly23_rd;
-	ADR_CFEB2_BADBITS_LY45:	data_out	<=	cfeb2_badbits_ly45_rd;
+	ADR_CFEB2_BADBITS_LY01:		data_out <=	cfeb2_badbits_ly01_rd;
+	ADR_CFEB2_BADBITS_LY23:		data_out <=	cfeb2_badbits_ly23_rd;
+	ADR_CFEB2_BADBITS_LY45:		data_out <=	cfeb2_badbits_ly45_rd;
 
-	ADR_CFEB3_BADBITS_LY01:	data_out	<=	cfeb3_badbits_ly01_rd;
-	ADR_CFEB3_BADBITS_LY23:	data_out	<=	cfeb3_badbits_ly23_rd;
-	ADR_CFEB3_BADBITS_LY45:	data_out	<=	cfeb3_badbits_ly45_rd;
+	ADR_CFEB3_BADBITS_LY01:		data_out <=	cfeb3_badbits_ly01_rd;
+	ADR_CFEB3_BADBITS_LY23:		data_out <=	cfeb3_badbits_ly23_rd;
+	ADR_CFEB3_BADBITS_LY45:		data_out <=	cfeb3_badbits_ly45_rd;
 
-	ADR_CFEB4_BADBITS_LY01:	data_out	<=	cfeb4_badbits_ly01_rd;
-	ADR_CFEB4_BADBITS_LY23:	data_out	<=	cfeb4_badbits_ly23_rd;
-	ADR_CFEB4_BADBITS_LY45:	data_out	<=	cfeb4_badbits_ly45_rd;
-	
-	ADR_ALCT_STARTUP_DELAY:	data_out	<=	alct_startup_delay_rd;
-	ADR_ALCT_STARTUP_STATUS:data_out	<=	alct_startup_status_rd;
+	ADR_CFEB4_BADBITS_LY01:		data_out <=	cfeb4_badbits_ly01_rd;
+	ADR_CFEB4_BADBITS_LY23:		data_out <=	cfeb4_badbits_ly23_rd;
+	ADR_CFEB4_BADBITS_LY45:		data_out <=	cfeb4_badbits_ly45_rd;
 
-	default:				data_out	<=	16'hDEAF;
+	ADR_ALCT_STARTUP_DELAY:		data_out <=	alct_startup_delay_rd;
+	ADR_ALCT_STARTUP_STATUS:	data_out <=	alct_startup_status_rd;
+	default:					data_out <= 16'hDEAF;
 	endcase
 	end
 
@@ -3320,6 +3095,7 @@
 	.fmt_err		(vsm_fmt_err[4:0]),		// Out	PROM data structure error
 	.nvme_writes	(vsm_nvme_writes[7:0])	// Out	Number of vme addresses written
 	);
+
 //------------------------------------------------------------------------------------------------------------------
 // ADR_IDREG0=00	ID Register 0, Readonly
 // ADR_IDREG0=02	ID Register 1, Readonly
@@ -3413,7 +3189,7 @@
 	assign tmb_loop_ro[8]		= 1'b0;				// 0=DMB driver enable
 	assign tmb_loop_ro[9] 		= 1'b0;				// 0=No GTL loop-back
 	assign tmb_loop_ro[10] 		= 1'b0;				// 0=Enable GTL outputs
-	assign tmb_loop_ro[15:11]	= 0;				// dmb_tx_reserved[4:0], not used
+	assign tmb_loop_ro[15:11]	= 5'h00;			// dmb_tx_reserved[4:0], not used
 
 // Overwritable defaults
 	initial begin
@@ -3443,9 +3219,9 @@
 	assign tmb_loop_rd[3]		= tmb_loop_wr[3];
 	assign tmb_loop_rd[5:4]		= tmb_loop_ro[5:4];
 	assign tmb_loop_rd[6]		= tmb_loop_wr[6];
-	assign tmb_loop_rd[15:7]	= tmb_loop_ro[15:7];
+	assign tmb_loop_rd[15:7]	= tmb_loop_wr[15:7];
 
-	assign dmb_tx_reserved		= tmb_loop_wr[15:11]; // DMB backplane reserved, not used
+	assign dmb_tx_reserved[4:0]	= tmb_loop_wr[15:11]; // DMB backplane reserved, not used
 
 //------------------------------------------------------------------------------------------------------------------
 // ADR_USR_JTAG=10	 User JTAG Register
@@ -3955,7 +3731,6 @@
 	assign dddrsm_rd[15:14]	= dddr_verify_dly[1:0];	// RW	Delay before latching verify data
 
 // Latch both edges of serial verify data from RAT 3D3444
-`ifdef VIRTEX2
 	initial $display ("vme: instantiating Virtex2 IDFDDRSE");
 
 	IFDDRRSE dddrin
@@ -3969,30 +3744,6 @@
 	.Q0	(dddr_sdo0),						// Posedge data output
 	.Q1	(dddr_sdo1));						// Negedge data output
  
- `elsif VIRTEX6
-	initial $display ("vme: instantiating Virtex6 IDDR");
-
-	IDDR #(
-	.DDR_CLK_EDGE	("SAME_EDGE_PIPELINED"),// "OPPOSITE_EDGE", "SAME_EDGE" or "SAME_EDGE_PIPELINED" 
-	.INIT_Q1		(1'b0),					// Initial value of Q1: 1'b0 or 1'b1
-	.INIT_Q2		(1'b0),					// Initial value of Q2: 1'b0 or 1'b1
-	.SRTYPE			("SYNC")				// Set/Reset type: "SYNC" or "ASYNC" 
-	) dddrin (
-	.C	(clock),							// 1-bit clock input
-	.CE	(1'b1),								// 1-bit clock enable input
-	.R	(1'b0),								// 1-bit reset
-	.S	(1'b0),								// 1-bit set
-	.D	(rpc_dsn),							// 1-bit DDR data input
-	.Q1	(dddr_sdo0),						// 1-bit output for positive edge of clock 
-	.Q2	(dddr_sdo1));						// 1-bit output for negative edge of clock
-
- `else
-	initial begin
-	$display ("vme: Virtex Undefined. Halting.");
-	$finish
-	end
-`endif
-
 	reg dddr_sdo0_ff = 0;
 	reg dddr_sdo1_ff = 0;
 	
@@ -4105,7 +3856,7 @@
 // Cylon pattern generators
 	wire [7:0] cylon_one;
 	wire [7:0] cylon_two;
-	wire [1:0] led_flash_rate;
+	wire [1:0] led_flash_rate=0;
 
 	cylon1 ucylon1 (clock,led_flash_rate,cylon_one);	// One cylon eye  for power-up
 	cylon2 ucylon2 (clock,led_flash_rate,cylon_two);	// Two cylon eyes for trigger-stop
@@ -4299,8 +4050,7 @@
 	mod_cfg_wr[2]					= 1;							// 1=Flash in trigger_stop mode
 	mod_cfg_wr[3]					= 0;							// 1=On-Board    LEDs sourced from VME register
 	mod_cfg_wr[4]					= 0;							// 1=BD LED Cylon mode, cool
-	mod_cfg_wr[9:5]					= 0;							// Readonly
-	mod_cfg_wr[11:10]				= 0;							// Flash rate in trig_stop mode
+	mod_cfg_wr[11:5]				= 0;							// Readonly
 	mod_cfg_wr[12]					= 1;							// 1=Enable global reset on lock_lost
 	mod_cfg_wr[15:13]				= 0;							// Readonly
 	end
@@ -4310,15 +4060,16 @@
 	assign led_flash_on_stop		= mod_cfg_wr[2];				// RW	1=Flash front panel in trigger_stop mode
 	assign led_bd_src_vme			= mod_cfg_wr[3];				// RW	1=On-Board    LEDs sourced from VME register
 	assign led_bd_cylon				= mod_cfg_wr[4];				// RW	1=On-Board    LEDs Cylon mode, cool
-	assign led_flash_rate[1:0]		= mod_cfg_wr[11:10];			// RW	Flash rate in trig_stop mode
 	assign global_reset_en			= mod_cfg_wr[12];				// RW	Enable global reset on lock_lost
 
 	assign mod_cfg_rd[4:0]			= mod_cfg_wr[4:0];				// RW	Readback
-	assign mod_cfg_rd[9:5]			= cfeb_exists[4:0];				// R	CFEBs instantiated in this firmware
-	assign mod_cfg_rd[12:10]		= mod_cfg_wr[12:10];			// RW	Readback
+	assign mod_cfg_rd[11:5]			= {2'b00,cfeb_exists[4:0]};		// R	CFEBs instantiated in this firmware
+	assign mod_cfg_rd[12]			= mod_cfg_wr[12];				// RW	Readback
 	assign mod_cfg_rd[13]			= power_up;						// R	Power-up FF
 	assign mod_cfg_rd[14]			= ddd_autostart;				// R	DDD autostart
 	assign mod_cfg_rd[15]			= mez_done;						// R	Mezzanine status
+
+	wire   mod_cfg_sump				= (|mod_cfg_wr[15:13]) | (|mod_cfg_wr[11:5]);
 
 //------------------------------------------------------------------------------------------------------------------
 //  ADR_CCB_CFG=2A		CCB Configuration Register
@@ -4576,7 +4327,7 @@
 	assign dmb_mon_rd[15:12]		= {(| dmb_rx_ff[5:3]),dmb_rx_ff[2:0]};// R	DMB received
 
 //------------------------------------------------------------------------------------------------------------------
-// ADR_CFEB_INJ=42		CFEB Injector Control Register
+// ADR_CFEB_INJ = 0x42		CFEB Injector Control Register
 //------------------------------------------------------------------------------------------------------------------
 // Power-up defaults
 	initial begin
@@ -4628,21 +4379,21 @@
 	assign cfeb_inj_rdata_rd[15:0]	= inj_rdata[15:0];				// R	Injector RAM read data
 
 //------------------------------------------------------------------------------------------------------------------
-// ADR_HCM001=4A	CFEB0 Ly0,Ly1 Hot Channel Mask
-// ADR_HCM023=4C	CFEB0 Ly2,Ly3
-// ADR_HCM045=4E	CFEB0 Ly4,Ly5
-// ADR_HCM101=50	CFEB1 Ly0,Ly1
-// ADR_HCM123=52	CFEB1 Ly2,Ly3
-// ADR_HCM145=54	CFEB1 Ly4,Ly5
-// ADR_HCM201=56	CFEB2 Ly0,Ly1
-// ADR_HCM223=58	CFEB2 Ly2,Ly3
-// ADR_HCM245=5A	CFEB2 Ly4,Ly5
-// ADR_HCM301=5C	CFEB3 Ly0,Ly1
-// ADR_HCM323=5E	CFEB3 Ly2,Ly3
-// ADR_HCM345=60	CFEB3 Ly4,Ly5
-// ADR_HCM401=62	CFEB4 Ly0,Ly1
-// ADR_HCM423=64	CFEB4 Ly2,Ly3
-// ADR_HCM445=66	CFEB4 Ly4,Ly5
+// ADR_HCM001=4A		CFEB0 Ly0,Ly1 Hot Channel Mask
+// ADR_HCM023=4C		CFEB0 Ly2,Ly3
+// ADR_HCM045=4E		CFEB0 Ly4,Ly5
+// ADR_HCM101=50		CFEB1 Ly0,Ly1
+// ADR_HCM123=52		CFEB1 Ly2,Ly3
+// ADR_HCM145=54		CFEB1 Ly4,Ly5
+// ADR_HCM201=56		CFEB2 Ly0,Ly1
+// ADR_HCM223=58		CFEB2 Ly2,Ly3
+// ADR_HCM245=5A		CFEB2 Ly4,Ly5
+// ADR_HCM301=5C		CFEB3 Ly0,Ly1
+// ADR_HCM323=5E		CFEB3 Ly2,Ly3
+// ADR_HCM345=60		CFEB3 Ly4,Ly5
+// ADR_HCM401=62		CFEB4 Ly0,Ly1
+// ADR_HCM423=64		CFEB4 Ly2,Ly3
+// ADR_HCM445=66		CFEB4 Ly4,Ly5
 //------------------------------------------------------------------------------------------------------------------
 // CFEB Hot Channel Mask Defaults
 	parameter DEF_CFEB0_LY0_HCM		=	8'b11111111;	// 1=Enable DiStrip
@@ -4757,9 +4508,9 @@
 	assign	hcm401_rd[15:0] = hcm401_wr[15:0];
 	assign	hcm423_rd[15:0] = hcm423_wr[15:0];
 	assign	hcm445_rd[15:0] = hcm445_wr[15:0];
-	
+
 //------------------------------------------------------------------------------------------------------------------
-// ADR_SEQ_TRIG_EN=68		Sequencer External Trigger Enables Register
+// ADR_SEQ_TRIG_EN = 0x68		Sequencer External Trigger Enables Register
 //------------------------------------------------------------------------------------------------------------------
 // Power-up defaults
 	initial begin
@@ -4778,9 +4529,9 @@
 	end
 
 // Sequencer trigger enables register
-	reg  [MXFEB-1:0] cfeb_en=5'b11111;
-	wire [MXFEB-1:0] cfeb_en_vme;
-	wire			 cfeb_en_source;
+	reg  [MXCFEB-1:0] cfeb_en={MXCFEB{1'b1}};
+	wire [MXCFEB-1:0] cfeb_en_vme;
+	wire			  cfeb_en_source;
 
 	assign clct_pat_trig_en			= seq_trigen_wr[0];			// RW	Allow CLCT Pattern pre-triggers
 	assign alct_pat_trig_en			= seq_trigen_wr[1];			// RW	Allow ALCT Pattern pre-trigger
@@ -4800,8 +4551,8 @@
 	assign seq_trigen_rd[15]		= seq_trigen_wr[15];		//		Readback what was written
 
 	always @(posedge clock) begin
-	if (cfeb_en_source==1) cfeb_en <= mask_all;
-	else                   cfeb_en <= cfeb_en_vme[4:0];
+	if (cfeb_en_source==1) cfeb_en <= mask_all[MXCFEB-1:0];
+	else                   cfeb_en <= cfeb_en_vme[MXCFEB-1:0];
 	end
 
 //------------------------------------------------------------------------------------------------------------------
@@ -5249,8 +5000,8 @@
 	assign seq_trigmod_rd[15:14]	= seq_trigmod_wr[15:14];	// RW	Readback
 
 //------------------------------------------------------------------------------------------------------------------
-// ADR_SEQSM   =AE		Sequencer Machine State Register, Readonly
-// ADR_SEQCLCTM=B0		Sequencer CLCT msbs Register, Readonly
+// ADR_SEQSM    = 0xAE	Sequencer Machine State Register, Readonly
+// ADR_SEQCLCTM = 0xB0	Sequencer CLCT msbs Register, Readonly
 //------------------------------------------------------------------------------------------------------------------
 // Sequencer Register: Machine State
 	assign seq_smstat_rd[11:0]		= sequencer_state[11:0];	// R	Sequencer state machines
@@ -5258,13 +5009,13 @@
 
 // Sequencer Register: CLCT MSBs
 	assign seq_clctmsb_rd[2:0]		= clctc_vme[2:0];			// R	Common to CLCT0/1 to TMB
-	assign seq_clctmsb_rd[7:3]		= clctf_vme[4:0];			// R	Active cfeb list at TMB match
-	assign seq_clctmsb_rd[13:8]		= 0;						// R	Unassigned
+	assign seq_clctmsb_rd[9:3]		= {2'b00,clctf_vme[4:0]};	// R	Active cfeb list at TMB match
+	assign seq_clctmsb_rd[13:10]	= 0;						// R	Unassigned
 	assign seq_clctmsb_rd[14]		= clock_lock_lost_err;		// R	40MHz main clock lost lock FF
 	assign seq_clctmsb_rd[15]		= clct_bx0_sync_err;		// R	Sync error: BXN counter==0 did not match bx0
 
 //------------------------------------------------------------------------------------------------------------------
-// ADR_TMBTIM=B2		TMB ALCT*CLCT Coincidence Timing Register
+// ADR_TMBTIM = 0xB2	TMB ALCT*CLCT Coincidence Timing Register
 //------------------------------------------------------------------------------------------------------------------
 // Power-up defaults
 	initial begin
@@ -5280,7 +5031,7 @@
 	assign tmb_timing_rd[15:0]		= tmb_timing_wr[15:0];		// RW	Readback
 
 //------------------------------------------------------------------------------------------------------------------
-// ADR_LHC_CYCLE=B4		LHC Cycle Counter Maximum BXN Register
+// ADR_LHC_CYCLE = 0xB4		LHC Cycle Counter Maximum BXN Register
 //------------------------------------------------------------------------------------------------------------------
 // Power-up defaults
 	initial begin
@@ -5292,8 +5043,8 @@
 	assign lhc_cycle_rd[15:0]		= lhc_cycle_wr[15:0];		//		Readback
 
 //------------------------------------------------------------------------------------------------------------------
-// ADR_RPC_CFG  =B6		RPC Configuration Register
-// ADR_RPC_RDATA=B8		RPC sync mode read data Register, Readonly
+// ADR_RPC_CFG   = 0xB6		RPC Configuration Register
+// ADR_RPC_RDATA = 0xB8		RPC sync mode read data Register, Readonly
 //------------------------------------------------------------------------------------------------------------------
 // Power-up defaults
 	initial begin
@@ -5562,7 +5313,7 @@
 // ADR_CNT_RDATA=D2	Trigger/Readout Counter Data Register
 //------------------------------------------------------------------------------------------------------------------
 // Remap 1D counters to 2D, beco XST does not support 2D ports
-	parameter MXCNT=79;								// Number of counters, last counter id is mxcnt-1
+	parameter MXCNT=88;								// Number of counters, last counter id is mxcnt-1
 	reg  [MXCNTVME-1:0]	cnt_snap [MXCNT-1:0];		// Event counter snapshot 2D
 	wire [MXCNTVME-1:0]	cnt      [MXCNT-1:0];		// Event counter 2D map
 
@@ -5633,27 +5384,38 @@
 	assign cnt[61]	= event_counter61;
 	assign cnt[62]	= event_counter62;
 	assign cnt[63]	= event_counter63;
+	assign cnt[64]	= event_counter64;
+	assign cnt[65]	= event_counter65;
 
 // Header Counters, not reset via direct VME command
-	assign cnt[64]	= pretrig_counter;		// Pre-trigger counter
-	assign cnt[65]	= clct_counter;			// CLCT counter
-	assign cnt[66]	= trig_counter;			// TMB trigger counter
-	assign cnt[67]	= alct_counter;			// ALCTs received counter
-	assign cnt[68]	= l1a_rx_counter;		// L1As received from ccb counter, only 12 bits
-	assign cnt[69]	= readout_counter;		// Readout counter, only 12 bits
-	assign cnt[70]	= orbit_counter;		// Orbit counter
+	assign cnt[66]	= pretrig_counter;		// Pre-trigger counter
+	assign cnt[67]	= clct_counter;			// CLCT counter
+	assign cnt[68]	= trig_counter;			// TMB trigger counter
+	assign cnt[69]	= alct_counter;			// ALCTs received counter
+	assign cnt[70]	= l1a_rx_counter;		// L1As received from ccb counter, only 12 bits
+	assign cnt[71]	= readout_counter;		// Readout counter, only 12 bits
+	assign cnt[72]	= orbit_counter;		// Orbit counter
 
 // ALCT Structure Error Counters
-	assign cnt[71]	= alct_err_counter0;
-	assign cnt[72]	= alct_err_counter1;
-	assign cnt[73]	= alct_err_counter2;
-	assign cnt[74]	= alct_err_counter3;
-	assign cnt[75]	= alct_err_counter4;
-	assign cnt[76]	= alct_err_counter5;
+	assign cnt[73]	= alct_err_counter0;
+	assign cnt[74]	= alct_err_counter1;
+	assign cnt[75]	= alct_err_counter2;
+	assign cnt[76]	= alct_err_counter3;
+	assign cnt[77]	= alct_err_counter4;
+	assign cnt[78]	= alct_err_counter5;
 
 // CCB TTC Lock Error Counters
-	assign cnt[77]	= ccb_ttcrx_lost_cnt;	// Number of times lock has been lost
-	assign cnt[78]	= ccb_qpll_lost_cnt;	// Number of times lock has been lost
+	assign cnt[79]	= ccb_ttcrx_lost_cnt;	// Number of times lock has been lost
+	assign cnt[80]	= ccb_qpll_lost_cnt;	// Number of times lock has been lost
+
+// Virtex-6 GTX Optical Receiver Error Counters
+	assign cnt[81]	= 0;					// Error count on this fiber channel
+	assign cnt[82]	= 0;
+	assign cnt[83]	= 0;
+	assign cnt[84]	= 0;
+	assign cnt[85]	= 0;
+	assign cnt[86]	= 0;
+	assign cnt[87]	= 0;
 
 // Snapshot current value of all counters at once
 	genvar j;
@@ -5824,30 +5586,31 @@
 	wire		perr_reset_vme	=  parity_wr[6];					// RW	Parity error reset
 	wire		perr_sump1		= |parity_wr[15:7];					// W	Unassigned
 
-	reg [5:0]	parity_rd_mux;
+	reg [7:0]	parity_rd_mux;
 
 	assign parity_rd[3:0]	= perr_adr[3:0];						// RW	Parity data bank select
 	assign parity_rd[4]		= perr_en;								// R	Parity error latch enabled
 	assign parity_rd[5]		= perr;									// R	Parity error summary
 	assign parity_rd[6]		= perr_ff;								// R	Parity error summary,  latched
 	assign parity_rd[7]		= perr_reset_vme;						// RW	Parity error reset
-	assign parity_rd[9:8]	= 0; 									// R	Free
-	assign parity_rd[15:10]	= parity_rd_mux[5:0];					// R	Parity data mux
+	assign parity_rd[15:8]	= parity_rd_mux[7:0];					// R	Parity data mux
 
 	always @* begin
 	case (perr_adr)
-	4'd0:	parity_rd_mux <= perr_ram_ff[ 5: 0];					// R	cfeb0 rams
-	4'd1:	parity_rd_mux <= perr_ram_ff[11: 6];					// R	cfeb1 rams
-	4'd2:	parity_rd_mux <= perr_ram_ff[17:12];					// R	cfeb2 rams
-	4'd3:	parity_rd_mux <= perr_ram_ff[23:18];					// R	cfeb3 rams
-	4'd4:	parity_rd_mux <= perr_ram_ff[29:24];					// R	cfeb4 rams
-	4'd5:	parity_rd_mux <= {1'b0,perr_ram_ff[34:30]};				// R	rpc   rams
-	4'd6:	parity_rd_mux <= {4'h0,perr_ram_ff[36:35]};				// R	mini  rams
-	4'd7:	parity_rd_mux <= {1'b0,perr_cfeb[4:0]};					// R	cfeb parity errors
-	4'd8:	parity_rd_mux <= {1'b0,perr_cfeb_ff[4:0]};				// R	cfeb parity errors,latched
-	4'd9:	parity_rd_mux <= {4'h0,perr_rpc_ff,perr_rpc};			// R	rpc  parity errors,latched
-	4'd10:	parity_rd_mux <= {4'h0,perr_mini_ff, perr_mini};		// R	mini parity errors,latched
-	default	parity_rd_mux <= 6'b111111;								// R	sub-addressing error flag
+	4'd0:	parity_rd_mux <= {2'h0,  perr_ram_ff[ 5: 0]};			// R	cfeb0 rams
+	4'd1:	parity_rd_mux <= {2'h0,  perr_ram_ff[11: 6]};			// R	cfeb1 rams
+	4'd2:	parity_rd_mux <= {2'h0,  perr_ram_ff[17:12]};			// R	cfeb2 rams
+	4'd3:	parity_rd_mux <= {2'h0,  perr_ram_ff[23:18]};			// R	cfeb3 rams
+	4'd4:	parity_rd_mux <= {2'h0,  perr_ram_ff[29:24]};			// R	cfeb4 rams
+	4'd5:	parity_rd_mux <= {2'h0,  perr_ram_ff[35:30]};			// R	cfeb5 rams v6 only
+	4'd6:	parity_rd_mux <= {2'h0,  perr_ram_ff[41:36]};			// R	cfeb6 rams v6 only
+	4'd7:	parity_rd_mux <= {3'h0,  perr_ram_ff[46:42]};			// R	rpc   rams
+	4'd8:	parity_rd_mux <= {6'h0,  perr_ram_ff[48:47]};			// R	mini  rams
+	4'd9:	parity_rd_mux <= {3'h0,  perr_cfeb[4:0]};				// R	cfeb parity errors
+	4'd10:	parity_rd_mux <= {3'h0,  perr_cfeb_ff[4:0]};			// R	cfeb parity errors,latched
+	4'd11:	parity_rd_mux <= {6'h00, perr_rpc_ff,perr_rpc};			// R	rpc  parity errors,latched
+	4'd12:	parity_rd_mux <= {6'h00, perr_mini_ff, perr_mini};		// R	mini parity errors,latched
+	default	parity_rd_mux <=  8'hFF;								// R	sub-addressing error flag
 	endcase
 	end
 
@@ -5987,15 +5750,15 @@
 	assign miniscope_rd[15:0]		= miniscope_wr[15:0];			//		Readback
 
 //------------------------------------------------------------------------------------------------------------------
-// ADR_PHASER0=10E DCM Phase Shifter Register: ALCT rxd
-// ADR_PHASER1=110 DCM Phase Shifter Register: ALCT txd
-// ADR_PHASER2=112 DCM Phase Shifter Register: CFEB0 rxd
-// ADR_PHASER3=114 DCM Phase Shifter Register: CFEB1 rxd
-// ADR_PHASER4=116 DCM Phase Shifter Register: CFEB2 rxd
-// ADR_PHASER5=118 DCM Phase Shifter Register: CFEB3 rxd
-// ADR_PHASER6=11A DCM Phase Shifter Register: CFEB4 rxd
+// ADR_PHASER0    = 0x10E DCM Phase Shifter Register: ALCT  rxd
+// ADR_PHASER1    = 0x110 DCM Phase Shifter Register: ALCT  txd
+// ADR_PHASER2    = 0x112 DCM Phase Shifter Register: CFEB0 rxd
+// ADR_PHASER3    = 0x114 DCM Phase Shifter Register: CFEB1 rxd
+// ADR_PHASER4    = 0x116 DCM Phase Shifter Register: CFEB2 rxd
+// ADR_PHASER5    = 0x118 DCM Phase Shifter Register: CFEB3 rxd
+// ADR_PHASER6    = 0x11A DCM Phase Shifter Register: CFEB4 rxd
 //------------------------------------------------------------------------------------------------------------------
-	wire [6:0] dps_fire_vme;
+	wire [MXDPS-1:0] dps_fire_vme;
 
 // Phaser 0: ALCT rxd
 	initial begin
@@ -6156,7 +5919,7 @@
 
 	x_oneshot upfire (.d(fire_phaser_auto_d),.clock(clock),.q(fire_phaser_auto));
 
-	assign dps_fire[6:0]	= {7{fire_phaser_auto}} | dps_fire_vme[6:0];
+	assign dps_fire[MXDPS-1:0]	= {MXDPS{fire_phaser_auto}} | dps_fire_vme[MXDPS-1:0];
 
 //------------------------------------------------------------------------------------------------------------------
 // ADR_DELAY0_INT=11C DDR Interstage delays
@@ -6180,8 +5943,8 @@
 // Delay1_is
 	initial begin
 	delay1_int_wr[3:0]				= 0;							// RW	CFEB4 Interstage delay	
-	delay1_int_wr[7:4]				= 0;							// RW	Free	
-	delay1_int_wr[11:8]				= 0;							// RW	Free
+	delay1_int_wr[7:4]				= 0;							// RW	CFEB5 Interstage delay v6 only	
+	delay1_int_wr[11:8]				= 0;							// RW	CFEB6 Interstage delay v6 only	
 	delay1_int_wr[15:12]			= 0;							// RW	Free
 	end
 
@@ -6235,34 +5998,34 @@
 	wire   sync_err_ctrl_sump		= |sync_err_ctrl_wr[14:9];		// R	Readonly sump
 
 //------------------------------------------------------------------------------------------------------------------
-// ADR_CFEB_BADBITS_CTRL  = 0x122 CFEB  Bad Bits Control/Status
-// ADR_CFEB_BADBITS_TIMER = 0x124 CFEB  Bad Bits Check Interval
+// ADR_CFEB_BADBITS_CTRL    = 0x122 CFEB  Bad Bits Control/Status
+// ADR_CFEB_BADBITS_TIMER   = 0x124 CFEB  Bad Bits Check Interval
 //------------------------------------------------------------------------------------------------------------------
 // ADR_CFEB_BADBIT_CTRL  = 0x122 CFEB  Bad Bits Control/Status
 	initial begin
-	cfeb_badbits_ctrl_wr[4:0]         = 0;							// RW	Reset bad cfeb bits FFs
-	cfeb_badbits_ctrl_wr[9:5]         = 0;							// RW	Allow bad bits to block triads
-	cfeb_badbits_ctrl_wr[14:10]       = 0;							// RO	CFEB[n] has at least 1 bad bit
-	cfeb_badbits_ctrl_wr[15]          = 0;							// RO	A CFEB had bad bits that were blocked
+	cfeb_badbits_ctrl_wr[4:0]         = 0;								// RW	Reset bad cfeb bits FFs
+	cfeb_badbits_ctrl_wr[9:5]         = 0;								// RW	Allow bad bits to block triads
+	cfeb_badbits_ctrl_wr[14:10]       = 0;								// RO	CFEB[n] has at least 1 bad bit
+	cfeb_badbits_ctrl_wr[15]          = 0;								// RO	A CFEB had bad bits that were blocked
 	end
 
-	wire   cfeb_badbits_blocked        = |(cfeb_badbits_found[4:0] & cfeb_badbits_block[4:0]);
+	wire   cfeb_badbits_blocked        = |(cfeb_badbits_found[MXCFEB-1:0] & cfeb_badbits_block[MXCFEB-1:0]);
 
-	assign cfeb_badbits_reset[4:0]     = cfeb_badbits_ctrl_wr[4:0];	// RW	Reset bad bits FFs for cfeb[n]
-	assign cfeb_badbits_block[4:0]     = cfeb_badbits_ctrl_wr[9:5];	// RW	Block bad bits on cfeb[n]
+	assign cfeb_badbits_reset[4:0]     = cfeb_badbits_ctrl_wr[4:0];		// RW	Reset bad bits FFs for cfeb[n]
+	assign cfeb_badbits_block[4:0]     = cfeb_badbits_ctrl_wr[9:5];		// RW	Block bad bits on cfeb[n]
 	wire   cfeb_badbits_ctrl_sump      =|cfeb_badbits_ctrl_wr[15:10];
 
-	assign cfeb_badbits_ctrl_rd[9:0]   = cfeb_badbits_ctrl_wr[9:0];	// RW	Readback
-	assign cfeb_badbits_ctrl_rd[14:10] = cfeb_badbits_found[4:0];	// RO	CFEB[n] has at least 1 bad bit
-	assign cfeb_badbits_ctrl_rd[15]    = cfeb_badbits_blocked;		// RO	A CFEB had bad bits that were blocked
+	assign cfeb_badbits_ctrl_rd[9:0]   = cfeb_badbits_ctrl_wr[9:0];		// RW	Readback
+	assign cfeb_badbits_ctrl_rd[14:10] = cfeb_badbits_found[4:0];		// RO	CFEB[n] has at least 1 bad bit
+	assign cfeb_badbits_ctrl_rd[15]    = cfeb_badbits_blocked;			// RO	A CFEB had bad bits that were blocked
 
 // ADR_CFEB_BADBIT_TIMER = 0x124 CFEB  Bad Bit Check Interval for bad bits
 	initial begin
-	cfeb_badbits_nbx_wr[15:0]          = 'd3564;					// RW	Cycles a bad bit must be continuously high
+	cfeb_badbits_nbx_wr[15:0]          = 'd3564;						// RW	Cycles a bad bit must be continuously high
 	end
 
-	assign cfeb_badbits_nbx[15:0]      = cfeb_badbits_nbx_wr[15:0];	// RW	Cycles a bad bit must be continuously high
-	assign cfeb_badbits_nbx_rd[15:0]   = cfeb_badbits_nbx_wr[15:0];	// RW	Readback
+	assign cfeb_badbits_nbx[15:0]      = cfeb_badbits_nbx_wr[15:0];		// RW	Cycles a bad bit must be continuously high
+	assign cfeb_badbits_nbx_rd[15:0]   = cfeb_badbits_nbx_wr[15:0];		// RW	Readback
 
 ///------------------------------------------------------------------------------------------------------------------
 // ADR_CFEB0_BADBITS_LY01 = 0x126 CFEB0 Bad Bits Array
@@ -6316,7 +6079,7 @@
 	assign alct_startup_delay_rd[15:0]	= alct_startup_delay_wr[15:0];	// RW	Readback
 
 //------------------------------------------------------------------------------------------------------------------
-// ADR_ALCT_STARTUP_STATUS = 0x142 ALCT startup machine status, Reaonly
+// ADR_ALCT_STARTUP_STATUS = 0x146 ALCT startup machine status, Reaonly
 //------------------------------------------------------------------------------------------------------------------
 	assign alct_startup_status_rd[0]	= global_reset;					// R	Global reset
 	assign alct_startup_status_rd[1]	= power_up;						// R	DLL clock lock, we wait for it
@@ -6446,6 +6209,7 @@
 	alct_stat_sump				|
 	sync_err_ctrl_sump			|
 	cfeb_badbits_ctrl_sump		|
+	mod_cfg_sump				|
 	l1a_lookback_sump			|
 	scint_veto_dummy			|
 	bx0_delay_wr[10]			|
@@ -6463,10 +6227,9 @@
 	(|usr_jtag_wr[15:14])		|
 	(|dsn_wr[14:13])			| (|dsn_wr[9:8])			| (|dsn_wr[4:3])		|
 	(|tmb_loop_wr[1:0])			| (|tmb_loop_wr[5:4])		| (|tmb_loop_wr[10:7])	|
-	(|mod_cfg_wr[15:13])		| (|mod_cfg_wr[9:5])		|
 	(|non_trig_ro_wr[9:5])		| (|non_trig_ro_wr[15:12])	|
 	(|vmesm0_wr[10:8])			| (|vmesm0_wr[6:2])			|
-   !(|tmb_loop_ro[3:2])			| tmb_loop_ro[6]			|
+   !(|tmb_loop_ro[3:2])			| tmb_loop_ro[6]			| (|tmb_loop_ro[15:11])	|
 	(|dddsm_wr[15:6])			| dddsm_wr[4]				|
 	(|dddrsm_wr[7:6])			| dddrsm_wr[4]				|
 	(|adc_wr[5:0])				| adc_wr[11]				|

@@ -1,5 +1,4 @@
 `timescale 1ns / 1ps
-//`define VIRTEX6 1	// uncomment for local compile, it is normally set in firmware_version
 //------------------------------------------------------------------------------------------------------------------------
 //	Finds:	  Best matching pattern template and number of layers hit on that pattern for 1 key 1/2-strip
 //	Returns:  Best matching pattern template ID, and number of hits on the pattern
@@ -46,14 +45,6 @@
 	parameter MXHITB	= 3;			// Hits on pattern bits
 	parameter MXPID		=11;			// Number of patterns
 	parameter MXPIDB	= 4;			// Pattern ID bits, lsb=bend direction
-
-//-------------------------------------------------------------------------------------------------------------------
-// Load global definitions
-//-------------------------------------------------------------------------------------------------------------------
-	`include "firmware_version.v"
-
-	`ifndef VIRTEX6 initial	$display("pattern_unit: FPGA_TYPE=VIRTEX2"); `endif
-	`ifdef  VIRTEX6 initial	$display("pattern_unit: FPGA_TYPE=VIRTEX6"); `endif
 
 //------------------------------------------------------------------------------------------------------------------------
 // Ports
@@ -223,22 +214,7 @@
 //
 // 7 LUT 7.564nsec
 // 01/09/2007 Initial
-// 08/12/2010 Adder version for virtex6 because xst inferred read-only ram instead of luts
 //------------------------------------------------------------------------------------------------------------------------
-// Virtex 6
-//------------------------------------------------------------------------------------------------------------------------
-`ifdef VIRTEX6
-	function [2:0]	count1s;
-	input	 [5:0]	inp;
-	begin
-	count1s = (inp[5]+inp[4]+inp[3])+(inp[2]+inp[1]+inp[0]);
-	end
-	endfunction
-
-//------------------------------------------------------------------------------------------------------------------------
-// Virtex 2
-//------------------------------------------------------------------------------------------------------------------------
-`else
 	function [2:0]	count1s;
 	input	 [5:0]	inp;
 	reg		 [3:0]	lut;
@@ -349,7 +325,6 @@
 	count1s=rom;
 	end
 	endfunction
-`endif
 
 //------------------------------------------------------------------------------------------------------------------------
 	endmodule

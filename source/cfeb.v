@@ -516,7 +516,6 @@
 	wire [1:0]		inj_ramoutb [2:0];
 	wire [MXDS-1:0] triad_inj   [MXLY-1:0];
 
-`ifdef VIRTEX2
 	initial $display("cfeb: generating Virtex2 RAMB16_S18_S18 ram.inj");
 
 	genvar i;
@@ -548,49 +547,6 @@
 	.DOPB				(inj_ramoutb[i][1:0]));				// Port B 2-bit Parity Output
 	end
 	endgenerate
-
-`else
-	initial $display("cfeb: generating Virtex6 RAMB18E1_S18_S18 ram.inj");
-
-	genvar i;
-	generate
-	for (i=0; i<=2; i=i+1) begin: ram
-	RAMB18E1 #(												// Virtex6
-	.RAM_MODE			("TDP"),							// SDP or TDP
- 	.READ_WIDTH_A		(18),								// 0,1,2,4,9,18,36 Read/write width per port
-	.WRITE_WIDTH_A		(18),								// 0,1,2,4,9,18
-	.READ_WIDTH_B		(18),								// 0,1,2,4,9,18
-	.WRITE_WIDTH_B		(0),								// 0,1,2,4,9,18,36
-	.WRITE_MODE_A		("READ_FIRST"),						// WRITE_FIRST, READ_FIRST, or NO_CHANGE
-	.WRITE_MODE_B		("READ_FIRST"),
-	.SIM_COLLISION_CHECK("ALL")								// ALL, WARNING_ONLY, GENERATE_X_ONLY or NONE)
-	) inj (
-	.WEA				({2{inj_wen[i] & inj_febsel}}),		//  2-bit A port write enable input
-	.ENARDEN			(1'b1),								//  1-bit A port enable/Read enable input
-	.RSTRAMARSTRAM		(1'b0),								//  1-bit A port set/reset input
-	.RSTREGARSTREG		(1'b0),								//  1-bit A port register set/reset input
-	.REGCEAREGCE		(1'b0),								//  1-bit A port register enable/Register enable input
-	.CLKARDCLK			(clock),							//  1-bit A port clock/Read clock input
-	.ADDRARDADDR		({inj_rwadr[9:0],4'hF}),			// 14-bit A port address/Read address input 18b->[13:4]
-	.DIADI				(inj_wdata[15:0]),					// 16-bit A port data/LSB data input
-	.DIPADIP			(inj_wdata[17:16]),					//  2-bit A port parity/LSB parity input
-	.DOADO				(inj_rdataa[i][15:0]),				// 16-bit A port data/LSB data output
-	.DOPADOP			(inj_rdataa[i][17:16]),				//  2-bit A port parity/LSB parity output
-
-	.WEBWE				(),									//  4-bit B port write enable/Write enable input
-	.ENBWREN			(1'b1),								//  1-bit B port enable/Write enable input
-	.REGCEB				(1'b0),								//  1-bit B port register enable input
-	.RSTRAMB			(1'b0),								//  1-bit B port set/reset input
-	.RSTREGB			(1'b0),								//  1-bit B port register set/reset input
-	.CLKBWRCLK			(clock),							//  1-bit B port clock/Write clock input
-	.ADDRBWRADDR		({inj_tbin_adr[9:0],4'hF}),			// 14-bit B port address/Write address input 18b->[13:4]
-	.DIBDI				(),									// 16-bit B port data/MSB data input
-	.DIPBDIP			(),									//  2-bit B port parity/MSB parity input
-	.DOBDO				({triad_inj[2*i+1],triad_inj[2*i]}),// 16-bit B port data/MSB data output
-	.DOPBDOP			(inj_ramoutb[i][1:0]));				//  2-bit B port parity/MSB parity output
-	end
-	endgenerate
-`endif
 
 `ifdef CFEB_INJECT_STAGGER	// Normal Staggered CSC
 // Initialize Injector RAMs, INIT values contain preset test pattern, 2 layers x 16 tbins per line
@@ -776,7 +732,6 @@
 // Raw hits RAM writes incoming hits into port A, reads out to DMB via port B
 	wire [MXDS-1:0] fifo_rdata_ly [MXLY-1:0];
 
-`ifdef VIRTEX2
 	initial $display("cfeb: generating Virtex2 RAMB16_S9_S9 raw.rawhits_ram");
 	wire [MXLY-1:0] dopa;
 
@@ -809,50 +764,6 @@
    );
 	end
 	endgenerate
-`else
-	initial $display("cfeb: generating Virtex6 RAMB18E1_S9_S9 raw.rawhits_ram");
-	wire [8:0] db [MXLY-1:0];								// Virtex6 dob dummy, no sump needed
-	wire dopa=0;											// Virtex2 doa dummy
-
-	generate
-	for (ily=0; ily<=MXLY-1; ily=ily+1) begin: raw
-	RAMB18E1 #(												// Virtex6
-	.RAM_MODE			("TDP"),							// SDP or TDP
- 	.READ_WIDTH_A		(0),								// 0,1,2,4,9,18,36 Read/write width per port
-	.WRITE_WIDTH_A		(9),								// 0,1,2,4,9,18
-	.READ_WIDTH_B		(9),								// 0,1,2,4,9,18
-	.WRITE_WIDTH_B		(0),								// 0,1,2,4,9,18,36
-	.WRITE_MODE_A		("READ_FIRST"),						// WRITE_FIRST, READ_FIRST, or NO_CHANGE
-	.WRITE_MODE_B		("READ_FIRST"),
-	.SIM_COLLISION_CHECK("ALL")								// ALL, WARNING_ONLY, GENERATE_X_ONLY or NONE)
-	) rawhits_ram (
-	.WEA				({2{fifo_wen}}),					//  2-bit A port write enable input
-	.ENARDEN			(1'b1),								//  1-bit A port enable/Read enable input
-	.RSTRAMARSTRAM		(1'b0),								//  1-bit A port set/reset input
-	.RSTREGARSTREG		(1'b0),								//  1-bit A port register set/reset input
-	.REGCEAREGCE		(1'b0),								//  1-bit A port register enable/Register enable input
-	.CLKARDCLK			(clock),							//  1-bit A port clock/Read clock input
-	.ADDRARDADDR		({fifo_wadr[10:0],3'h7}),			// 14-bit A port address/Read address input 9b->[13:3]
-	.DIADI				({8'h00,triad_s2[ily]}),			// 16-bit A port data/LSB data input
-	.DIPADIP			({1'b0,parity_wr[ily]}),			//  2-bit A port parity/LSB parity input
-	.DOADO				(),									// 16-bit A port data/LSB data output
-	.DOPADOP			(),									//  2-bit A port parity/LSB parity output
-
-	.WEBWE				(),									//  4-bit B port write enable/Write enable input
-	.ENBWREN			(1'b1),								//  1-bit B port enable/Write enable input
-	.REGCEB				(1'b0),								//  1-bit B port register enable input
-	.RSTRAMB			(1'b0),								//  1-bit B port set/reset input
-	.RSTREGB			(1'b0),								//  1-bit B port register set/reset input
-	.CLKBWRCLK			(clock),							//  1-bit B port clock/Write clock input
-	.ADDRBWRADDR		({fifo_radr[10:0],3'hF}),			// 14-bit B port address/Write address input 18b->[13:4]
-	.DIBDI				(),									// 16-bit B port data/MSB data input
-	.DIPBDIP			(),									//  2-bit B port parity/MSB parity input
-	.DOBDO				({db[ily][7:0],fifo_rdata_ly[ily]}),// 16-bit B port data/MSB data output
-	.DOPBDOP			({db[ily][8],parity_rd[ily]})		//  2-bit B port parity/MSB parity output
-	);
-	end
-	endgenerate
-`endif
 
 // Compare read parity to write parity
 	wire [MXLY-1:0] parity_expect;

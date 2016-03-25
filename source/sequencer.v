@@ -839,6 +839,8 @@
 	event_counter61,
 	event_counter62,
 	event_counter63,
+	event_counter64,
+	event_counter65,
 
 // Event Counter Ports
 	hdr_clear_on_resync,
@@ -1031,9 +1033,6 @@
 	parameter MXCNTVME		=	30;				// VME counter length
 	parameter MXL1ARX		=	12;				// Number L1As received counter bits
 	parameter MXORBIT		=	30;				// Number orbit counter bits
-
-// Block RAM type
-	`include "firmware_version.v"
 
 //------------------------------------------------------------------------------------------------------------------
 // I/O Ports:
@@ -1504,6 +1503,8 @@
 	output	[MXCNTVME-1:0]	event_counter61;
 	output	[MXCNTVME-1:0]	event_counter62;
 	output	[MXCNTVME-1:0]	event_counter63;
+	output	[MXCNTVME-1:0]	event_counter64;
+	output	[MXCNTVME-1:0]	event_counter65;
 
 // Event Counter Ports
 	input					hdr_clear_on_resync;	// Clear header counters on ttc_resync
@@ -1997,7 +1998,8 @@
 	end
 
 // Raw hits & header RAM buffer status
-	wire wr_buf_avail = (wr_buf_ready || !wr_buf_required);	// clct_sm may process new triggers
+	wire wr_buf_avail = (wr_buf_ready || !wr_buf_required);							// clct_sm may process new triggers
+	wire buf_fence_cnt_is_peak = (buf_fence_cnt_peak[11:0]==buf_fence_cnt[11:0]);	// Peak number of fences in fence RAM
 
 // CLCT Pattern Trigger on hit cfebs, includes only cfebs with actual hits, and not overlaps from adjacent cfebs 
 	wire [MXCFEB-1:0] active_feb;
@@ -2389,7 +2391,7 @@
 //------------------------------------------------------------------------------------------------------------------
 // Counter registers
 	parameter MNCNT			= 13;						// First sequencer counter, not number of counters beco they start at 7
-	parameter MXCNT			= 63;						// Last  sequencer counter, not number of counters beco they end   at 51
+	parameter MXCNT			= 65;						// Last  sequencer counter, not number of counters beco they end   at 51
 	parameter RESYNCCNT_ID	= 61;						// TTC Resyncs received counter does not get cleared
 
 	reg	[MXCNTVME-1:0]	cnt [MXCNT:MNCNT];				// TMB counter array, counters[6:0] are in alct.v
@@ -2404,62 +2406,64 @@
 	cnt_en[16]	<= cfeb_hit_at_pretrig[2];				// CLCT pretrigger is on CFEB2
 	cnt_en[17]	<= cfeb_hit_at_pretrig[3];				// CLCT pretrigger is on CFEB3
 	cnt_en[18]	<= cfeb_hit_at_pretrig[4];				// CLCT pretrigger is on CFEB4
+	cnt_en[19]	<= 0;									// CLCT pretrigger is on CFEB5
+	cnt_en[20]	<= 0;									// CLCT pretrigger is on CFEB6
 
-	cnt_en[19]	<= clct_pretrig_me1a;					// CLCT pretrigger is on ME1A cfeb4 only
-	cnt_en[20]	<= clct_pretrig_me1b;					// CLCT pretrigger is on ME1B cfeb0-3 only
+	cnt_en[21]	<= clct_pretrig_me1a;					// CLCT pretrigger is on ME1A cfeb4 only
+	cnt_en[22]	<= clct_pretrig_me1b;					// CLCT pretrigger is on ME1B cfeb0-3 only
 
-	cnt_en[21]	<= discard_nowrbuf_cnt_en;				// CLCT pretrig discarded, no wrbuf available, buffer stalled
-	cnt_en[22]	<= discard_noalct_cnt_en;				// CLCT pretrig discarded, no alct in window
-	cnt_en[23]	<= discard_invp_cnt_en;					// CLCT CLCT discarded, CLCT0 had invalid pattern after drift
-	cnt_en[24]	<= discard_inv_clct0_cnt_en;			// CLCT CLCT0 passed hit thresh but failed pid thresh after drift
-	cnt_en[25]	<= discard_inv_clct1_cnt_en;			// CLCT CLCT1 passed hit thresh but failed pid thresh after drift
-	cnt_en[26]	<= clct_deadtime;						// CLCT Bx pre-triggrer machine had to wait for triads to dissipate before rearming
+	cnt_en[23]	<= discard_nowrbuf_cnt_en;				// CLCT pretrig discarded, no wrbuf available, buffer stalled
+	cnt_en[24]	<= discard_noalct_cnt_en;				// CLCT pretrig discarded, no alct in window
+	cnt_en[25]	<= discard_invp_cnt_en;					// CLCT CLCT discarded, CLCT0 had invalid pattern after drift
+	cnt_en[26]	<= discard_inv_clct0_cnt_en;			// CLCT CLCT0 passed hit thresh but failed pid thresh after drift
+	cnt_en[27]	<= discard_inv_clct1_cnt_en;			// CLCT CLCT1 passed hit thresh but failed pid thresh after drift
+	cnt_en[28]	<= clct_deadtime;						// CLCT Bx pre-triggrer machine had to wait for triads to dissipate before rearming
 
-	cnt_en[27]	<= clct_push_xtmb && clct0_vpf;			// CLCT CLCT0 sent to TMB matching
-	cnt_en[28]	<= clct_push_xtmb && clct1_vpf;			// CLCT CLCT1 sent to TMB matching
+	cnt_en[29]	<= clct_push_xtmb && clct0_vpf;			// CLCT CLCT0 sent to TMB matching
+	cnt_en[30]	<= clct_push_xtmb && clct1_vpf;			// CLCT CLCT1 sent to TMB matching
 
-	cnt_en[29]	<= tmb_trig_pulse && tmb_trig_keep;		// TMB	TMB matching accepted a match, alct-only, or clct-only event
-	cnt_en[30]	<= tmb_trig_write && tmb_match;			// TMB	CLCT*ALCT matched trigger
-	cnt_en[31]	<= tmb_trig_write && tmb_alct_only;		// TMB	ALCT-only trigger
-	cnt_en[32]	<= tmb_trig_write && tmb_clct_only;		// TMB	CLCT-only trigger
+	cnt_en[31]	<= tmb_trig_pulse && tmb_trig_keep;		// TMB	TMB matching accepted a match, alct-only, or clct-only event
+	cnt_en[32]	<= tmb_trig_write && tmb_match;			// TMB	CLCT*ALCT matched trigger
+	cnt_en[33]	<= tmb_trig_write && tmb_alct_only;		// TMB	ALCT-only trigger
+	cnt_en[34]	<= tmb_trig_write && tmb_clct_only;		// TMB	CLCT-only trigger
 
-	cnt_en[33]	<= discard_tmbreject_cnt_en;			// TMB	TMB matching rejected event
-	cnt_en[34]	<= tmb_trig_pulse && tmb_non_trig_keep;	// TMB	TMB matching rejected event, but keep for readout anyway
-	cnt_en[35]	<= tmb_trig_write && tmb_alct_discard;	// TMB	TMB matching discarded an ALCT pair
-	cnt_en[36]	<= tmb_trig_write && tmb_clct_discard;	// TMB	TMB matching discarded a  CLCT pair
-	cnt_en[37]	<= tmb_trig_write && tmb_clct0_discard;	// TMB	TMB matching discarded CLCT0 from ME1A
-	cnt_en[38]	<= tmb_trig_write && tmb_clct1_discard;	// TMB	TMB matching discarded CLCT1 from ME1A
+	cnt_en[35]	<= discard_tmbreject_cnt_en;			// TMB	TMB matching rejected event
+	cnt_en[36]	<= tmb_trig_pulse && tmb_non_trig_keep;	// TMB	TMB matching rejected event, but keep for readout anyway
+	cnt_en[37]	<= tmb_trig_write && tmb_alct_discard;	// TMB	TMB matching discarded an ALCT pair
+	cnt_en[38]	<= tmb_trig_write && tmb_clct_discard;	// TMB	TMB matching discarded a  CLCT pair
+	cnt_en[39]	<= tmb_trig_write && tmb_clct0_discard;	// TMB	TMB matching discarded CLCT0 from ME1A
+	cnt_en[40]	<= tmb_trig_write && tmb_clct1_discard;	// TMB	TMB matching discarded CLCT1 from ME1A
 
-	cnt_en[39]	<= tmb_no_alct   && wr_push_rtmb;		// TMB	Matching found no  ALCT
-	cnt_en[40]	<= tmb_no_clct   && wr_push_rtmb;		// TMB	Matching found no  CLCT
-	cnt_en[41]	<= tmb_one_alct  && wr_push_rtmb;		// TMB	Matching found One ALCT
-	cnt_en[42]	<= tmb_one_clct  && wr_push_rtmb;		// TMB	Matching found One CLCT
-	cnt_en[43]	<= tmb_two_alct  && wr_push_rtmb;		// TMB	Matching found Two ALCTs
-	cnt_en[44]	<= tmb_two_clct  && wr_push_rtmb;		// TMB	Matching found Two CLCTs
+	cnt_en[41]	<= tmb_no_alct   && wr_push_rtmb;		// TMB	Matching found no  ALCT
+	cnt_en[42]	<= tmb_no_clct   && wr_push_rtmb;		// TMB	Matching found no  CLCT
+	cnt_en[43]	<= tmb_one_alct  && wr_push_rtmb;		// TMB	Matching found One ALCT
+	cnt_en[44]	<= tmb_one_clct  && wr_push_rtmb;		// TMB	Matching found One CLCT
+	cnt_en[45]	<= tmb_two_alct  && wr_push_rtmb;		// TMB	Matching found Two ALCTs
+	cnt_en[46]	<= tmb_two_clct  && wr_push_rtmb;		// TMB	Matching found Two CLCTs
 
-	cnt_en[45]	<= tmb_dupe_alct && wr_push_rtmb;		// TMB	ALCT0 copied into ALCT1 to make 2nd LCT
-	cnt_en[46]	<= tmb_dupe_clct && wr_push_rtmb;		// TMB	CLCT0 copied into CLCT1 to make 2nd LCT
-	cnt_en[47]	<= tmb_rank_err  && wr_push_rtmb;		// TMB	LCT1 has higher quality than LCT0, error
+	cnt_en[47]	<= tmb_dupe_alct && wr_push_rtmb;		// TMB	ALCT0 copied into ALCT1 to make 2nd LCT
+	cnt_en[48]	<= tmb_dupe_clct && wr_push_rtmb;		// TMB	CLCT0 copied into CLCT1 to make 2nd LCT
+	cnt_en[49]	<= tmb_rank_err  && wr_push_rtmb;		// TMB	LCT1 has higher quality than LCT0, error
 
-	cnt_en[48]	<= mpc_xmit_lct0;						// TMB	Transmitted LCT0 to MPC
-	cnt_en[49]	<= mpc_xmit_lct1;						// TMB	Transmitted LCT1 to MPC
+	cnt_en[50]	<= mpc_xmit_lct0;						// TMB	Transmitted LCT0 to MPC
+	cnt_en[51]	<= mpc_xmit_lct1;						// TMB	Transmitted LCT1 to MPC
 
-	cnt_en[50]	<= mpc_response_ff && mpc_accept_ff[0];	// TMB	MPC accepted LCT0
-	cnt_en[51]	<= mpc_response_ff && mpc_accept_ff[1];	// TMB	MPC accepted LCT1
-	cnt_en[52]	<= mpc_response_ff && !(|mpc_accept_ff);// TMB	MPC rejected both LCT0 & LCT1
+	cnt_en[52]	<= mpc_response_ff && mpc_accept_ff[0];	// TMB	MPC accepted LCT0
+	cnt_en[53]	<= mpc_response_ff && mpc_accept_ff[1];	// TMB	MPC accepted LCT1
+	cnt_en[54]	<= mpc_response_ff && !(|mpc_accept_ff);// TMB	MPC rejected both LCT0 & LCT1
 
-	cnt_en[53]	<= l1a_received;						// L1A  L1A received
-	cnt_en[54]	<= l1a_match_cnt_en;					// L1A  L1A received, TMB in L1A window
-	cnt_en[55]	<= l1a_notmb_cnt_en;					// L1A  L1A received,  no TMB in window
-	cnt_en[56]	<= tmb_nol1a_cnt_en;					// L1A  TMB triggered, no L1A in window
-	cnt_en[57]	<= (read_sm == xcrc0);					// L1A  TMB readouts completed
-	cnt_en[58]	<= l1a_los_win;							// L1A  TMB readouts lost due to L1A prioritizing
+	cnt_en[55]	<= l1a_received;						// L1A  L1A received
+	cnt_en[56]	<= l1a_match_cnt_en;					// L1A  L1A received, TMB in L1A window
+	cnt_en[57]	<= l1a_notmb_cnt_en;					// L1A  L1A received,  no TMB in window
+	cnt_en[58]	<= tmb_nol1a_cnt_en;					// L1A  TMB triggered, no L1A in window
+	cnt_en[59]	<= (read_sm == xcrc0);					// L1A  TMB readouts completed
+	cnt_en[60]	<= l1a_los_win;							// L1A  TMB readouts lost due to L1A prioritizing
 	
-	cnt_en[59]	<= (|triad_skip[4:0]);					// STAT	CLCT Triads skipped
-	cnt_en[60]	<= buf_reset && startup_done;			// STAT	Raw hits buffer had to be reset due to ovf, error
-	cnt_en[61]	<= ttc_resync;							// STAT	TTC Resyncs received
-	cnt_en[62]	<= sync_err_cnt_en;						// STAT	TTC sync errors
-	cnt_en[63]	<= perr_pulse;							// STAT Raw hits RAM parity errors
+	cnt_en[61]	<= (|triad_skip[4:0]);					// STAT	CLCT Triads skipped
+	cnt_en[62]	<= buf_reset && startup_done;			// STAT	Raw hits buffer had to be reset due to ovf, error
+	cnt_en[63]	<= ttc_resync;							// STAT	TTC Resyncs received
+	cnt_en[64]	<= sync_err_cnt_en;						// STAT	TTC sync errors
+	cnt_en[65]	<= perr_pulse;							// STAT Raw hits RAM parity errors
 	end
 
 // Counter overflow disable
@@ -2553,6 +2557,8 @@
 	assign event_counter61	= cnt[61];
 	assign event_counter62	= cnt[62];
 	assign event_counter63	= cnt[63];
+	assign event_counter64	= cnt[64];
+	assign event_counter65	= cnt[65];
 
 //------------------------------------------------------------------------------------------------------------------
 // Multi-buffer storage for event header
@@ -2851,7 +2857,7 @@
 // L1A parallel shifter dual port RAM
 //  Port A wo 18-bit event data
 //	Port B ro 18-bit event data delayed ~128bx
-`ifdef VIRTEX2
+
 	initial $display("sequencer: generating Virtex2 RAMB16_S18_S18 ul1abs");
 
 	RAMB16_S18_S18 # (
@@ -2878,44 +2884,6 @@
 	.DIPB				(2'b00),						// Port B 2-bit parity Input
 	.DOB				(l1a_dob[15:0]),				// Port B 16-bit Data Output
 	.DOPB				());							// Port B 2-bit Parity Output
-
-`else
-	initial $display("sequencer: generating Virtex6 RAMB18E1_S18_S18 ul1abs");
-
-	RAMB18E1 #(												// Virtex6
-	.RAM_MODE			("TDP"),							// SDP or TDP
- 	.READ_WIDTH_A		(0),								// 0,1,2,4,9,18,36 Read/write width per port
-	.WRITE_WIDTH_A		(18),								// 0,1,2,4,9,18
-	.READ_WIDTH_B		(18),								// 0,1,2,4,9,18
-	.WRITE_WIDTH_B		(0),								// 0,1,2,4,9,18,36
-	.WRITE_MODE_A		("READ_FIRST"),						// WRITE_FIRST, READ_FIRST, or NO_CHANGE
-	.WRITE_MODE_B		("READ_FIRST"),
-	.SIM_COLLISION_CHECK("ALL")								// ALL, WARNING_ONLY, GENERATE_X_ONLY or NONE)
-	) ul1abs (
-	.WEA				(2'b11),							//  2-bit A port write enable input
-	.ENARDEN			(1'b1),								//  1-bit A port enable/Read enable input
-	.RSTRAMARSTRAM		(1'b0),								//  1-bit A port set/reset input
-	.RSTREGARSTREG		(1'b0),								//  1-bit A port register set/reset input
-	.REGCEAREGCE		(1'b0),								//  1-bit A port register enable/Register enable input
-	.CLKARDCLK			(clock),							//  1-bit A port clock/Read clock input
-	.ADDRARDADDR		({2'h0,l1a_delay_wadr[7:0],4'hF}),	// 14-bit A port address/Read address input 18b->[13:4]
-	.DIADI				(l1a_dia[15:0]),					// 16-bit A port data/LSB data input
-	.DIPADIP			(),									//  2-bit A port parity/LSB parity input
-	.DOADO				(),									// 16-bit A port data/LSB data output
-	.DOPADOP			(),									//  2-bit A port parity/LSB parity output
-
-	.WEBWE				(),									//  4-bit B port write enable/Write enable input
-	.ENBWREN			(1'b1),								//  1-bit B port enable/Write enable input
-	.REGCEB				(1'b0),								//  1-bit B port register enable input
-	.RSTRAMB			(1'b0),								//  1-bit B port set/reset input
-	.RSTREGB			(1'b0),								//  1-bit B port register set/reset input
-	.CLKBWRCLK			(clock),							//  1-bit B port clock/Write clock input
-	.ADDRBWRADDR		({2'h0,l1a_delay_radr[7:0],4'hF}),	// 14-bit B port address/Write address input 18b->[13:4]
-	.DIBDI				(),									// 16-bit B port data/MSB data input
-	.DIPBDIP			(),									//  2-bit B port parity/MSB parity input
-	.DOBDO				(l1a_dob[15:0]),					// 16-bit B port data/MSB data output
-	.DOPBDOP			());								//  2-bit B port parity/MSB parity output
-`endif
 
 // After ~128bx L1A delay, unpack data stored in L1A parallel shifter
 	wire 		tmb_push_dly		= l1a_dob[0];
@@ -3858,7 +3826,13 @@
 	assign	header39_[14]		=	reverse_hs_me1b;			// 1=ME1B hstrip order reversed
 	assign	header39_[18:15]	=	0;							// DDU+DMB control flags
 
-	assign	header40_[11:0]		=	buf_fence_cnt_peak[11:0];	// Peak number of fences in fence RAM
+	assign	header40_[1:0]		=	0;							// Hdr23 Active CFEB list sent to DMB 		v6 only
+	assign	header40_[3:2]		=	0;							// Hdr23 CFEBs read out for this event		v6 only
+	assign	header40_[5:4]		=	0;							// Hdr27 CFEB RAM parity error, latched		v6 only
+	assign	header40_[7:6]		=	0;							// Hdr30 CFEB[n] has at least 1 bad bit		v6 only
+	assign	header40_[9:8]		=	0;							// Hdr35 CFEBs enabled for triggering		v6 only
+	assign	header40_[10]		=	buf_fence_cnt_is_peak;		// Current fence is peak number of fences in RAM
+	assign	header40_[11]		=	(MXCFEB==7);				// TMB has 7 DCFEBs so hdr40_[10:1] are active
 	assign	header40_[12]		=	r_trig_source_vec[9];		// Pre-trigger was ME1A only
 	assign	header40_[13]		=	r_trig_source_vec[10];		// Pre-trigger was ME1B only
 	assign	header40_[14]		=	r_tmb_trig_pulse;			// TMB trig pulse coincident with rtmb_push
@@ -4647,8 +4621,7 @@
 // Dual port Block RAM 18x4K built from 9x2K+9x2K cascaded to a second bank of 9x2K+9x2K
 //  Port A wo written by sequencer
 //  Port B rw read/write by VME
-	
-`ifdef VIRTEX2
+
 	initial $display("sequencer: generating Virtex2 RAMB16_S9_9 dmb_bram");
 
 	generate
@@ -4683,55 +4656,6 @@
 	end
 	end
 	endgenerate
-
-`else
-	initial $display("sequencer: generating Virtex6 RAMB18E1_S9_S9 dmb_bram");
-
-	assign seq_dopa = 0;											// Port A dummy not needed for Virtex6
-	wire [8:0] db [1:0][1:0];										// Port B dummy for Virtex6, does not need sump
-	
-	generate
-	for (jdepth=0; jdepth<=1; jdepth=jdepth+1) begin: depth_2x2048
-	for (iwidth=0; iwidth<=1; iwidth=iwidth+1) begin: width_2x9
-
-	RAMB18E1 #(														// Virtex6
-	.RAM_MODE			("TDP"),									// SDP or TDP
- 	.READ_WIDTH_A		(0),										// 0,1,2,4,9,18,36 Read/write width per port
-	.WRITE_WIDTH_A		(9),										// 0,1,2,4,9,18
-	.READ_WIDTH_B		(9),										// 0,1,2,4,9,18
-	.WRITE_WIDTH_B		(9),										// 0,1,2,4,9,18,36
-	.WRITE_MODE_A		("READ_FIRST"),								// WRITE_FIRST, READ_FIRST, or NO_CHANGE
-	.WRITE_MODE_B		("READ_FIRST"),
-	.SIM_COLLISION_CHECK("ALL")										// ALL, WARNING_ONLY, GENERATE_X_ONLY or NONE)
-	) dmb_bram (
-	.WEA				({2{seq_wea[jdepth]}}),						//  2-bit A port write enable input
-	.ENARDEN			(seq_ena),									//  1-bit A port enable/Read enable input
-	.RSTRAMARSTRAM		(1'b0),										//  1-bit A port set/reset input
-	.RSTREGARSTREG		(1'b0),										//  1-bit A port register set/reset input
-	.REGCEAREGCE		(1'b0),										//  1-bit A port register enable/Register enable input
-	.CLKARDCLK			(clock),									//  1-bit A port clock/Read clock input
-	.ADDRARDADDR		({seq_wadr[10:0],3'h7}),					// 14-bit A port address/Read address input 9b->[13:3]
-	.DIADI				({8'h00,seq_wdata[7+9*iwidth:9*iwidth]}),	// 16-bit A port data/LSB data input
-	.DIPADIP			({1'b0,seq_wdata[8+9*iwidth]}),				//  2-bit A port parity/LSB parity input
-	.DOADO				(),											// 16-bit A port data/LSB data output
-	.DOPADOP			(),											//  2-bit A port parity/LSB parity output
-
-	.WEBWE				({4{dmb_web[jdepth]}}),						//  4-bit B port write enable/Write enable input
-	.ENBWREN			(dmb_enb),									//  1-bit B port enable/Write enable input
-	.REGCEB				(1'b0),										//  1-bit B port register enable input
-	.RSTRAMB			(1'b0),										//  1-bit B port set/reset input
-	.RSTREGB			(1'b0),										//  1-bit B port register set/reset input
-	.CLKBWRCLK			(clock),									//  1-bit B port clock/Write clock input
-	.ADDRBWRADDR		({dmb_adr[10:0],3'h7}),						// 14-bit B port address/Write address input 9b->[13:3]
-	.DIBDI				({8'h00,dmb_wdata[7+9*iwidth:9*iwidth]}),	// 16-bit B port data/MSB data input
-	.DIPBDIP			({1'b0,dmb_wdata[8+9*iwidth]}),				//  2-bit B port parity/MSB parity input
-	.DOBDO				({db[jdepth][iwidth][7:0],dmb_rdata_mux[(jdepth*18)+(7+9*iwidth):(jdepth*18)+(9*iwidth)]}),	// 16-bit B port data/MSB data output
-	.DOPBDOP			({db[jdepth][iwidth][8],  dmb_rdata_mux[(jdepth*18)+(8+9*iwidth)]})							//  2-bit B port parity/MSB parity output
-	);
-	end
-	end
-	endgenerate
-`endif
 
 // Multiplex 1st and 2nd RAM banks, delay adr msb 1bx to wait for RAM access
 	reg dmb_adr11_ff=0;
@@ -4836,22 +4760,7 @@
 // Returns 	sum1s = (inp[4]+inp[3])+(inp[2]+inp[1]+inp[0]);
 //
 // 01/09/2007 Initial
-// 08/12/2010 Adder version for virtex6 because xst inferred read-only ram instead of luts
 //------------------------------------------------------------------------------------------------------------------------
-// Virtex 6
-//------------------------------------------------------------------------------------------------------------------------
-`ifdef VIRTEX6
-	function [2:0]	count1s5;
-	input	 [4:0]	inp;
-	begin
-	count1s5 = (inp[4]+inp[3])+(inp[2]+inp[1]+inp[0]);
-	end
-	endfunction
-
-//------------------------------------------------------------------------------------------------------------------------
-// Virtex 2
-//------------------------------------------------------------------------------------------------------------------------
-`else
 	function [2:0]	count1s5;
 	input	 [4:0]	inp;
 	reg		 [3:0]	lut;
@@ -4954,7 +4863,6 @@
 	count1s5=rom;
 	end
 	endfunction
-`endif
 
 //-------------------------------------------------------------------------------------------------------------------
 // Debug Simulation state machine display

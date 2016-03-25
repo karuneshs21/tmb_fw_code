@@ -280,7 +280,6 @@
 	`ifdef CSC_TYPE_C initial $display ("CSC_TYPE_C=%H",`CSC_TYPE_C); `endif	// Normal	ME1B reversed ME1A
 	`ifdef CSC_TYPE_D initial $display ("CSC_TYPE_D=%H",`CSC_TYPE_D); `endif	// Reversed ME1B normal   ME1A
 	`ifdef VIRTEX2    initial $display ("VIRTEX2   =%H",`VIRTEX2   ); `endif	// Virtex 2 Mezzanine card
-	`ifdef VIRTEX6    initial $display ("VIRTEX6   =%H",`VIRTEX6   ); `endif	// Virtex 6 Mezzanine card
 
 //-------------------------------------------------------------------------------------------------------------------
 // Debug mode, FF aligns inputs, and has local DLL to generate 2x clock and lac clock
@@ -330,9 +329,6 @@
 	.PSDONE		());
 	defparam udcmtmb.STARTUP_WAIT = "TRUE";
 	defparam udcmtmb.CLK_FEEDBACK = "1X";
-	`ifdef VIRTEX6
-	defparam udcmtmb.FACTORY_JF   = "F0F0";
-	`endif
 
 // Logic Accessible clock
    FDRSE #(.INIT(1'b0)) u0 (// Initial value of register
@@ -709,29 +705,44 @@
 //	ly3hs:   -1 00 | 01 02 03 04 05 06 07 ... 153 154 155 156 157 158 159 160 | 161 
 //	ly4hs:   -2 -1 | 00 01 02 03 04 05 06 ... 152 153 154 155 156 157 158 159 | 160 no shift
 //	ly5hs:   -1 00 | 01 02 03 04 05 06 07 ... 153 154 155 156 157 158 159 160 | 161 
+//
 //-------------------------------------------------------------------------------------------------------------------
-	parameter j=1;									// Shift negative array indexes positive
+// Staggered layers
+//-------------------------------------------------------------------------------------------------------------------
+	parameter j=1;								// Shift negative array indexes positive
+
+`ifdef STAGGER_HS_CSC
 	wire [MXHSX-1+j:-0+j] ly0hs;
 	wire [MXHSX-1+j:-1+j] ly1hs;
-	wire [MXHSX-1+j:-0+j] ly2hs;					// key layer 2
+	wire [MXHSX-1+j:-0+j] ly2hs;				// key layer 2
 	wire [MXHSX-1+j:-1+j] ly3hs;
 	wire [MXHSX-1+j:-0+j] ly4hs;
 	wire [MXHSX-1+j:-1+j] ly5hs;
 
-`ifdef STAGGER_HS_CSC
-	assign ly0hs = {      me1234_ly0hs};			// Stagger correction
+	assign ly0hs = {      me1234_ly0hs};		// Stagger correction
 	assign ly1hs = {1'b0, me1234_ly1hs};
 	assign ly2hs = {      me1234_ly2hs};
 	assign ly3hs = {1'b0, me1234_ly3hs};
 	assign ly4hs = {      me1234_ly4hs};
 	assign ly5hs = {1'b0, me1234_ly5hs};
+
+//-------------------------------------------------------------------------------------------------------------------
+// Non-staggered layers
+//-------------------------------------------------------------------------------------------------------------------
 `else
-	assign ly0hs = {me1a_ly0hs, me1b_ly0hs      };	// No stagger correction
-	assign ly1hs = {me1a_ly1hs, me1b_ly1hs, 1'b0};
-	assign ly2hs = {me1a_ly2hs, me1b_ly2hs      };
-	assign ly3hs = {me1a_ly3hs, me1b_ly3hs, 1'b0};
-	assign ly4hs = {me1a_ly4hs, me1b_ly4hs      };
-	assign ly5hs = {me1a_ly5hs, me1b_ly5hs, 1'b0};
+	wire [MXHSX-1:0] ly0hs;
+	wire [MXHSX-1:0] ly1hs;
+	wire [MXHSX-1:0] ly2hs;						// key layer 2
+	wire [MXHSX-1:0] ly3hs;
+	wire [MXHSX-1:0] ly4hs;
+	wire [MXHSX-1:0] ly5hs;
+
+	assign ly0hs = {me1a_ly0hs, me1b_ly0hs};	// No stagger correction
+	assign ly1hs = {me1a_ly1hs, me1b_ly1hs};
+	assign ly2hs = {me1a_ly2hs, me1b_ly2hs};
+	assign ly3hs = {me1a_ly3hs, me1b_ly3hs};
+	assign ly4hs = {me1a_ly4hs, me1b_ly4hs};
+	assign ly5hs = {me1a_ly5hs, me1b_ly5hs};
 `endif
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -806,6 +817,11 @@
 	sel[MXLY-1:0] <= {~sel[MXLY-2:0],~clock_lac};
 	end
 
+//-------------------------------------------------------------------------------------------------------------------
+// Staggered layers
+//-------------------------------------------------------------------------------------------------------------------
+`ifdef STAGGER_HS_CSC
+
 // Create hs arrays with 0s padded at left and right csc edges
 	parameter k=5;		// Shift negative array indexes positive
 
@@ -847,19 +863,19 @@
 	generate
 	for (ihs=0; ihs<=MXHSX/2-1; ihs=ihs+1) begin: patgen
 	pattern_unit upat (
-	clock_2x,
-	ly0hs_pad[ihs+5+k:ihs-5+k],
-	ly1hs_pad[ihs+2+k:ihs-2+k],
-	ly2hs_pad[ihs+0+k:ihs-0+k],	//key on ly2
-	ly3hs_pad[ihs+2+k:ihs-2+k],
-	ly4hs_pad[ihs+4+k:ihs-4+k],
-	ly5hs_pad[ihs+5+k:ihs-5+k],
-	hs_hit[ihs],
-	hs_pid[ihs]);
+	.clock_2x	(clock_2x),
+	.ly0		(ly0hs_pad[ihs+5+k:ihs-5+k]),
+	.ly1		(ly1hs_pad[ihs+2+k:ihs-2+k]),
+	.ly2		(ly2hs_pad[ihs+0+k:ihs-0+k]),	//key on ly2
+	.ly3		(ly3hs_pad[ihs+2+k:ihs-2+k]),
+	.ly4		(ly4hs_pad[ihs+4+k:ihs-4+k]),
+	.ly5		(ly5hs_pad[ihs+5+k:ihs-5+k]),
+	.pat_nhits	(hs_hit[ihs]),
+	.pat_id		(hs_pid[ihs]));
 	end
 	endgenerate
 
-// Store 1/2-cycle patten unit results
+// Store 1/2-cycle pattern unit results
 	reg	[MXHITB-1:0]	hs_hit_s0a	[MXHSX/2-1:0];
 	reg	[MXPIDB-1:0]	hs_pid_s0a	[MXHSX/2-1:0];
 	reg	[MXHITB-1:0]	hs_hit_s0b	[MXHSX/2-1:0];
@@ -906,7 +922,201 @@
 	end
 	endgenerate
 
-// Convert s0 pattern IDs and hits into sortable pattern numbers, [6:4]=nhits, [3:0]=pattern id
+//-------------------------------------------------------------------------------------------------------------------
+// Non-Staggered layers
+//-------------------------------------------------------------------------------------------------------------------
+`else
+
+// Create hs arrays with 0s padded at left and right csc edges
+	parameter k		 = 5;		// Shift negative array indexes positive
+	parameter MXHSXA = 32;		// Number of hs on ME1A
+	parameter MXHSXB = 128;		// Number of hs on ME1B
+
+	wire [MXHSXA/2-1+5+k:0-5+k] ly0hs_pad_me1a, ly0hs_pad_me1a_a, ly0hs_pad_me1a_b;
+	wire [MXHSXA/2-1+2+k:0-2+k] ly1hs_pad_me1a, ly1hs_pad_me1a_a, ly1hs_pad_me1a_b;
+	wire [MXHSXA/2-1+0+k:0-0+k] ly2hs_pad_me1a, ly2hs_pad_me1a_a, ly2hs_pad_me1a_b;
+	wire [MXHSXA/2-1+2+k:0-2+k] ly3hs_pad_me1a, ly3hs_pad_me1a_a, ly3hs_pad_me1a_b;
+	wire [MXHSXA/2-1+4+k:0-4+k] ly4hs_pad_me1a, ly4hs_pad_me1a_a, ly4hs_pad_me1a_b;
+	wire [MXHSXA/2-1+5+k:0-5+k] ly5hs_pad_me1a, ly5hs_pad_me1a_a, ly5hs_pad_me1a_b;
+
+	wire [MXHSXB/2-1+5+k:0-5+k] ly0hs_pad_me1b, ly0hs_pad_me1b_a, ly0hs_pad_me1b_b;
+	wire [MXHSXB/2-1+2+k:0-2+k] ly1hs_pad_me1b, ly1hs_pad_me1b_a, ly1hs_pad_me1b_b;
+	wire [MXHSXB/2-1+0+k:0-0+k] ly2hs_pad_me1b, ly2hs_pad_me1b_a, ly2hs_pad_me1b_b;
+	wire [MXHSXB/2-1+2+k:0-2+k] ly3hs_pad_me1b, ly3hs_pad_me1b_a, ly3hs_pad_me1b_b;
+	wire [MXHSXB/2-1+4+k:0-4+k] ly4hs_pad_me1b, ly4hs_pad_me1b_a, ly4hs_pad_me1b_b;
+	wire [MXHSXB/2-1+5+k:0-5+k] ly5hs_pad_me1b, ly5hs_pad_me1b_a, ly5hs_pad_me1b_b;
+
+// Pad 0s beyond csc edges  ME1A hs128-159, isolate it from ME1B
+	assign ly0hs_pad_me1a_a = { ly0hs[148:144], ly0hs[143:128], 5'b00000       };
+	assign ly1hs_pad_me1a_a = { ly0hs[145:144], ly1hs[143:128], 2'b00          };
+	assign ly2hs_pad_me1a_a = {                 ly2hs[143:128]                 };
+	assign ly3hs_pad_me1a_a = { ly0hs[145:144], ly3hs[143:128], 2'b00          };
+	assign ly4hs_pad_me1a_a = { ly0hs[147:144], ly4hs[143:128], 4'b0000        };
+	assign ly5hs_pad_me1a_a = { ly0hs[148:144], ly5hs[143:128], 5'b00000       };
+
+	assign ly0hs_pad_me1a_b = { 5'b00000,       ly0hs[159:144], ly0hs[143:139] };
+	assign ly1hs_pad_me1a_b = {    2'b00,       ly1hs[159:144], ly0hs[143:142] };
+	assign ly2hs_pad_me1a_b = {                 ly2hs[159:144]                 };
+	assign ly3hs_pad_me1a_b = {    2'b00,       ly3hs[159:144], ly0hs[143:142] };
+	assign ly4hs_pad_me1a_b = {  4'b0000,       ly4hs[159:144], ly0hs[143:140] };
+	assign ly5hs_pad_me1a_b = { 5'b00000,       ly5hs[159:144], ly0hs[143:139] };
+
+// Pad 0s beyond csc edges  ME1B hs0-127, isolate it from ME1A
+	assign ly0hs_pad_me1b_a = { ly0hs[68:64],   ly0hs[63:0],    5'b00000       };
+	assign ly1hs_pad_me1b_a = { ly0hs[65:64],   ly1hs[63:0],    2'b00          };
+	assign ly2hs_pad_me1b_a = {                 ly2hs[63:0]                    };
+	assign ly3hs_pad_me1b_a = { ly0hs[65:64],   ly3hs[63:0],    2'b00          };
+	assign ly4hs_pad_me1b_a = { ly0hs[67:64],   ly4hs[63:0],    4'b0000        };
+	assign ly5hs_pad_me1b_a = { ly0hs[68:64],   ly5hs[63:0],    5'b00000       };
+
+	assign ly0hs_pad_me1b_b = { 5'b00000,       ly0hs[127:64],  ly0hs[63:59]   };
+	assign ly1hs_pad_me1b_b = {    2'b00,       ly1hs[127:64],  ly0hs[63:62]   };
+	assign ly2hs_pad_me1b_b = {                 ly2hs[127:64]                  };
+	assign ly3hs_pad_me1b_b = {    2'b00,       ly3hs[127:64],  ly0hs[63:62]   };
+	assign ly4hs_pad_me1b_b = {  4'b0000,       ly4hs[127:64],  ly0hs[63:60]   };
+	assign ly5hs_pad_me1b_b = { 5'b00000,       ly5hs[127:64],  ly0hs[63:59]   };
+	
+// Select Left then Right 1/2 of CSC at 80MHz
+	assign ly0hs_pad_me1a = (sel[0]) ? ly0hs_pad_me1a_a : ly0hs_pad_me1a_b;
+	assign ly1hs_pad_me1a = (sel[1]) ? ly1hs_pad_me1a_a : ly1hs_pad_me1a_b;
+	assign ly2hs_pad_me1a = (sel[2]) ? ly2hs_pad_me1a_a : ly2hs_pad_me1a_b;
+	assign ly3hs_pad_me1a = (sel[3]) ? ly3hs_pad_me1a_a : ly3hs_pad_me1a_b;
+	assign ly4hs_pad_me1a = (sel[4]) ? ly4hs_pad_me1a_a : ly4hs_pad_me1a_b;
+	assign ly5hs_pad_me1a = (sel[5]) ? ly5hs_pad_me1a_a : ly5hs_pad_me1a_b;
+
+	assign ly0hs_pad_me1b = (sel[0]) ? ly0hs_pad_me1b_a : ly0hs_pad_me1b_b;
+	assign ly1hs_pad_me1b = (sel[1]) ? ly1hs_pad_me1b_a : ly1hs_pad_me1b_b;
+	assign ly2hs_pad_me1b = (sel[2]) ? ly2hs_pad_me1b_a : ly2hs_pad_me1b_b;
+	assign ly3hs_pad_me1b = (sel[3]) ? ly3hs_pad_me1b_a : ly3hs_pad_me1b_b;
+	assign ly4hs_pad_me1b = (sel[4]) ? ly4hs_pad_me1b_a : ly4hs_pad_me1b_b;
+	assign ly5hs_pad_me1b = (sel[5]) ? ly5hs_pad_me1b_a : ly5hs_pad_me1b_b;
+
+// Find pattern hits for each 1/2-strip key
+	wire [MXHITB-1:0] hs_hit_me1a [MXHSXA/2-1:0];
+	wire [MXPIDB-1:0] hs_pid_me1a [MXHSXA/2-1:0];
+
+	wire [MXHITB-1:0] hs_hit_me1b [MXHSXB/2-1:0];
+	wire [MXPIDB-1:0] hs_pid_me1b [MXHSXB/2-1:0];
+
+	generate
+	for (ihs=0; ihs<=15; ihs=ihs+1) begin: patgen_me1a
+	pattern_unit upat_me1a (
+	.clock_2x	(clock_2x),
+	.ly0		(ly0hs_pad_me1a[ihs+5+k:ihs-5+k]),
+	.ly1		(ly1hs_pad_me1a[ihs+2+k:ihs-2+k]),
+	.ly2		(ly2hs_pad_me1a[ihs+0+k:ihs-0+k]),	//key on ly2
+	.ly3		(ly3hs_pad_me1a[ihs+2+k:ihs-2+k]),
+	.ly4		(ly4hs_pad_me1a[ihs+4+k:ihs-4+k]),
+	.ly5		(ly5hs_pad_me1a[ihs+5+k:ihs-5+k]),
+	.pat_nhits	(hs_hit_me1a[ihs]),
+	.pat_id		(hs_pid_me1a[ihs]));
+	end
+	endgenerate
+
+	generate
+	for (ihs=0; ihs<=63; ihs=ihs+1) begin: patgen_me1b
+	pattern_unit upat_me1b (
+	.clock_2x	(clock_2x),
+	.ly0		(ly0hs_pad_me1b[ihs+5+k:ihs-5+k]),
+	.ly1		(ly1hs_pad_me1b[ihs+2+k:ihs-2+k]),
+	.ly2		(ly2hs_pad_me1b[ihs+0+k:ihs-0+k]),	//key on ly2
+	.ly3		(ly3hs_pad_me1b[ihs+2+k:ihs-2+k]),
+	.ly4		(ly4hs_pad_me1b[ihs+4+k:ihs-4+k]),
+	.ly5		(ly5hs_pad_me1b[ihs+5+k:ihs-5+k]),
+	.pat_nhits	(hs_hit_me1b[ihs]),
+	.pat_id		(hs_pid_me1b[ihs]));
+	end
+	endgenerate
+
+// Store 1/2-cycle pattern unit results
+	reg	[MXHITB-1:0] hs_hit_me1a_s0a	[MXHSXA/2-1:0];
+	reg	[MXPIDB-1:0] hs_pid_me1a_s0a	[MXHSXA/2-1:0];
+	reg	[MXHITB-1:0] hs_hit_me1a_s0b	[MXHSXA/2-1:0];
+	reg	[MXPIDB-1:0] hs_pid_me1a_s0b	[MXHSXA/2-1:0];
+
+	reg	[MXHITB-1:0] hs_hit_me1b_s0a	[MXHSXB/2-1:0];
+	reg	[MXPIDB-1:0] hs_pid_me1b_s0a	[MXHSXB/2-1:0];
+	reg	[MXHITB-1:0] hs_hit_me1b_s0b	[MXHSXB/2-1:0];
+	reg	[MXPIDB-1:0] hs_pid_me1b_s0b	[MXHSXB/2-1:0];
+
+	generate
+	for (ihs=0; ihs<=15; ihs=ihs+1) begin: store_me1a_ab
+	always @(posedge clock) begin
+	hs_hit_me1a_s0a[ihs] <= hs_hit_me1a[ihs];	// store result a on rising edge
+	hs_pid_me1a_s0a[ihs] <= hs_pid_me1a[ihs];
+	end
+	always @(negedge clock) begin
+	hs_hit_me1a_s0b[ihs] <= hs_hit_me1a[ihs];	// store result b on falling edge	
+	hs_pid_me1a_s0b[ihs] <= hs_pid_me1a[ihs];
+	end
+	end
+	endgenerate
+
+	generate
+	for (ihs=0; ihs<=63; ihs=ihs+1) begin: store_me1b_ab
+	always @(posedge clock) begin
+	hs_hit_me1b_s0a[ihs] <= hs_hit_me1b[ihs];	// store result a on rising edge
+	hs_pid_me1b_s0a[ihs] <= hs_pid_me1b[ihs];
+	end
+	always @(negedge clock) begin
+	hs_hit_me1b_s0b[ihs] <= hs_hit_me1b[ihs];	// store result b on falling edge
+	hs_pid_me1b_s0b[ihs] <= hs_pid_me1b[ihs];
+	end
+	end
+	endgenerate
+
+// S0 latch: realign with main clock
+	reg	[MXHITB-1:0]	hs_hit_s0	[MXHSX-1:0];
+	reg	[MXPIDB-1:0]	hs_pid_s0	[MXHSX-1:0];
+
+	generate
+	for (ihs=0; ihs<=15; ihs=ihs+1) begin: store_me1a_s0
+	always @(posedge clock) begin
+	hs_hit_s0[ihs+128]		<= hs_hit_me1a_s0a[ihs];	// me1a hs 128-159
+	hs_pid_s0[ihs+128]		<= hs_pid_me1a_s0a[ihs];
+	hs_hit_s0[ihs+128+16]	<= hs_hit_me1a_s0b[ihs];
+	hs_pid_s0[ihs+128+16]	<= hs_pid_me1a_s0b[ihs];
+	end
+	end
+	endgenerate
+
+	generate
+	for (ihs=0; ihs<=63; ihs=ihs+1) begin: store_me1b_s0
+	always @(posedge clock) begin
+	hs_hit_s0[ihs]			<= hs_hit_me1b_s0a[ihs];	// me1b hs 0-127
+	hs_pid_s0[ihs]			<= hs_pid_me1b_s0a[ihs];
+	hs_hit_s0[ihs+64]		<= hs_hit_me1b_s0b[ihs];
+	hs_pid_s0[ihs+64]		<= hs_pid_me1b_s0b[ihs];
+	end
+	end
+	endgenerate
+
+// pre-s0 latch signals for pre-trigger speed
+	wire [MXHITB-1:0] hs_hit_pre_s0 [MXHSX-1:0];
+	wire [MXPIDB-1:0] hs_pid_pre_s0 [MXHSX-1:0];
+
+	generate
+	for (ihs=0; ihs<=15; ihs=ihs+1) begin: build_pad_me1a_ab
+	assign hs_hit_pre_s0[ihs+128]		= hs_hit_me1a_s0a[ihs];		// me1a hs 128-159
+	assign hs_pid_pre_s0[ihs+128]		= hs_pid_me1a_s0a[ihs];
+	assign hs_hit_pre_s0[ihs+128+16]	= hs_hit_me1a_s0b[ihs];
+	assign hs_pid_pre_s0[ihs+128+16]	= hs_pid_me1a_s0b[ihs];
+	end
+	endgenerate
+
+	generate
+	for (ihs=0; ihs<=63; ihs=ihs+1) begin: build_pad_me1b_ab		// me1b hs 0-127
+	assign hs_hit_pre_s0[ihs]			= hs_hit_me1b_s0a[ihs];
+	assign hs_pid_pre_s0[ihs]			= hs_pid_me1b_s0a[ihs];
+	assign hs_hit_pre_s0[ihs+64]		= hs_hit_me1b_s0b[ihs];
+	assign hs_pid_pre_s0[ihs+64]		= hs_pid_me1b_s0b[ihs];
+	end
+	endgenerate
+`endif
+
+//-------------------------------------------------------------------------------------------------------------------
+// Convert S0 pattern IDs and hits into sortable pattern numbers, [6:4]=nhits, [3:0]=pattern id
+//-------------------------------------------------------------------------------------------------------------------
 	wire [MXPATB-1:0] hs_pat_s0 [MXHSX-1:0];
 
 	generate
