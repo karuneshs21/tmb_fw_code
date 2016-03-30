@@ -25,8 +25,8 @@
 //---------------------------------------------------------------------------------------------------------------------------------------
 // Conditional compile flags: Enable only one CSC_TYPE
 //---------------------------------------------------------------------------------------------------------------------------------------
-	`define CSC_TYPE_A			04'hA		// Normal   CSC:  Normal chambers facing toward IR
-//	`define CSC_TYPE_B			04'hB		// Reversed CSC:  Normal chambers facing away from IR. All  hs = reversed
+//	`define CSC_TYPE_A			04'hA		// Normal   CSC:  Normal chambers facing toward IR
+	`define CSC_TYPE_B			04'hB		// Reversed CSC:  Normal chambers facing away from IR. All  hs = reversed
 //	`define CSC_TYPE_C			04'hC		// Normal   ME1B: ME1B   chambers facing toward IR.    ME1B hs =!reversed, ME1A hs = reversed
 //	`define CSC_TYPE_D			04'hD		// Reversed ME1B: ME1B   chambers facing away from IR. ME1B hs = reversed, ME1A hs =!reversed
 
