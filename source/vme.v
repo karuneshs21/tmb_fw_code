@@ -392,13 +392,17 @@
 	clct_flush_delay,
 	clct_throttle,
 	clct_wr_continuous,
-	alct_trig_width,
+	alct_preClct_width,
 	wr_buf_required,
 	wr_buf_autoclr_en,
 	valid_clct_required,
 
+// Sequencer Ports: pre-CLCT modifiers for L1A*preCLCT overlap
+  l1a_preClct_width,
+  l1a_preClct_dly,
+
 // Sequencer Ports: External Trigger Delays
-	alct_pre_trig_dly,
+	alct_preClct_dly,
 	alct_pat_trig_dly,
 	adb_ext_trig_dly,
 	dmb_ext_trig_dly,
@@ -701,6 +705,18 @@
 	alct_err_counter4,
 	alct_err_counter5,
 
+// CLCT pre-trigger coincidence counters
+  preClct_l1a_counter,  // CLCT pre-trigger AND L1A coincidence counter
+  preClct_alct_counter, // CLCT pre-trigger AND ALCT coincidence counter
+
+// Active CFEB(s) counters
+  active_cfebs_event_counter,      // Any CFEB active flag sent to DMB
+  active_cfeb0_event_counter,      // CFEB0 active flag sent to DMB
+  active_cfeb1_event_counter,      // CFEB1 active flag sent to DMB
+  active_cfeb2_event_counter,      // CFEB2 active flag sent to DMB
+  active_cfeb3_event_counter,      // CFEB3 active flag sent to DMB
+  active_cfeb4_event_counter,      // CFEB4 active flag sent to DMB
+
 // CSC Orientation Ports
 	csc_type,
 	csc_me1ab,
@@ -959,6 +975,7 @@
 	parameter ADR_SEQ_TRIG_EN			= 9'h68;	// Sequencer Trigger Source Enables
 	parameter ADR_SEQ_TRIG_DLY0			= 9'h6A;	// Sequencer Trigger Source Delays
 	parameter ADR_SEQ_TRIG_DLY1			= 9'h6C;	// Sequencer Trigger Source Delays
+	parameter ADR_SEQ_TRIG_DLY2 = 9'h194; // Sequencer Trigger Source Delays
 	parameter ADR_SEQ_ID				= 9'h6E;	// Sequencer ID info
 
 	parameter ADR_SEQ_CLCT				= 9'h70;	// Sequencer CLCT Configuration
@@ -1521,13 +1538,17 @@
 	output	[MXFLUSH-1:0]	clct_flush_delay;		// Trigger sequencer flush state timer
 	output	[MXTHROTTLE-1:0]clct_throttle;			// Pre-trigger throttle to reduce trigger rate
 	output					clct_wr_continuous;		// 1=allow continuous header buffer writing for invalid triggers
-	output	[3:0]			alct_trig_width;		// ALCT*CLCT overlap window size
+	output	[3:0]			alct_preClct_width;		// ALCT (alct_active_feb flag) window width for ALCT*preCLCT overlap
 	output					wr_buf_required;		// Require wr_buffer to pretrigger
 	output					wr_buf_autoclr_en;		// Enable frozen buffer auto clear
 	output					valid_clct_required;	// Require valid pattern after drift to trigger
 
+// Sequencer Ports: pre-CLCT modifiers for L1A*preCLCT overlap
+  output [3:0] l1a_preClct_width; // pre-CLCT window width for L1A*preCLCT overlap
+  output [7:0] l1a_preClct_dly;   // pre-CLCT delay for L1A*preCLCT overlap
+
 // Sequencer Ports: External Trigger Delays
-	output	[MXEXTDLY-1:0]	alct_pre_trig_dly;		// ALCT pre      trigger delay
+	output	[MXEXTDLY-1:0]	alct_preClct_dly;  // ALCT (alct_active_feb flag) delay for ALCT*preCLCT overlap
 	output	[MXEXTDLY-1:0]	alct_pat_trig_dly;		// ALCT pattern  trigger delay
 	output	[MXEXTDLY-1:0]	adb_ext_trig_dly;		// ADB  external trigger delay
 	output	[MXEXTDLY-1:0]	dmb_ext_trig_dly;		// DMB  external trigger delay
@@ -1833,6 +1854,18 @@
 	input	[7:0]			alct_err_counter4;
 	input	[7:0]			alct_err_counter5;
 
+// CLCT pre-trigger coincidence counters
+  input  [MXCNTVME-1:0] preClct_l1a_counter;  // CLCT pre-trigger AND L1A coincidence counter
+  input  [MXCNTVME-1:0] preClct_alct_counter; // CLCT pre-trigger AND ALCT coincidence counter
+
+// Active CFEB(s) counters
+  input  [MXCNTVME-1:0] active_cfebs_event_counter;      // Any CFEB active flag sent to DMB
+  input  [MXCNTVME-1:0] active_cfeb0_event_counter;      // CFEB0 active flag sent to DMB
+  input  [MXCNTVME-1:0] active_cfeb1_event_counter;      // CFEB1 active flag sent to DMB
+  input  [MXCNTVME-1:0] active_cfeb2_event_counter;      // CFEB2 active flag sent to DMB
+  input  [MXCNTVME-1:0] active_cfeb3_event_counter;      // CFEB3 active flag sent to DMB
+  input  [MXCNTVME-1:0] active_cfeb4_event_counter;      // CFEB4 active flag sent to DMB
+
 // CSC Orientation Ports
 	input	[3:0]			csc_type;				// Firmware compile type
 	input					csc_me1ab;				// 1=ME1A or ME1B CSC type
@@ -2090,6 +2123,9 @@
 
 	reg		[15:0]	seq_trigdly1_wr;
 	wire	[15:0]	seq_trigdly1_rd;
+
+  reg   [15:0]  seq_trigdly2_wr;
+  wire  [15:0]  seq_trigdly2_rd;
 
 	reg		[15:0]	seq_id_wr;
 	wire	[15:0]	seq_id_rd;
@@ -2390,6 +2426,7 @@
 	wire			wr_seq_trigen;
 	wire			wr_seq_trigdly0;
 	wire			wr_seq_trigdly1;
+	wire      wr_seq_trigdly2;
 	wire			wr_seq_id;
 	wire			wr_seq_clct;
 	wire			wr_seq_fifo;
@@ -2693,10 +2730,11 @@
 	ADR_HCM423:			data_out	<=	hcm423_rd;
 	ADR_HCM445:			data_out	<=	hcm445_rd;
 
-	ADR_SEQ_TRIG_EN:	data_out	<=	seq_trigen_rd;
-	ADR_SEQ_TRIG_DLY0:	data_out	<=	seq_trigdly0_rd;
-	ADR_SEQ_TRIG_DLY1:	data_out	<=	seq_trigdly1_rd;
-	ADR_SEQ_ID:			data_out	<=	seq_id_rd;
+	ADR_SEQ_TRIG_EN:   data_out	<= seq_trigen_rd;
+	ADR_SEQ_TRIG_DLY0: data_out	<= seq_trigdly0_rd;
+	ADR_SEQ_TRIG_DLY1: data_out	<= seq_trigdly1_rd;
+	ADR_SEQ_TRIG_DLY2: data_out <= seq_trigdly2_rd;
+	ADR_SEQ_ID:        data_out	<= seq_id_rd;
 
 	ADR_SEQ_CLCT:		data_out	<=	seq_clct_rd;
 	ADR_SEQ_FIFO:		data_out	<=	seq_fifo_rd;
@@ -2889,6 +2927,7 @@
 	assign wr_seq_trigen			= (reg_adr==ADR_SEQ_TRIG_EN			&& clk_en);
 	assign wr_seq_trigdly0			= (reg_adr==ADR_SEQ_TRIG_DLY0		&& clk_en);
 	assign wr_seq_trigdly1			= (reg_adr==ADR_SEQ_TRIG_DLY1		&& clk_en);
+	assign wr_seq_trigdly2 = (reg_adr==ADR_SEQ_TRIG_DLY2 && clk_en);
 	assign wr_seq_id				= (reg_adr==ADR_SEQ_ID				&& clk_en);
 
 	assign wr_seq_clct				= (reg_adr==ADR_SEQ_CLCT			&& clk_en);
@@ -4558,8 +4597,9 @@
 //------------------------------------------------------------------------------------------------------------------
 // ADR_SEQ_TRIG_DLY0=6A		Sequencer Trigger Delays Register: First Group
 // ADR_SEQ_TRIG_DLY1=6C		Sequencer Trigger Delays Register: Second Group
+// ADR_SEQ_TRIG_DLY2=194  Sequencer Trigger Delays Register: Third Group
 //------------------------------------------------------------------------------------------------------------------
-// Power-up defaults First+Second Group
+// Power-up defaults First+Second+Third Group
 	initial begin
 	seq_trigdly0_wr[3:0]			= 4'd3;						// ALCT*CLCT pretrigger overlap window size
 	seq_trigdly0_wr[7:4]			= 4'd0;						// ALCT pre      trigger delay
@@ -4569,11 +4609,15 @@
 	seq_trigdly1_wr[3:0]			= 4'd1;						// DMB  external trigger delay
 	seq_trigdly1_wr[7:4]			= 4'd7;						// CLCT External trigger delay
 	seq_trigdly1_wr[11:8]			= 4'd7;						// ALCT External trigger delay
-	seq_trigdly1_wr[15:12]			= 4'd0;						// Free
+	seq_trigdly1_wr[15:12]		= 4'd0;						// Free
+	
+	seq_trigdly2_wr[3:0]   = 4'd4;   // pre-CLCT window width for L1A*preCLCT overlap
+  seq_trigdly2_wr[11:4]  = 8'd128; // pre-CLCT delay for L1A*preCLCT overlap
+  seq_trigdly2_wr[15:12] = 4'd0;   // Free
 	end
 
-	assign alct_trig_width[3:0]		= seq_trigdly0_wr[3:0];		// RW	ALCT*CLCT overlap window size
-	assign alct_pre_trig_dly[3:0]	= seq_trigdly0_wr[7:4];		// RW	ALCT pre     trigger delay
+	assign alct_preClct_width[3:0]		= seq_trigdly0_wr[3:0];		// RW	ALCT (alct_active_feb flag) window width for ALCT*preCLCT overlap
+	assign alct_preClct_dly[3:0]	= seq_trigdly0_wr[7:4];		// RW	ALCT (alct_active_feb flag) delay for ALCT*preCLCT overlap
 	assign alct_pat_trig_dly[3:0]	= seq_trigdly0_wr[11:8];	// RW	ALCT Pattern trigger delay
 	assign adb_ext_trig_dly[3:0]	= seq_trigdly0_wr[15:12];	// RW	ADB External trigger delay
 	assign seq_trigdly0_rd[15:0]	= seq_trigdly0_wr[15:0];	//		Readback
@@ -4583,6 +4627,10 @@
 	assign alct_ext_trig_dly[3:0]	= seq_trigdly1_wr[11:8];	// RW	ALCT External trigger delay
 //	assign layer_trig_dly[3:0]		= seq_trigdly1_wr[15:12];	// RW	Free
 	assign seq_trigdly1_rd[15:0]	= seq_trigdly1_wr[15:0];	//		Readback
+
+  assign l1a_preClct_width[3:0] = seq_trigdly2_wr[3:0];    // RW  pre-CLCT window width for L1A*preCLCT overlap
+  assign l1a_preClct_dly[7:0]   = seq_trigdly2_wr[11:4];   // RW  pre-CLCT delay for L1A*preCLCT overlap
+  assign seq_trigdly2_rd[15:0]  = seq_trigdly2_wr[15:0];   //     Readback
 
 //------------------------------------------------------------------------------------------------------------------
 // ADR_SEQ_ID=6E		Sequencer ID Information Register, Board & CSC ID
@@ -5408,14 +5456,28 @@
 	assign cnt[79]	= ccb_ttcrx_lost_cnt;	// Number of times lock has been lost
 	assign cnt[80]	= ccb_qpll_lost_cnt;	// Number of times lock has been lost
 
+// CLCT pre-trigger coincidence counters
+// NOTE: these counters 81-87 were previously used for Virtex-6 GTX Optical Receiver Error Counters
+  assign cnt[81]  = preClct_l1a_counter;  // CLCT pre-trigger AND L1A coincidence counter
+  assign cnt[82]  = preClct_alct_counter; // CLCT pre-trigger AND ALCT coincidence counter
+
+// Active CFEB(s) counters
+// NOTE: counters 81-87 were previously used for Virtex-6 GTX Optical Receiver Error Counters
+  assign cnt[83]  = active_cfebs_event_counter;      // Any CFEB active flag sent to DMB
+  assign cnt[84]  = active_cfeb0_event_counter;      // CFEB0 active flag sent to DMB
+  assign cnt[85]  = active_cfeb1_event_counter;      // CFEB1 active flag sent to DMB
+  assign cnt[86]  = active_cfeb2_event_counter;      // CFEB2 active flag sent to DMB
+  assign cnt[87]  = active_cfeb3_event_counter;      // CFEB3 active flag sent to DMB
+  assign cnt[88]  = active_cfeb4_event_counter;      // CFEB4 active flag sent to DMB
+
 // Virtex-6 GTX Optical Receiver Error Counters
-	assign cnt[81]	= 0;					// Error count on this fiber channel
-	assign cnt[82]	= 0;
-	assign cnt[83]	= 0;
-	assign cnt[84]	= 0;
-	assign cnt[85]	= 0;
-	assign cnt[86]	= 0;
-	assign cnt[87]	= 0;
+//	assign cnt[81]	= 0;					// Error count on this fiber channel
+//	assign cnt[82]	= 0;
+//	assign cnt[83]	= 0;
+//	assign cnt[84]	= 0;
+//	assign cnt[85]	= 0;
+//	assign cnt[86]	= 0;
+//	assign cnt[87]	= 0;
 
 // Snapshot current value of all counters at once
 	genvar j;
@@ -6137,6 +6199,7 @@
 	if (wr_seq_trigen)				seq_trigen_wr			<=	d[15:0];
 	if (wr_seq_trigdly0)			seq_trigdly0_wr			<=	d[15:0];
 	if (wr_seq_trigdly1)			seq_trigdly1_wr			<=	d[15:0];
+	if (wr_seq_trigdly2)    seq_trigdly2_wr  <=  d[15:0];
 //	if (wr_seq_id)					seq_id_wr				<=	d[15:0];
 	if (wr_seq_clct)				seq_clct_wr				<=	d[15:0];
 	if (wr_seq_fifo)				seq_fifo_wr				<=	d[15:0];

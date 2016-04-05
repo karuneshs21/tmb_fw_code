@@ -4,8 +4,8 @@
 // Firmware version global definitions
 	`define FIRMWARE_TYPE		04'hC		// C=Normal CLCT/TMB, D=Debug PCB loopback version
 	`define VERSION				04'hE		// Version revision number, A=TMB2004 and earlier, E=TMB2005E production
-	`define MONTHDAY			16'h0501	// Version date
-	`define YEAR				16'h2013	// Version date
+	`define MONTHDAY			16'h0405	// Version date
+	`define YEAR				16'h2016	// Version date
 
 	`define AUTO_VME			01'h1		// Automatically initialize VME registers from PROM data,   0=do not
 	`define AUTO_JTAG			01'h1		// Automatically initialize JTAG chain from PROM data,      0=do not
@@ -25,8 +25,8 @@
 //---------------------------------------------------------------------------------------------------------------------------------------
 // Conditional compile flags: Enable only one CSC_TYPE
 //---------------------------------------------------------------------------------------------------------------------------------------
-//	`define CSC_TYPE_A			04'hA		// Normal   CSC:  Normal chambers facing toward IR
-	`define CSC_TYPE_B			04'hB		// Reversed CSC:  Normal chambers facing away from IR. All  hs = reversed
+	`define CSC_TYPE_A			04'hA		// Normal   CSC:  Normal chambers facing toward IR
+//	`define CSC_TYPE_B			04'hB		// Reversed CSC:  Normal chambers facing away from IR. All  hs = reversed
 //	`define CSC_TYPE_C			04'hC		// Normal   ME1B: ME1B   chambers facing toward IR.    ME1B hs =!reversed, ME1A hs = reversed
 //	`define CSC_TYPE_D			04'hD		// Reversed ME1B: ME1B   chambers facing away from IR. ME1B hs = reversed, ME1A hs =!reversed
 

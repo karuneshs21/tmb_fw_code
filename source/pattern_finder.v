@@ -275,7 +275,7 @@
 // Load global definitions
 //-------------------------------------------------------------------------------------------------------------------
 	`include "firmware_version.v"
-	//`include "pattern_unit.v"
+//	`include "pattern_unit.v"
 	`ifdef CSC_TYPE_A initial $display ("CSC_TYPE_A=%H",`CSC_TYPE_A); `endif	// Normal   CSC
 	`ifdef CSC_TYPE_B initial $display ("CSC_TYPE_B=%H",`CSC_TYPE_B); `endif	// Reversed CSC
 	`ifdef CSC_TYPE_C initial $display ("CSC_TYPE_C=%H",`CSC_TYPE_C); `endif	// Normal	ME1B reversed ME1A

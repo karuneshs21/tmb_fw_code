@@ -609,6 +609,7 @@
 // Load global defines
 	`include "firmware_version.v"
 
+
 // Display
 	`ifdef FIRMWARE_TYPE		initial	$display ("FIRMWARE_TYPE %H", `FIRMWARE_TYPE);	`endif
 	`ifdef VERSION				initial	$display ("VERSION       %H", `VERSION      );	`endif
@@ -981,6 +982,18 @@
 	wire	[7:0]			alct_err_counter3;
 	wire	[7:0]			alct_err_counter4;
 	wire	[7:0]			alct_err_counter5;
+
+// CLCT pre-trigger coincidence counters
+  wire  [MXCNTVME-1:0] preClct_l1a_counter;  // CLCT pre-trigger AND L1A coincidence counter
+  wire  [MXCNTVME-1:0] preClct_alct_counter; // CLCT pre-trigger AND ALCT coincidence counter
+
+// Active CFEB(s) counters
+  wire  [MXCNTVME-1:0] active_cfebs_event_counter;      // Any CFEB active flag sent to DMB
+  wire  [MXCNTVME-1:0] active_cfeb0_event_counter;      // CFEB0 active flag sent to DMB
+  wire  [MXCNTVME-1:0] active_cfeb1_event_counter;      // CFEB1 active flag sent to DMB
+  wire  [MXCNTVME-1:0] active_cfeb2_event_counter;      // CFEB2 active flag sent to DMB
+  wire  [MXCNTVME-1:0] active_cfeb3_event_counter;      // CFEB3 active flag sent to DMB
+  wire  [MXCNTVME-1:0] active_cfeb4_event_counter;      // CFEB4 active flag sent to DMB
 
 // CFEB injector RAM map 2D arrays into 1D for ALCT
 	wire	[MXCFEB-1:0]	inj_ramout_pulse;
@@ -1527,14 +1540,17 @@
 	wire	[2:0]			nlayers_hit_vme;
 	wire	[MXBXN-1:0]		bxn_clct_vme;			// CLCT BXN at pre-trigger
 	wire	[MXBXN-1:0]		bxn_l1a_vme;			// CLCT BXN at L1A
-	wire	[3:0]			alct_trig_width;
+	wire	[3:0]			alct_preClct_width;
 
-	wire	[MXEXTDLY-1:0]	alct_pre_trig_dly;
+	wire	[MXEXTDLY-1:0]	alct_preClct_dly;
 	wire	[MXEXTDLY-1:0]	alct_pat_trig_dly;
 	wire	[MXEXTDLY-1:0]	adb_ext_trig_dly;
 	wire	[MXEXTDLY-1:0]	dmb_ext_trig_dly;
 	wire	[MXEXTDLY-1:0]	clct_ext_trig_dly;
 	wire	[MXEXTDLY-1:0]	alct_ext_trig_dly;
+
+  wire [3:0] l1a_preClct_width;
+  wire [7:0] l1a_preClct_dly;
 
 	wire	[MXCLCT-1:0]	clct0_vme;
 	wire	[MXCLCT-1:0]	clct1_vme;
@@ -1697,7 +1713,7 @@
 	.cfeb_en				(cfeb_en[MXCFEB-1:0]),			// In	1=Enable this CFEB for triggering + sending active feb flag
 	.active_feb_src			(active_feb_src),				// In	Active cfeb flag source, 0=pretrig, 1=tmb-matching ~8bx later
 
-	.alct_trig_width		(alct_trig_width[3:0]),			// In	ALCT*CLCT overlap window size
+	.alct_preClct_width		(alct_preClct_width[3:0]),			// In  ALCT (alct_active_feb flag) window width for ALCT*preCLCT overlap
 	.wr_buf_required		(wr_buf_required),				// In	Require wr_buffer to pretrigger
 	.wr_buf_autoclr_en		(wr_buf_autoclr_en),			// In	Enable frozen buffer auto clear
 	.valid_clct_required	(valid_clct_required),			// In	Require valid pattern after drift to trigger
@@ -1706,12 +1722,16 @@
 	.sync_err_stops_readout	(sync_err_stops_readout),		// In	Sync error stops L1A readouts
 
 // External Trigger Delays
-	.alct_pre_trig_dly		(alct_pre_trig_dly[MXEXTDLY-1:0]),	// In	ALCT pre      trigger delay
+	.alct_preClct_dly		(alct_preClct_dly[MXEXTDLY-1:0]),	// In  ALCT (alct_active_feb flag) delay for ALCT*preCLCT
 	.alct_pat_trig_dly		(alct_pat_trig_dly[MXEXTDLY-1:0]),	// In	ALCT pattern  trigger delay
 	.adb_ext_trig_dly		(adb_ext_trig_dly[MXEXTDLY-1:0]),	// In	ADB  external trigger delay
 	.dmb_ext_trig_dly		(dmb_ext_trig_dly[MXEXTDLY-1:0]),	// In	DMB  external trigger delay
 	.clct_ext_trig_dly		(clct_ext_trig_dly[MXEXTDLY-1:0]),	// In	CLCT external trigger delay
 	.alct_ext_trig_dly		(alct_ext_trig_dly[MXEXTDLY-1:0]),	// In	ALCT external trigger delay
+
+// Sequencer Ports: pre-CLCT modifiers for L1A*preCLCT overlap
+  .l1a_preClct_width (l1a_preClct_width[3:0]), // In  pre-CLCT window width for L1A*preCLCT overlap
+  .l1a_preClct_dly   (l1a_preClct_dly[7:0]),   // In  pre-CLCT delay for L1A*preCLCT overlap
 
 // CLCT/RPC/RAT Pattern Injector
 	.inj_trig_vme			(inj_trig_vme),						// In	Start pattern injector
@@ -2126,6 +2146,18 @@
 	.event_counter63		(event_counter63[MXCNTVME-1:0]),	// Out
 	.event_counter64		(event_counter64[MXCNTVME-1:0]),	// Out
 	.event_counter65		(event_counter65[MXCNTVME-1:0]),	// Out
+
+// CLCT pre-trigger coincidence counters
+  .preClct_l1a_counter   (preClct_l1a_counter[MXCNTVME-1:0]),  // Out
+  .preClct_alct_counter  (preClct_alct_counter[MXCNTVME-1:0]), // Out
+  
+// Active CFEB(s) counters
+  .active_cfebs_event_counter      (active_cfebs_event_counter[MXCNTVME-1:0]),      // Out
+  .active_cfeb0_event_counter      (active_cfeb0_event_counter[MXCNTVME-1:0]),      // Out
+  .active_cfeb1_event_counter      (active_cfeb1_event_counter[MXCNTVME-1:0]),      // Out
+  .active_cfeb2_event_counter      (active_cfeb2_event_counter[MXCNTVME-1:0]),      // Out
+  .active_cfeb3_event_counter      (active_cfeb3_event_counter[MXCNTVME-1:0]),      // Out
+  .active_cfeb4_event_counter      (active_cfeb4_event_counter[MXCNTVME-1:0]),      // Out
 
 // Header Counters
 	.hdr_clear_on_resync	(hdr_clear_on_resync),				// In	Clear header counters on ttc_resync
@@ -3166,18 +3198,22 @@
 	.clct_flush_delay		(clct_flush_delay[MXFLUSH-1:0]),	// Out	Trigger sequencer flush state timer
 	.clct_throttle			(clct_throttle[MXTHROTTLE-1:0]),	// Out	Pre-trigger throttle to reduce trigger rate
 	.clct_wr_continuous		(clct_wr_continuous),				// Out	1=allow continuous header buffer writing for invalid triggers
-	.alct_trig_width		(alct_trig_width[3:0]),				// Out	ALCT*CLCT overlap window size
+	.alct_preClct_width		(alct_preClct_width[3:0]),				// Out  ALCT (alct_active_feb flag) window width for ALCT*preCLCT overlap
 	.wr_buf_required		(wr_buf_required),					// Out	Require wr_buffer to pretrigger
 	.wr_buf_autoclr_en		(wr_buf_autoclr_en),				// Out	Enable frozen buffer auto clear
 	.valid_clct_required	(valid_clct_required),				// Out	Require valid pattern after drift to trigger
 
 // Sequencer Ports: External Trigger Delays
-	.alct_pre_trig_dly		(alct_pre_trig_dly[MXEXTDLY-1:0]),	// Out	ALCT pre      trigger delay
+	.alct_preClct_dly		(alct_preClct_dly[MXEXTDLY-1:0]),	// Out  ALCT (alct_active_feb flag) delay for ALCT*preCLCT overlap
 	.alct_pat_trig_dly		(alct_pat_trig_dly[MXEXTDLY-1:0]),	// Out	ALCT pattern  trigger delay
 	.adb_ext_trig_dly		(adb_ext_trig_dly[MXEXTDLY-1:0]),	// Out	ADB  external trigger delay
 	.dmb_ext_trig_dly		(dmb_ext_trig_dly[MXEXTDLY-1:0]),	// Out	DMB  external trigger delay
 	.clct_ext_trig_dly		(clct_ext_trig_dly[MXEXTDLY-1:0]),	// Out	CLCT external trigger delay
 	.alct_ext_trig_dly		(alct_ext_trig_dly[MXEXTDLY-1:0]),	// Out	ALCT external trigger delay
+
+  // Sequencer Ports: pre-CLCT modifiers for L1A*preCLCT overlap
+  .l1a_preClct_width (l1a_preClct_width[3:0]), // Out  pre-CLCT window width for L1A*preCLCT overlap
+  .l1a_preClct_dly   (l1a_preClct_dly[7:0]),   // Out  pre-CLCT delay for L1A*preCLCT overlap
 
 // Sequencer Ports: CLCT/RPC/RAT Pattern Injector
 	.inj_trig_vme			(inj_trig_vme),						// Out	Start pattern injector
@@ -3473,6 +3509,18 @@
 	.alct_err_counter3		(alct_err_counter3[7:0]),			// In
 	.alct_err_counter4		(alct_err_counter4[7:0]),			// In
 	.alct_err_counter5		(alct_err_counter5[7:0]),			// In
+
+  // CLCT pre-trigger coincidence counters
+  .preClct_l1a_counter  (preClct_l1a_counter[MXCNTVME-1:0]),  // In
+  .preClct_alct_counter (preClct_alct_counter[MXCNTVME-1:0]), // In
+
+  // Active CFEB(s) counters
+  .active_cfebs_event_counter      (active_cfebs_event_counter[MXCNTVME-1:0]),      // In
+  .active_cfeb0_event_counter      (active_cfeb0_event_counter[MXCNTVME-1:0]),      // In
+  .active_cfeb1_event_counter      (active_cfeb1_event_counter[MXCNTVME-1:0]),      // In
+  .active_cfeb2_event_counter      (active_cfeb2_event_counter[MXCNTVME-1:0]),      // In
+  .active_cfeb3_event_counter      (active_cfeb3_event_counter[MXCNTVME-1:0]),      // In
+  .active_cfeb4_event_counter      (active_cfeb4_event_counter[MXCNTVME-1:0]),      // In
 
 // CSC Orientation Ports
 	.csc_type				(csc_type[3:0]),					// In	Firmware compile type

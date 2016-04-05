@@ -415,7 +415,7 @@
 
 // Trigger modifiers
 	all_cfebs_active,
-	alct_trig_width,
+	alct_preClct_width,
 	wr_buf_required,
 	wr_buf_autoclr_en,
 	valid_clct_required,
@@ -423,12 +423,16 @@
 	sync_err_stops_readout,
 
 // External Trigger Delays
-	alct_pre_trig_dly,
+	alct_preClct_dly,
 	alct_pat_trig_dly,
 	adb_ext_trig_dly,
 	dmb_ext_trig_dly,
 	clct_ext_trig_dly,
 	alct_ext_trig_dly,
+
+// pre-CLCT modifiers for L1A*preCLCT overlap
+  l1a_preClct_width,
+  l1a_preClct_dly,
 
 // CLCT/RPC/RAT Pattern Injector
 	inj_trig_vme,
@@ -852,6 +856,18 @@
 	readout_counter,
 	orbit_counter,
 
+// CLCT pre-trigger coincidence counters
+  preClct_l1a_counter,  // CLCT pre-trigger AND L1A  coincidence counter
+  preClct_alct_counter, // CLCT pre-trigger AND ALCT coincidence counter
+
+// Active CFEB(s) counters
+  active_cfebs_event_counter,      // Any CFEB active flag sent to DMB
+  active_cfeb0_event_counter,      // CFEB0 active flag sent to DMB
+  active_cfeb1_event_counter,      // CFEB1 active flag sent to DMB
+  active_cfeb2_event_counter,      // CFEB2 active flag sent to DMB
+  active_cfeb3_event_counter,      // CFEB3 active flag sent to DMB
+  active_cfeb4_event_counter,      // CFEB4 active flag sent to DMB
+
 // Parity Errors
 	perr_pulse,
 	perr_cfeb_ff,
@@ -921,7 +937,7 @@
 	,wr_en_xmpc
 	,wr_en_rmpc
 
-	,alct_pretrig_window
+	,alct_preClct_window
 
 	,pretrig_data
 	,postdrift_data
@@ -1078,7 +1094,7 @@
 	input	[MXCFEB-1:0]	cfeb_en;				// 1=Enable this CFEB for triggering + sending active feb flag
 	input					active_feb_src;			// Active cfeb flag source, 0=pretrig, 1=tmb-matching ~8bx later
 
-	input	[3:0]			alct_trig_width;		// ALCT*CLCT overlap window size
+	input	[3:0]			alct_preClct_width;		// ALCT (alct_active_feb flag) window width for ALCT*preCLCT overlap
 	input					wr_buf_required;		// Require wr_buffer to pretrigger
 	input					wr_buf_autoclr_en;		// Enable frozen buffer auto clear
 	input					valid_clct_required;	// Require valid pattern after drift to trigger
@@ -1087,12 +1103,16 @@
 	input					sync_err_stops_readout;	// Sync error stops L1A readouts
 
 // External Trigger Delays
-	input	[MXEXTDLY-1:0]	alct_pre_trig_dly;		// ALCT pre      trigger delay
+	input	[MXEXTDLY-1:0]	alct_preClct_dly;  // ALCT (alct_active_feb flag) delay for ALCT*preCLCT overlap
 	input	[MXEXTDLY-1:0]	alct_pat_trig_dly;		// ALCT pattern  trigger delay
 	input	[MXEXTDLY-1:0]	adb_ext_trig_dly;		// ADB  external trigger delay
 	input	[MXEXTDLY-1:0]	dmb_ext_trig_dly;		// DMB  external trigger delay
 	input	[MXEXTDLY-1:0]	clct_ext_trig_dly;		// CLCT external trigger delay
 	input	[MXEXTDLY-1:0]	alct_ext_trig_dly;		// ALCT external trigger delay
+
+// pre-CLCT modifiers for L1A*preCLCT overlap
+  input [3:0] l1a_preClct_width; // pre-CLCT window width for L1A*preCLCT overlap
+  input [7:0] l1a_preClct_dly;   // pre-CLCT delay for L1A*preCLCT overlap
 
 // CLCT/RPC/RAT Pattern Injector
 	input					inj_trig_vme;			// Start pattern injector
@@ -1516,6 +1536,18 @@
 	output	[MXL1ARX-1:0]	readout_counter;		// Readout counter
 	output	[MXORBIT-1:0]	orbit_counter;			// Orbit counter
 
+// CLCT pre-trigger coincidence counters
+  output  [MXCNTVME-1:0]  preClct_l1a_counter;  // CLCT pre-trigger AND L1A coincidence counter
+  output  [MXCNTVME-1:0]  preClct_alct_counter; // CLCT pre-trigger AND ALCT coincidence counter
+
+// Active CFEB(s) counters
+  output  [MXCNTVME-1:0] active_cfebs_event_counter;      // Any CFEB active flag sent to DMB
+  output  [MXCNTVME-1:0] active_cfeb0_event_counter;      // CFEB0 active flag sent to DMB
+  output  [MXCNTVME-1:0] active_cfeb1_event_counter;      // CFEB1 active flag sent to DMB
+  output  [MXCNTVME-1:0] active_cfeb2_event_counter;      // CFEB2 active flag sent to DMB
+  output  [MXCNTVME-1:0] active_cfeb3_event_counter;      // CFEB3 active flag sent to DMB
+  output  [MXCNTVME-1:0] active_cfeb4_event_counter;      // CFEB4 active flag sent to DMB
+
 // Parity Errors
 	input					perr_pulse;				// Parity error pulse for counting
 	input	[MXCFEB-1:0]	perr_cfeb_ff;			// CFEB RAM parity error, latched
@@ -1586,7 +1618,7 @@
 	output					wr_en_xmpc;
 	output					wr_en_rmpc;
 
-	output					alct_pretrig_window;
+	output					alct_preClct_window;
 	output	[21-1:0]		pretrig_data;
 	output	[21-1:0]		postdrift_data;
 	output	[3:0]			postdrift_adr;
@@ -1613,7 +1645,7 @@
 //------------------------------------------------------------------------------------------------------------------
 // Local:
 //------------------------------------------------------------------------------------------------------------------
-	wire alct_pretrig;
+	wire alct_preClct; // ALCT*CLCT pre-trigger coincidence
 
 	wire clct0_vpf;
 	wire clct1_vpf;
@@ -1871,6 +1903,115 @@
 	else if (pretrig_cnt_en   ) pretrig_counter = pretrig_counter+1'b1;
 	end
 
+//******************************************************************************
+// New counters: YP March 2016 - copy from OTMB
+// BEGIN
+//******************************************************************************
+
+	wire [4:0] active_feb_list;		// Active FEB list selection
+	wire			 l1a_pulse;
+
+// Counting
+	wire vme_cnt_reset = ccb_evcntres || cnt_all_reset;
+	wire cnt_fatzero   = {MXCNTVME{1'b0}};
+
+// CLCT pre-trigger AND L1A coincidence counter (YP March 2016 - copy from OTMB)
+  reg [MXCNTVME-1:0] preClct_l1a_counter = 0;
+  // add delay to CLCT pre-trigger
+  wire preClct = (clct_sm == pretrig);
+//  wire preClct_ff;         // delayed CLCT pre-trigger
+//  x_delay_os #( .MXDLY(8) ) upreClct_delay (.d(clct_pretrig),.clock(clock),.delay(l1a_preClct_dly),.q(preClct_ff)); 
+  wire preClct_ff = preClct;         // Lets not delay CLCT pre-trigger for now
+  
+  // open CLCT pre-trigger window
+  reg  [3:0] preClct_width_cnt = 0;
+  wire       preClct_width_bsy = (preClct_width_cnt != 0); 
+  //
+  always @(posedge clock) begin
+    if      ( ttc_resync        ) preClct_width_cnt = 0;                        // Clear on reset
+    else if ( preClct_ff        ) preClct_width_cnt = l1a_preClct_width - 1'b1; // Load persistence count
+    else if ( preClct_width_bsy ) preClct_width_cnt = preClct_width_cnt - 1'b1; // Decrement count down to 0
+  end
+  //
+  wire preClct_window = preClct_width_bsy | preClct_ff; // Assert immediately, hold until count done
+  //
+  wire preClct_l1a_cnt_reset = vme_cnt_reset;
+  wire preClct_l1a_cnt_ovf   = (preClct_l1a_counter == {MXCNTVME{1'b1}});
+  wire preClct_l1a_cnt_en    = preClct_window && l1a_pulse && !preClct_l1a_cnt_ovf;
+  //
+  always @(posedge clock) begin
+    if      (preClct_l1a_cnt_reset) preClct_l1a_counter = 0;
+    else if (preClct_l1a_cnt_en   ) preClct_l1a_counter = preClct_l1a_counter + 1'b1;
+  end
+
+// CLCT pre-trigger AND ALCT coincidence counter (YP March 2016 - copy from OTMB)
+  reg   [MXCNTVME-1:0]  preClct_alct_counter = 0;
+
+//  wire preClct_alct_cnt_reset = ccb_evcntres || (ttc_resync && hdr_clear_on_resync);
+  wire preClct_alct_cnt_reset = vme_cnt_reset;
+  wire preClct_alct_cnt_ovf   = (preClct_alct_counter == {MXCNTVME{1'b1}});
+  wire preClct_alct_cnt_en    = alct_preClct && !preClct_alct_cnt_ovf;
+//  wire preClct_alct_cnt_en    = alct_active_feb && !preClct_alct_cnt_ovf;
+
+  always @(posedge clock) begin
+    if      (preClct_alct_cnt_reset) preClct_alct_counter = cnt_fatzero;
+    else if (preClct_alct_cnt_en   ) preClct_alct_counter = preClct_alct_counter + 1'b1;
+  end
+
+// Active CFEB(s) counters (YP March 2016 - copy from OTMB)
+  reg   [MXCNTVME-1:0]  active_cfebs_event_counter      = 0; // Any CFEB active flag sent to DMB
+  reg   [MXCNTVME-1:0]  active_cfeb0_event_counter      = 0; // CFEB0 active flag sent to DMB
+  reg   [MXCNTVME-1:0]  active_cfeb1_event_counter      = 0; // CFEB1 active flag sent to DMB
+  reg   [MXCNTVME-1:0]  active_cfeb2_event_counter      = 0; // CFEB2 active flag sent to DMB
+  reg   [MXCNTVME-1:0]  active_cfeb3_event_counter      = 0; // CFEB3 active flag sent to DMB
+  reg   [MXCNTVME-1:0]  active_cfeb4_event_counter      = 0; // CFEB4 active flag sent to DMB
+
+  wire active_cfebs_event_counter_reset      = vme_cnt_reset;
+  wire active_cfeb0_event_counter_reset      = vme_cnt_reset;
+  wire active_cfeb1_event_counter_reset      = vme_cnt_reset;
+  wire active_cfeb2_event_counter_reset      = vme_cnt_reset;
+  wire active_cfeb3_event_counter_reset      = vme_cnt_reset;
+  wire active_cfeb4_event_counter_reset      = vme_cnt_reset;
+  
+  wire active_cfebs_event_counter_ovf      = (active_cfebs_event_counter      == {MXCNTVME{1'b1}});
+  wire active_cfeb0_event_counter_ovf      = (active_cfeb0_event_counter      == {MXCNTVME{1'b1}});
+  wire active_cfeb1_event_counter_ovf      = (active_cfeb1_event_counter      == {MXCNTVME{1'b1}});
+  wire active_cfeb2_event_counter_ovf      = (active_cfeb2_event_counter      == {MXCNTVME{1'b1}});
+  wire active_cfeb3_event_counter_ovf      = (active_cfeb3_event_counter      == {MXCNTVME{1'b1}});
+  wire active_cfeb4_event_counter_ovf      = (active_cfeb4_event_counter      == {MXCNTVME{1'b1}});
+  
+  wire active_cfebs_event_counter_en      = (|active_feb_list) && !active_cfebs_event_counter_ovf;
+  wire active_cfeb0_event_counter_en      = active_feb_list[0] && !active_cfeb0_event_counter_ovf;
+  wire active_cfeb1_event_counter_en      = active_feb_list[1] && !active_cfeb1_event_counter_ovf;
+  wire active_cfeb2_event_counter_en      = active_feb_list[2] && !active_cfeb2_event_counter_ovf;
+  wire active_cfeb3_event_counter_en      = active_feb_list[3] && !active_cfeb3_event_counter_ovf;
+  wire active_cfeb4_event_counter_en      = active_feb_list[4] && !active_cfeb4_event_counter_ovf;
+  
+  always @(posedge clock) begin
+    if      (active_cfebs_event_counter_reset) active_cfebs_event_counter = cnt_fatzero;
+    else if (active_cfebs_event_counter_en   ) active_cfebs_event_counter = active_cfebs_event_counter + 1'b1;
+    //
+    if      (active_cfeb0_event_counter_reset) active_cfeb0_event_counter = cnt_fatzero;
+    else if (active_cfeb0_event_counter_en   ) active_cfeb0_event_counter = active_cfeb0_event_counter + 1'b1;
+    //
+    if      (active_cfeb1_event_counter_reset) active_cfeb1_event_counter = cnt_fatzero;
+    else if (active_cfeb1_event_counter_en   ) active_cfeb1_event_counter = active_cfeb1_event_counter + 1'b1;
+    //
+    if      (active_cfeb2_event_counter_reset) active_cfeb2_event_counter = cnt_fatzero;
+    else if (active_cfeb2_event_counter_en   ) active_cfeb2_event_counter = active_cfeb2_event_counter + 1'b1;
+    //
+    if      (active_cfeb3_event_counter_reset) active_cfeb3_event_counter = cnt_fatzero;
+    else if (active_cfeb3_event_counter_en   ) active_cfeb3_event_counter = active_cfeb3_event_counter + 1'b1;
+    //
+    if      (active_cfeb4_event_counter_reset) active_cfeb4_event_counter = cnt_fatzero;
+    else if (active_cfeb4_event_counter_en   ) active_cfeb4_event_counter = active_cfeb4_event_counter + 1'b1;
+  end
+
+//******************************************************************************
+// New counters: YP March 2016 - copy from OTMB
+// END
+//******************************************************************************
+
 // CLCT counter, presets at evcntres or resync
 	reg	 [MXCNTVME-1:0]	clct_counter = 0;
 
@@ -1911,7 +2052,7 @@
 // Level Accept Rx Counter, counts ccb_l1accepts received, presets at evcntres or resync
 	reg	 [MXL1ARX-1:0]	l1a_rx_counter = 0;		// L1As received from ccb
 	wire [MXL1ARX-1:0]	l1a_rx_counter_plus1;	// L1As received from ccb plus 1 lookahead
-	wire				l1a_pulse;
+//	wire				l1a_pulse;
 
 	wire l1a_cnt_reset = ccb_evcntres || (ttc_resync && hdr_clear_on_resync);
 	wire l1a_rxcnt_en  = l1a_pulse;				// l1a_ccb || l1a_int
@@ -2016,7 +2157,7 @@
 	wire	clct_ext_trig_os;	// CLCT external trigger from ccb (scintillator)
 	wire	alct_ext_trig_os;	// ALCT external trigger from ccb
 
-	x_delay    #(4) udly0 (.d(alct_active_feb    ),.clock(clock),.delay(alct_pre_trig_dly),.q(alct_pre_trig_os));	
+	x_delay    #(4) udly0 (.d(alct_active_feb    ),.clock(clock),.delay(alct_preClct_dly),.q(alct_pre_trig_os));	
 	x_delay_os #(4) udly1 (.d(alct0_valid        ),.clock(clock),.delay(alct_pat_trig_dly),.q(alct_pat_trig_os));	
 	x_delay_os #(4) udly2 (.d(alct_adb_pulse_sync),.clock(clock),.delay(adb_ext_trig_dly ),.q(adb_ext_trig_os ));	
 	x_delay_os #(4) udly3 (.d(dmb_ext_trig       ),.clock(clock),.delay(dmb_ext_trig_dly ),.q(dmb_ext_trig_os ));	
@@ -2025,19 +2166,19 @@
 
 // Open an ALCT pretrig coincidence window, updates if new alcts arrive, uses triad decoder fast look-ahead counter
 	reg  [3:0] alct_width_cnt=0;
-	wire [3:0] alct_pretrig_win;
+	wire [3:0] alct_preClct_win;
 
 	wire alct_width_bsy   = (alct_width_cnt != 0); 
 	wire alct_open_window = alct_pre_trig_os;								// ALCT match window opens on alct_active_feb
 	
 	always @(posedge clock) begin
 	if		(ttc_resync      )	alct_width_cnt = 0;							// Clear on reset
-	else if (alct_open_window)	alct_width_cnt = alct_trig_width-1'b1;		// Load persistence count
+	else if (alct_open_window)	alct_width_cnt = alct_preClct_width - 1'b1;		// Load persistence count
 	else if (alct_width_bsy  )	alct_width_cnt = alct_width_cnt-1'b1;		// Decrement count down to 0
 	end
 
-	wire   alct_pretrig_window = alct_width_bsy | alct_open_window;							// Assert immediately, hold until count done
-	assign alct_pretrig_win    = (alct_open_window) ? 4'h0: alct_trig_width-alct_width_cnt;	// Position of alct active feb signal at pretrigger
+	wire   alct_preClct_window = alct_width_bsy | alct_open_window;							// Assert immediately, hold until count done
+	assign alct_preClct_win    = (alct_open_window) ? 4'h0: alct_preClct_width - alct_width_cnt;	// Position of alct active feb signal at pretrigger
 	wire   alct_required       = alct_match_trig_en && !clct_pat_trig_en;					// ALCT coincidence is required
 
 // Pre-trigger Source Multiplexer
@@ -2062,7 +2203,7 @@
 	wire clct_pretrig_rqst= (| trig_source[7:0]) && !sync_err_stops_pretrig;// CLCT pretrigger requested, dont trig on [8]
 
 	assign clct_pretrig	= (clct_sm == pretrig);								// CLCT pre-triggered
-	assign alct_pretrig	= (clct_sm == pretrig) && alct_pretrig_window;		// ALCT*CLCT pre-trigger coincidence
+	assign alct_preClct	= (clct_sm == pretrig) && alct_preClct_window;		// ALCT*CLCT pre-trigger coincidence
 
 	wire clct_pat_trig	= any_cfeb_hit && clct_pat_trig_en;					// Trigger source is a CLCT pattern
 	wire clct_retrigger	= clct_pat_trig && noflush && nothrottle;			// Immediate re-trigger
@@ -2071,7 +2212,7 @@
 
 // Pre-trigger keep or discard
 	wire discard_nowrbuf = clct_pretrig && !wr_buf_avail;					// Discard pretrig because wr_buf was not ready
-	wire discard_noalct  = clct_pretrig && !alct_pretrig  && alct_required;	// Discard pretrig because alct was not in window
+	wire discard_noalct  = clct_pretrig && !alct_preClct  && alct_required;	// Discard pretrig because alct was not in window
 	wire discard_pretrig = discard_nowrbuf || discard_noalct;				// Discard this pretrig
 
 	wire clct_push_pretrig = clct_pretrig && !discard_pretrig;				// Keep this pretrig, push it into pipeline
@@ -2198,7 +2339,7 @@
 	wire [10:0] trig_source_s0_mod;
 	
 	assign trig_source_s0_mod[1:0] = trig_source_s0[1:0];			// Copy non-alct trigger source bits
-	assign trig_source_s0_mod[2]   = alct_pretrig_window && clct_pretrig && alct_match_trig_en;	// ALCT window was open at pretrig
+	assign trig_source_s0_mod[2]   = alct_preClct_window && clct_pretrig && alct_match_trig_en;	// ALCT window was open at pretrig
 	assign trig_source_s0_mod[8:3] = trig_source_s0[8:3];			// Copy non-alct trigger source bits
 	assign trig_source_s0_mod[9]   = clct_pretrig_me1a;				// CLCT pre-trigger was ME1A only
 	assign trig_source_s0_mod[10]  = clct_pretrig_me1b;				// CLCT pre-trigger was ME1B only
@@ -2224,7 +2365,7 @@
 // On Pretrigger send Active FEB word to DMB, persist 1 cycle per event
 	wire [4:0] active_feb_list_pre;	// Active FEB list to DMB at pretrig time
 	wire [4:0] active_feb_list_tmb;	// Active FEB list to DMB at tmb match time
-	wire [4:0] active_feb_list;		// Active FEB list selection
+//	wire [4:0] active_feb_list;		// Active FEB list selection
 	
 	wire       active_feb_flag_pre;	// Active FEB flag to DMB at pretrig time
 	wire       active_feb_flag_tmb;	// Active FEB flag to DMB at tmb match time
@@ -2487,9 +2628,9 @@
 	cnt_en_all		<= !((cnt_any_ovf_clct || cnt_any_ovf_alct) && cnt_stop_on_ovf);
 	end
 
-// Counting
-	wire vme_cnt_reset = ccb_evcntres || cnt_all_reset;
-	wire cnt_fatzero   = {MXCNTVME{1'b0}};
+//// Counting
+//	wire vme_cnt_reset = ccb_evcntres || cnt_all_reset;
+//	wire cnt_fatzero   = {MXCNTVME{1'b0}};
 
 	generate
 	for (j=MNCNT; j<=MXCNT; j=j+1) begin: gencnt
@@ -2573,7 +2714,7 @@
 	assign xpre_wdata[27:16]	=	bxn_counter[11:0];			// Full Bunch Crossing number at pretrig
 	assign xpre_wdata[57:28]	=	orbit_counter[29:0];		// Orbit count at pre-trigger
 	assign xpre_wdata[58]		=	sync_err;					// BXN sync error
-	assign xpre_wdata[62:59]	=	alct_pretrig_win[3:0];		// ALCT active_feb_flag position in pretrig window
+	assign xpre_wdata[62:59]	=	alct_preClct_win[3:0];		// ALCT active_feb_flag position in pretrig window
 
 	assign xpre_wdata[73:63]	=	wr_buf_adr[MXBADR-1:0];		// Address of write buffer at pretrig
 	assign xpre_wdata[84:74]	=	buf_fence_dist[10:0];		// Distance to 1st fence address at pretrigger
@@ -3204,7 +3345,7 @@
 	wire [11:0]	r_bxn_counter		=	xpre_rdata[27:16];	// Full Bunch Crossing number at pretrig
 	wire [29:0]	r_orbit_counter		=	xpre_rdata[57:28];	// Orbit count at pre-trigger
 	wire		r_sync_err			=	xpre_rdata[58];		// BXN sync error
-	wire [3:0]	r_alct_pretrig_win	=	xpre_rdata[62:59];	// ALCT active_feb_flag position in pretrig window
+	wire [3:0]	r_alct_preClct_win	=	xpre_rdata[62:59];	// ALCT active_feb_flag position in pretrig window
 
 	wire [10:0]	r_wr_buf_adr		=	xpre_rdata[73:63];	// Address of write buffer at pretrig
 	wire [10:0] r_buf_fence_dist	=	xpre_rdata[84:74];	// Distance to 1st fence address at pretrigger
@@ -3754,7 +3895,7 @@
 	assign	header28_[2:1]		=	r_alct0_quality[1:0];		// ALCT0 quality
 	assign	header28_[3]		=	r_alct0_amu;				// ALCT0 accelerator muon flag
 	assign	header28_[10:4]		=	r_alct0_key[6:0];			// ALCT0 key wire group
-	assign	header28_[14:11]	=	r_alct_pretrig_win[3:0];	// ALCT active_feb_flag position in pretrig window
+	assign	header28_[14:11]	=	r_alct_preClct_win[3:0];	// ALCT active_feb_flag position in pretrig window
 	assign	header28_[18:15]	=	0;							// DDU+DMB control flags
 
 	assign	header29_[0]		=	r_alct1_valid;				// ALCT1 valid pattern flag
@@ -4292,7 +4433,7 @@
 
 // Pre-trigger CLCT*ALCT matching
 	assign scp_ch[9]		= alct_active_feb;			// ALCT active feb flag, should precede alct0_vpf
-	assign scp_ch[10]		= alct_pretrig_window;		// ALCT*CLCT pretrigger matching window
+	assign scp_ch[10]		= alct_preClct_window;		// ALCT*CLCT pretrigger matching window
 
 // Pre-trigger Processing
 	assign scp_ch[13:11]	= clct_sm_vec[2:0];			// Pre-trigger state machine
