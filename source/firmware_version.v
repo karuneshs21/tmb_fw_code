@@ -19,7 +19,7 @@
 //---------------------------------------------------------------------------------------------------------------------------------------
 	`define VIRTEX2				04'h2		// FPGA type is Virtex2
 	`define MEZCARD				04'hC		// Mezzanine Card: A=V23K, B=V24K prototype, C=V24K production
-	`define ISE_VERSION			16'h0823	// ISE Compiler version 8.2i sp3 or 10.1i sp3
+	`define ISE_VERSION			16'h0101	// ISE Compiler version 8.2 or 10.1
 	`define FPGAID				16'h4000	// FPGA Type 4000 XC2V4000
 
 //---------------------------------------------------------------------------------------------------------------------------------------
