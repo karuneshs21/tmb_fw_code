@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
-//`define DEBUG_TMB2005E 1
+//`define DEBUG_TMB_VIRTEX2 1
 //-------------------------------------------------------------------------------------------------------------------
-//	tmb2005e:	Top Level
+//	tmb_virtex2:	Top Level
 //-------------------------------------------------------------------------------------------------------------------
 //	03/12/2003	Initial: Ported TMB2003a from tmb2001a+cfebreqst
 //	03/13/2003	New TTC decodes in ccb.v
@@ -298,7 +298,7 @@
 //-------------------------------------------------------------------------------------------------------------------
 //	Port Declarations
 //-------------------------------------------------------------------------------------------------------------------
-	module tmb2005e
+	module tmb_virtex2
 	(
 // CFEB
 	cfeb0_rx,
@@ -607,8 +607,7 @@
 // Display definitions in synth log
 //-------------------------------------------------------------------------------------------------------------------
 // Load global defines
-	`include "firmware_version.v"
-
+	`include "tmb_virtex2_fw_version.v"
 
 // Display
 	`ifdef FIRMWARE_TYPE		initial	$display ("FIRMWARE_TYPE %H", `FIRMWARE_TYPE);	`endif
