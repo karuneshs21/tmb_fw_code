@@ -440,9 +440,9 @@
 // Stage 4A1: CSC_TYPE_A Normal CSC
 //-------------------------------------------------------------------------------------------------------------------
 `ifdef CSC_TYPE_A
-`define	STAGGER_HS_CSC
-`define CSC_TYPE_A_or_CSC_TYPE_B
-`define CSC_TYPE_A_or_CSC_TYPE_C
+`define	STAGGER_HS_CSC 01'h1
+`define CSC_TYPE_A_or_CSC_TYPE_B 01'h1
+`define CSC_TYPE_A_or_CSC_TYPE_C 01'h1
 
 	wire [MXHS*5-1:0] me1234_ly0hs; 
 	wire [MXHS*5-1:0] me1234_ly1hs; 
@@ -472,8 +472,8 @@
 // Stage 4A2: CSC_TYPE_B Reversed CSC
 //-------------------------------------------------------------------------------------------------------------------
 `elsif  CSC_TYPE_B
-`define	STAGGER_HS_CSC
-`define CSC_TYPE_A_or_CSC_TYPE_B
+`define	STAGGER_HS_CSC 01'h1
+`define CSC_TYPE_A_or_CSC_TYPE_B 01'h1
 
 	wire [MXHS*5-1:0] me1234_ly0hs; 
 	wire [MXHS*5-1:0] me1234_ly1hs; 
@@ -549,8 +549,8 @@
 // Stage 4A3: CSC_TYPE_C Normal ME1B reversed ME1A
 //-------------------------------------------------------------------------------------------------------------------
 `elsif CSC_TYPE_C
-`define CSC_TYPE_A_or_CSC_TYPE_C
-`define CSC_TYPE_C_or_CSC_TYPE_D
+`define CSC_TYPE_A_or_CSC_TYPE_C 01'h1
+`define CSC_TYPE_C_or_CSC_TYPE_D 01'h1
 
 	wire [MXHS*1-1:0] me1a_ly0hs;
 	wire [MXHS*1-1:0] me1a_ly1hs;
@@ -609,7 +609,7 @@
 // Stage 4A4: CSC_TYPE_D Normal ME1A reversed ME1B
 //-------------------------------------------------------------------------------------------------------------------
 `elsif CSC_TYPE_D
-`define CSC_TYPE_C_or_CSC_TYPE_D
+`define CSC_TYPE_C_or_CSC_TYPE_D 01'h1
 
 	wire [MXHS*1-1:0] me1a_ly0hs;
 	wire [MXHS*1-1:0] me1a_ly1hs;
