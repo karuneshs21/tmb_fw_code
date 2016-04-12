@@ -2542,16 +2542,16 @@
 	always @(posedge clock) begin
 	cnt_en[13]	<= clct_pretrig;						// CLCT pretrigger is on any cfeb
 
-	cnt_en[14]	<= cfeb_hit_at_pretrig[0];				// CLCT pretrigger is on CFEB0
-	cnt_en[15]	<= cfeb_hit_at_pretrig[1];				// CLCT pretrigger is on CFEB1
-	cnt_en[16]	<= cfeb_hit_at_pretrig[2];				// CLCT pretrigger is on CFEB2
-	cnt_en[17]	<= cfeb_hit_at_pretrig[3];				// CLCT pretrigger is on CFEB3
-	cnt_en[18]	<= cfeb_hit_at_pretrig[4];				// CLCT pretrigger is on CFEB4
-	cnt_en[19]	<= 0;									// CLCT pretrigger is on CFEB5
-	cnt_en[20]	<= 0;									// CLCT pretrigger is on CFEB6
+	cnt_en[14]	<= cfeb_hit_at_pretrig[0]; // CLCT pretrigger is on CFEB0
+	cnt_en[15]	<= cfeb_hit_at_pretrig[1]; // CLCT pretrigger is on CFEB1
+	cnt_en[16]	<= cfeb_hit_at_pretrig[2]; // CLCT pretrigger is on CFEB2
+	cnt_en[17]	<= cfeb_hit_at_pretrig[3]; // CLCT pretrigger is on CFEB3
+	cnt_en[18]	<= cfeb_hit_at_pretrig[4]; // CLCT pretrigger is on CFEB4
+	cnt_en[19]	<= 0;                      // CLCT pretrigger is on CFEB5 - only in ME1/1 OTMB
+	cnt_en[20]	<= 0;                      // CLCT pretrigger is on CFEB6 - only in ME1/1 OTMB
 
-	cnt_en[21]	<= clct_pretrig_me1a;					// CLCT pretrigger is on ME1A cfeb4 only
-	cnt_en[22]	<= clct_pretrig_me1b;					// CLCT pretrigger is on ME1B cfeb0-3 only
+	cnt_en[21]	<= clct_pretrig_me1a;      // CLCT pretrigger is on ME1A cfeb4-6 only
+	cnt_en[22]	<= clct_pretrig_me1b;      // CLCT pretrigger is on ME1B cfeb0-3 only
 
 	cnt_en[23]	<= discard_nowrbuf_cnt_en;				// CLCT pretrig discarded, no wrbuf available, buffer stalled
 	cnt_en[24]	<= discard_noalct_cnt_en;				// CLCT pretrig discarded, no alct in window

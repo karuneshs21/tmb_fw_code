@@ -5361,7 +5361,7 @@
 // ADR_CNT_RDATA=D2	Trigger/Readout Counter Data Register
 //------------------------------------------------------------------------------------------------------------------
 // Remap 1D counters to 2D, beco XST does not support 2D ports
-	parameter MXCNT=93;	// Number of counters, last counter id is mxcnt-1. ME1/1 chambers have 93 counters. Non-ME1/1 chambers have 89 counters
+	parameter MXCNT=93;	// Number of counters, last counter id is mxcnt-1. Same number of counters in ME1/1 OTMB and TMB
 	reg  [MXCNTVME-1:0]	cnt_snap [MXCNT-1:0];		// Event counter snapshot 2D
 	wire [MXCNTVME-1:0]	cnt      [MXCNT-1:0];		// Event counter 2D map
 
@@ -5469,10 +5469,10 @@
   assign cnt[86]  = active_cfeb2_event_counter;      // CFEB2 active flag sent to DMB
   assign cnt[87]  = active_cfeb3_event_counter;      // CFEB3 active flag sent to DMB
   assign cnt[88]  = active_cfeb4_event_counter;      // CFEB4 active flag sent to DMB
-  assign cnt[89]  = {MXCNTVME{1'b0}};                // dummy counter, it is used in OTMB
-  assign cnt[90]  = {MXCNTVME{1'b0}};                // dummy counter, it is used in OTMB
-  assign cnt[91]  = {MXCNTVME{1'b0}};                // dummy counter, it is used in OTMB
-  assign cnt[92]  = {MXCNTVME{1'b0}};                // dummy counter, it is used in OTMB
+  assign cnt[89]  = {MXCNTVME{1'b0}};                // CFEB5 active flag sent to DMB - it is used in ME1/1 OTMB only
+  assign cnt[90]  = {MXCNTVME{1'b0}};                // CFEB6 active flag sent to DMB - it is used in ME1/1 OTMB only
+  assign cnt[91]  = {MXCNTVME{1'b0}};                // ME1a CFEB active flag sent to DMB - it is used in ME1/1 OTMB only
+  assign cnt[92]  = {MXCNTVME{1'b0}};                // ME1b CFEB active flag sent to DMB - it is used in ME1/1 OTMB only
      
 // Virtex-6 GTX Optical Receiver Error Counters
 //	assign cnt[81]	= 0;					// Error count on this fiber channel
