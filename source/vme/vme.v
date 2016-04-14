@@ -5463,25 +5463,16 @@
 
 // Active CFEB(s) counters
 // NOTE: counters 81-87 were previously used for Virtex-6 GTX Optical Receiver Error Counters
-  assign cnt[83]  = active_cfebs_event_counter;      // Any CFEB active flag sent to DMB
-  assign cnt[84]  = active_cfeb0_event_counter;      // CFEB0 active flag sent to DMB
-  assign cnt[85]  = active_cfeb1_event_counter;      // CFEB1 active flag sent to DMB
-  assign cnt[86]  = active_cfeb2_event_counter;      // CFEB2 active flag sent to DMB
-  assign cnt[87]  = active_cfeb3_event_counter;      // CFEB3 active flag sent to DMB
-  assign cnt[88]  = active_cfeb4_event_counter;      // CFEB4 active flag sent to DMB
-  assign cnt[89]  = {MXCNTVME{1'b0}};                // CFEB5 active flag sent to DMB - it is used in ME1/1 OTMB only
-  assign cnt[90]  = {MXCNTVME{1'b0}};                // CFEB6 active flag sent to DMB - it is used in ME1/1 OTMB only
-  assign cnt[91]  = {MXCNTVME{1'b0}};                // ME1a CFEB active flag sent to DMB - it is used in ME1/1 OTMB only
-  assign cnt[92]  = {MXCNTVME{1'b0}};                // ME1b CFEB active flag sent to DMB - it is used in ME1/1 OTMB only
-     
-// Virtex-6 GTX Optical Receiver Error Counters
-//	assign cnt[81]	= 0;					// Error count on this fiber channel
-//	assign cnt[82]	= 0;
-//	assign cnt[83]	= 0;
-//	assign cnt[84]	= 0;
-//	assign cnt[85]	= 0;
-//	assign cnt[86]	= 0;
-//	assign cnt[87]	= 0;
+  assign cnt[83]  = active_cfeb0_event_counter;      // CFEB0 active flag sent to DMB
+  assign cnt[84]  = active_cfeb1_event_counter;      // CFEB1 active flag sent to DMB
+  assign cnt[85]  = active_cfeb2_event_counter;      // CFEB2 active flag sent to DMB
+  assign cnt[86]  = active_cfeb3_event_counter;      // CFEB3 active flag sent to DMB
+  assign cnt[87]  = active_cfeb4_event_counter;      // CFEB4 active flag sent to DMB
+  assign cnt[88]  = {MXCNTVME{1'b0}};                // CFEB5 active flag sent to DMB - it is used in ME1/1 OTMB only
+  assign cnt[89]  = {MXCNTVME{1'b0}};                // CFEB6 active flag sent to DMB - it is used in ME1/1 OTMB only
+  assign cnt[90]  = {MXCNTVME{1'b0}};                // ME1a CFEB active flag sent to DMB - it is used in ME1/1 OTMB only
+  assign cnt[91]  = {MXCNTVME{1'b0}};                // ME1b CFEB active flag sent to DMB - it is used in ME1/1 OTMB only
+  assign cnt[92]  = active_cfebs_event_counter;      // Any CFEB active flag sent to DMB
 
 // Snapshot current value of all counters at once
 	genvar j;
