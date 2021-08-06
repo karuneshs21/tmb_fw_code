@@ -12,7 +12,7 @@ The Jtag cable must be disconnected when loading  the firmware from emulib
 To load the firmware from impact, open impact software and then select the mcs file in order.  The mcs file for the first prom (closest to the FPGA on Jtag chain)  is the one with filename ending with 0 when prom files are created, like tmb_virtex2_20202113_0.mcs. Other prom files for next 3 proms are like tmb_virtex2_20202113_1.mcs, tmb_virtex2_20202113_2.mcs, tmb_virtex2_20202113_3.mcs.  Overall it takes ~10 min in total to load firmware from impact.  Make sure the parallel mode is enabled for programming properties!
 
 
-### create XSVF files from impact during loading firmware to FPGA
+### create XSVF files from impact during loading firmware to proms
 To create the XSVF files from Impact:
 
 In Impact, do boundary scan with the tmb connected 
