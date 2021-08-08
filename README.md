@@ -13,8 +13,14 @@ To load the firmware from impact, open impact software and then select the mcs f
 
 
 ### create XSVF files from impact during loading firmware to proms
-To create the XSVF files from Impact:
+Creating the XSVF files from Impact includes two parts:
 
+First part is to creat the mcs files from impact:
+   - open impact, go to create prom file
+   - step1: xilinx Flash/Prom  -> step2 add Storage Device: add 4 xc18v04 devices -> step3 fill the Output filename and select output directory
+   - click ok button to create the four mcs files:  output_filename_0.mcs (for the prom next to FPGA), output_filename_1.mcs, output_filename_2.mcs, output_filename_3.mcs
+  
+The second part is to create XVSF file during loading firmware prom files(.mcs) to four proms
 In Impact, do boundary scan with the tmb connected 
 
 Then if you go to Output --> XSVF --> Create XSVF File 
