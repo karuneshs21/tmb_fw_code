@@ -30,4 +30,4 @@ Between Create and Stop it records all the different jtag commands that it sends
 
 
 ### software environment 
-TMB firmware must be compiled with old ISE(ISE10.1) but can be programmed with newer version of impact tool
+TMB firmware must be compiled with old ISE(ISE10.1) but can be programmed with newer version(like 14.7) of impact tool
