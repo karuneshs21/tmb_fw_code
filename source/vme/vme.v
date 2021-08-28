@@ -295,6 +295,10 @@
 	dmb_thresh_pretrig,
 	adjcfeb_dist,
 
+        ccLUT_enable,
+        run3_trig_df,
+        run3_daq_df,
+
 // CFEB Ports: Hot Channel Mask
 	cfeb0_ly0_hcm,
 	cfeb0_ly1_hcm,
@@ -453,18 +457,38 @@
 	lhc_cycle,
 	l1a_offset,
 
-// Sequencer Ports: Latched CLCTs + Status
-	event_clear_vme,
-	clct0_vme,
-	clct1_vme,
-	clctc_vme,
-	clctf_vme,
-	bxn_clct_vme,
-	bxn_l1a_vme,
-	bxn_alct_vme,
-	trig_source_vme,
-	nlayers_hit_vme,
-	clct_bx0_sync_err,
+      //HMT part
+      hmt_enable,
+      hmt_nhits_trig_vme,
+      hmt_nhits_trig_bx678_vme,
+      hmt_nhits_trig_bx2345_vme,
+      hmt_trigger_vme,
+    //output
+      hmt_thresh1,
+      hmt_thresh2,
+      hmt_thresh3,
+
+    // Sequencer Ports: Latched CLCTs + Status
+      event_clear_vme,
+      clct0_vme,
+      clct1_vme,
+      clctc_vme,
+      clctf_vme,
+      bxn_clct_vme,
+      bxn_l1a_vme,
+      bxn_alct_vme,
+      trig_source_vme,
+      nlayers_hit_vme,
+      clct_bx0_sync_err,
+
+      clct0_vme_qlt,
+      clct0_vme_bnd,
+      clct0_vme_xky,
+      clct0_vme_carry,
+      clct1_vme_qlt,
+      clct1_vme_bnd,
+      clct1_vme_xky,
+      clct1_vme_carry,
 
 // Sequencer Ports: Raw Hits Ram
 	dmb_wr,
@@ -893,6 +917,16 @@
 	parameter MXHITB		= 3;			// Hits on pattern bits
 	parameter MXPATB		= 3+4;			// Pattern bits
 
+        parameter MXXKYB                = 10;
+         //CCLUT
+        //parameter MXSUBKEYBX = 10;            // Number of EightStrip key bits on 7 CFEBs, was 8 bits with traditional pattern finding
+        parameter MXPATC   = 11;                // Pattern Carry Bits
+        parameter MXOFFSB = 4;                 // Quarter-strip bits
+        parameter MXBNDB  = 5;                 // Bend bits, 4bits for value, 1bit for sign
+        parameter MXPID   = 11;                // Number of patterns
+        parameter MXPAT   = 5;                 // Number of patterns
+        parameter MXHMTB     =  4;// bits for HMT
+
 // Raw hits RAM parameters
 	parameter RAM_DEPTH		= 2048;			// Storage bx depth
 	parameter RAM_ADRB		= 11;			// Address width=log2(ram_depth)
@@ -1155,6 +1189,19 @@
 
 	parameter ADR_V6_EXTEND				= 9'h17A;	// DCFEB 7-bit extensions
 
+  // Tao,CCLUT register starts from 10'h19A = 410
+  parameter ADR_CLCT0_CC              = 10'h19A;  // Comparator code, for 1st CLCT, readonly
+  parameter ADR_CLCT1_CC              = 10'h19C;  // Comparator code, for 2nd CLCT, readonly
+  parameter ADR_CLCT0_BNDXKY          = 10'h19E;  // new bending
+  parameter ADR_CLCT1_BNDXKY          = 10'h1A0; 
+
+  parameter ADR_RUN3_FORMAT_CTRL      = 10'h1AA; // control for CCLUT, data format
+  parameter ADR_HMT_CTRL              = 10'h1AC; // control for HMT
+  parameter ADR_HMT_THRESH1           = 10'h1AE; // threshold1 for HMT
+  parameter ADR_HMT_THRESH2           = 10'h1B0; // threshold2 for HMT
+  parameter ADR_HMT_THRESH3           = 10'h1B2; // threshold3 for HMT
+  parameter ADR_HMT_NHITS_SIG         = 10'h1B4;
+  parameter ADR_HMT_NHITS_BKG         = 10'h1B6;
 //------------------------------------------------------------------------------------------------------------------
 // Ports
 //------------------------------------------------------------------------------------------------------------------
@@ -1441,6 +1488,12 @@
 	output	[MXHITB-1:0]	dmb_thresh_pretrig;		// Hits on pattern template DMB active-feb threshold
 	output	[MXKEYB-1+1:0]	adjcfeb_dist;			// Distance from key to cfeb boundary for marking adjacent cfeb as hit
 
+        input ccLUT_enable; // In
+        output run3_trig_df;
+        output run3_daq_df;
+
+
+
 // CFEB Ports: Hot Channel Mask
 	output	[MXDS-1:0]		cfeb0_ly0_hcm;			// 1=enable DiStrip
 	output	[MXDS-1:0]		cfeb0_ly1_hcm;			// 1=enable DiStrip
@@ -1601,6 +1654,16 @@
 	output	[MXBXN-1:0]		lhc_cycle;				// LHC period, max BXN count+1
 	output	[MXL1ARX-1:0]	l1a_offset;				// L1A counter preset value
 
+      //HMT part
+      output hmt_enable;
+      input [9:0] hmt_nhits_trig_vme;
+      input [9:0] hmt_nhits_trig_bx678_vme;
+      input [9:0] hmt_nhits_trig_bx2345_vme;
+      input [MXHMTB-1:0] hmt_trigger_vme;
+
+      output [9:0] hmt_thresh1;
+      output [9:0] hmt_thresh2;
+      output [9:0] hmt_thresh3;
 // Sequencer Ports: Latched CLCTs
 	output					event_clear_vme;		// Event clear for aff,clct,mpc vme diagnostic registers
 	input	[MXCLCT-1:0]	clct0_vme;				// First  CLCT
@@ -1614,6 +1677,12 @@
 	input	[2:0]			nlayers_hit_vme;		// Number layers hit on layer trigger
 	input					clct_bx0_sync_err;		// Sync error: BXN counter==0 did not match bx0
 
+      input  [MXBNDB - 1   : 0] clct0_vme_bnd; // new bending 
+      input  [MXXKYB-1     : 0] clct0_vme_xky; // new position with 1/8 precision
+      input  [MXBNDB - 1   : 0] clct1_vme_bnd; // new bending 
+      input  [MXXKYB-1     : 0] clct1_vme_xky; // new position with 1/8 precision
+      input  [MXPATC-1     : 0] clct0_vme_carry;         // First  CLCT
+      input  [MXPATC-1     : 0] clct1_vme_carry;         // Second CLCT
 // Sequencer Ports: Raw Hits Ram
 	output					dmb_wr;					// Raw hits RAM VME write enable
 	output					dmb_reset;				// Raw hits RAM VME address reset
@@ -2375,6 +2444,30 @@
 	wire	[15:0]	alct_startup_delay_rd;
 	wire	[15:0]	alct_startup_status_rd;
 
+          wire [15:0] clct0_cc_rd;
+          wire [15:0] clct1_cc_rd;
+          //wire [15:0] clct0_qlt_rd;
+          //wire [15:0] clct1_qlt_rd;
+          wire [15:0] clct0_bndxky_rd;
+          wire [15:0] clct1_bndxky_rd;
+          //wire [15:0] clct0_xky_rd;
+          //wire [15:0] clct1_xky_rd;
+
+          reg  [15:0] run3_format_ctrl_wr;
+          wire [15:0] run3_format_ctrl_rd;
+
+          reg  [15:0] hmt_ctrl_wr;
+          wire [15:0] hmt_ctrl_rd;
+
+          reg  [15:0] hmt_thresh1_wr;
+          wire [15:0] hmt_thresh1_rd;
+          reg  [15:0] hmt_thresh2_wr;
+          wire [15:0] hmt_thresh2_rd;
+          reg  [15:0] hmt_thresh3_wr;
+          wire [15:0] hmt_thresh3_rd;
+
+          wire [15:0] hmt_nhits_sig_rd;
+          wire [15:0] hmt_nhits_bkg_rd;
 //------------------------------------------------------------------------------------------------------------------
 // Address Write Decodes
 //------------------------------------------------------------------------------------------------------------------
@@ -2498,6 +2591,12 @@
 	wire			wr_cfeb_badbits_nbx;
 	wire			wr_alct_startup_delay;
 
+      //CCLUT
+      wire      wr_run3_format_ctrl;
+      wire      wr_hmt_ctrl;
+      wire      wr_hmt_thresh1;
+      wire      wr_hmt_thresh2;
+      wire      wr_hmt_thresh3;
 	wire			wr_adr_cap;
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -2873,6 +2972,25 @@
 
 	ADR_ALCT_STARTUP_DELAY:		data_out <=	alct_startup_delay_rd;
 	ADR_ALCT_STARTUP_STATUS:	data_out <=	alct_startup_status_rd;
+          //CCLUT, Tao
+          ADR_CLCT0_CC:              data_out <= clct0_cc_rd;
+          ADR_CLCT1_CC:              data_out <= clct1_cc_rd;
+          ADR_CLCT0_BNDXKY:          data_out <= clct0_bndxky_rd;  // new bending
+          ADR_CLCT1_BNDXKY:          data_out <= clct1_bndxky_rd; 
+          //ADR_CLCT0_QLT:             data_out <= clct0_qlt_rd;  // new Quality
+          //ADR_CLCT1_QLT:             data_out <= clct1_qlt_rd; 
+          //ADR_CLCT0_XKY:             data_out <= clct0_xky_rd; // new position with 1/8 strip precision
+          //ADR_CLCT1_XKY:             data_out <= clct1_xky_rd; 
+
+          ADR_RUN3_FORMAT_CTRL:      data_out <= run3_format_ctrl_rd;
+          ADR_HMT_CTRL:              data_out <= hmt_ctrl_rd;
+          ADR_HMT_THRESH1:           data_out <= hmt_thresh1_rd;
+          ADR_HMT_THRESH2:           data_out <= hmt_thresh2_rd;
+          ADR_HMT_THRESH3:           data_out <= hmt_thresh3_rd;
+
+          ADR_HMT_NHITS_SIG:         data_out <= hmt_nhits_sig_rd;
+          ADR_HMT_NHITS_BKG:         data_out <= hmt_nhits_bkg_rd;
+
 	default:					data_out <= 16'hDEAF;
 	endcase
 	end
@@ -3003,6 +3121,13 @@
 	assign wr_cfeb_badbits_nbx		= (reg_adr==ADR_CFEB_BADBITS_TIMER	&& clk_en);
 
 	assign wr_alct_startup_delay	= (reg_adr==ADR_ALCT_STARTUP_DELAY	&& clk_en);
+        //CCLUT
+      assign wr_run3_format_ctrl      =  (reg_adr==ADR_RUN3_FORMAT_CTRL       && clk_en);
+      assign wr_hmt_ctrl              =  (reg_adr==ADR_HMT_CTRL               && clk_en);
+      assign wr_hmt_thresh1           =  (reg_adr==ADR_HMT_THRESH1            && clk_en);
+      assign wr_hmt_thresh2           =  (reg_adr==ADR_HMT_THRESH2            && clk_en);
+      assign wr_hmt_thresh3           =  (reg_adr==ADR_HMT_THRESH3            && clk_en);
+
 	assign wr_adr_cap				= (                        			  adr_cap);
 
 //------------------------------------------------------------------------------------------------------------------
@@ -6148,6 +6273,111 @@
 	assign alct_startup_status_rd[7]	= alct_startup_done;			// R	ALCT FPGA should be configured by now
 	assign alct_startup_status_rd[15:8]	= 0; 							// R	Unassigned
 
+
+//------------------------------------------------------------------------------------------------------------------
+// ADR_CLCT0_CC= 0x19A    1st CLCT Comparator Code
+// ADR_CLCT1_CC= 0x19C    2nd CLCT Comparator Code
+// ADR_CLCT0_BNDXKY= 0x19E    1st CLCT new bnd+XKY
+// ADR_CLCT1_BNDXKY= 0x1A0    2nd CLCT new bnd+XKY
+//------------------------------------------------------------------------------------------------------------------
+  assign clct0_cc_rd[MXPATC-1:0] = clct0_vme_carry[MXPATC-1:0]; 
+  assign clct1_cc_rd[MXPATC-1:0] = clct1_vme_carry[MXPATC-1:0]; 
+  assign clct0_cc_rd[11] = 1'b0;
+  assign clct1_cc_rd[11] = 1'b0;//since comparator code is reduced to 11 bits but software is not changed yet
+  assign clct0_cc_rd[15:12]  = 4'b0;
+  assign clct1_cc_rd[15:12]  = 4'b0;
+  //assign clct0_qlt_rd[MXQLTB - 1    : 0] = clct0_vme_qlt[MXQLTB - 1   : 0];
+  //assign clct1_qlt_rd[MXQLTB - 1    : 0] = clct1_vme_qlt[MXQLTB - 1   : 0];
+  assign clct0_bndxky_rd[MXBNDB - 1    : 0]         = clct0_vme_bnd[MXBNDB - 1   : 0];
+  assign clct0_bndxky_rd[MXXKYB - 1+MXBNDB: MXBNDB] = clct0_vme_xky[MXXKYB - 1   : 0];
+  assign clct1_bndxky_rd[MXBNDB - 1    : 0]         = clct1_vme_bnd[MXBNDB - 1   : 0];
+  assign clct1_bndxky_rd[MXXKYB - 1+MXBNDB: MXBNDB] = clct1_vme_xky[MXXKYB - 1   : 0];
+  assign clct0_bndxky_rd[15] = 1'b0;
+  assign clct1_bndxky_rd[15] = 1'b0;
+
+//------------------------------------------------------------------------------------------------------------------
+// ADR_RUN3_FORMAT_CTRL = 0x1AA  CCLUT
+//------------------------------------------------------------------------------------------------------------------
+
+  initial begin
+    run3_format_ctrl_wr[0] = 1'b0;
+    run3_format_ctrl_wr[1] = 1'b0; // default, Run3 trigger format upgrade is off
+    run3_format_ctrl_wr[2] = 1'b0; // default, Run3 daq format upgrade is ON
+    run3_format_ctrl_wr[15:3] = 13'b0; // NOT used
+    //cclut_format_ctrl_wr[1] = 0; //CLCT pattern sorting, 0= use {pat, nhits}, 1={new quality}
+    //cclut_format_ctrl_wr[2] = 0; //LCT data format control, 0 = use Run2, 1= use Run3 with GEM-CSC+CCLUT
+  end
+  assign run3_trig_df = run3_format_ctrl_wr[1];
+  assign run3_daq_df  = run3_format_ctrl_wr[2];
+
+  assign run3_format_ctrl_rd[0]    = ccLUT_enable;
+  assign run3_format_ctrl_rd[1]    = ccLUT_enable ? run3_trig_df : 1'b0;//only enable it for CCLUT case
+  assign run3_format_ctrl_rd[2]    = ccLUT_enable ? run3_daq_df : 1'b0; 
+  assign run3_format_ctrl_rd[15:3] = run3_format_ctrl_wr[15:3];
+      
+
+//------------------------------------------------------------------------------------------------------------------
+// ADR_HMT_CTRL = 0x1AC  HMT
+//------------------------------------------------------------------------------------------------------------------
+
+  initial begin
+    hmt_ctrl_wr[0] = 1'b1; // RW, enable the HMT or not
+    hmt_ctrl_wr[1] = 1'b1; //RW, enable ME1a or not
+    hmt_ctrl_wr[11:2] = 10'b0; //R only nhits for trigger 
+    hmt_ctrl_wr[13:12] = 2'b0; // result of over threshold, reserved
+  end
+  assign hmt_enable  = hmt_ctrl_wr[0];
+  assign hmt_me1a_enable = hmt_ctrl_wr[1];
+  //assign hmt_me1a_enable = 1'b1;// always enable now 
+
+
+  assign hmt_ctrl_rd[0] = hmt_enable;
+  assign hmt_ctrl_rd[1] = hmt_me1a_enable;
+  assign hmt_ctrl_rd[11: 2] = hmt_nhits_trig_vme[9:0];
+  assign hmt_ctrl_rd[15:12]= hmt_trigger_vme[MXHMTB-1:0];  //reserved for HMT results
+  //reserved for HMT results 
+
+//------------------------------------------------------------------------------------------------------------------
+// ADR_HMT_THRESH1 = 0x1AE  HMT thresh
+// ADR_HMT_THRESH2 = 0x1B0  HMT thresh
+// ADR_HMT_THRESH3 = 0x1B2  HMT thresh
+//------------------------------------------------------------------------------------------------------------------
+
+  initial begin
+    hmt_thresh1_wr[9:0] = 10'd90; // RW, enable the HMT thresh1
+    hmt_thresh2_wr[9:0] = 10'd95; // RW, enable the HMT thresh1
+    hmt_thresh3_wr[9:0] = 10'd100; // RW, enable the HMT thresh1
+    hmt_thresh1_wr[10]  = 1'b0; // pass threshold or not 
+    hmt_thresh2_wr[10]  = 1'b0; // pass threshold or not 
+    hmt_thresh3_wr[10]  = 1'b0; // pass threshold or not 
+    hmt_thresh1_wr[15:11] = 5'b0; // not used
+    hmt_thresh2_wr[15:11] = 5'b0; // not used
+    hmt_thresh3_wr[15:11] = 5'b0; // not used
+  end 
+
+  assign hmt_thresh1[9:0]  = hmt_thresh1_wr[9:0];
+  assign hmt_thresh2[9:0]  = hmt_thresh2_wr[9:0];
+  assign hmt_thresh3[9:0]  = hmt_thresh3_wr[9:0];
+
+  assign hmt_thresh1_rd[9:0] =  hmt_thresh1_wr[9:0];
+  assign hmt_thresh2_rd[9:0] =  hmt_thresh2_wr[9:0];
+  assign hmt_thresh3_rd[9:0] =  hmt_thresh3_wr[9:0];
+  assign hmt_thresh1_rd[10]  = (hmt_nhits_trig_vme > hmt_thresh1);
+  assign hmt_thresh2_rd[10]  = (hmt_nhits_trig_vme > hmt_thresh2);
+  assign hmt_thresh3_rd[10]  = (hmt_nhits_trig_vme > hmt_thresh3);
+  assign hmt_thresh1_rd[15:11] = 5'b0;
+  assign hmt_thresh2_rd[15:11] = 5'b0;
+  assign hmt_thresh3_rd[15:11] = 5'b0;
+
+//------------------------------------------------------------------------------------------------------------------
+// ADR_HMT_NHITS_SIG=0x1B4  Nhits for HMT in bx678, Signal
+// ADR_HMT_NHITS_BKG=0x1B6  Nhits for HMT in bx2345, background/control region
+//------------------------------------------------------------------------------------------------------------------
+  assign hmt_nhits_sig_rd[9:0]   = hmt_nhits_trig_bx678_vme[9:0];
+  assign hmt_nhits_sig_rd[15:10] = 6'b0;
+  assign hmt_nhits_bkg_rd[9:0]   = hmt_nhits_trig_bx2345_vme[9:0];
+  assign hmt_nhits_bkg_rd[15:10] = 6'b0;
+
 //------------------------------------------------------------------------------------------------------------------
 // VME Write-Registers latch data when addressed + latch power-up defaults
 //------------------------------------------------------------------------------------------------------------------
@@ -6254,6 +6484,12 @@
 	if (wr_sync_err_ctrl)			sync_err_ctrl_wr		<=	d[15:0];
 	if (wr_cfeb_badbits_ctrl)		cfeb_badbits_ctrl_wr	<=	d[15:0];
 	if (wr_cfeb_badbits_nbx)		cfeb_badbits_nbx_wr		<=	d[15:0];
+        //CCLUT
+      if (wr_run3_format_ctrl)      run3_format_ctrl_wr     <= d[15:0];
+      if (wr_hmt_ctrl)              hmt_ctrl_wr             <= d[15:0];
+      if (wr_hmt_thresh1)           hmt_thresh1_wr          <= d[15:0];
+      if (wr_hmt_thresh2)           hmt_thresh2_wr          <= d[15:0];
+      if (wr_hmt_thresh3)           hmt_thresh3_wr          <= d[15:0];
 	if (wr_alct_startup_delay)		alct_startup_delay_wr	<=	d[15:0];
 	end
 
