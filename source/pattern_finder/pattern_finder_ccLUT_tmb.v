@@ -902,7 +902,7 @@
 	generate
 	for (ihs=0; ihs<=MXHSX/2-1; ihs=ihs+1) begin: patgen
 	pattern_unit_ccLUT upat (
-	.clock_2x	(clock_2x),
+	//.clock_2x	(clock_2x),
 	.ly0		(ly0hs_pad[ihs+5+k:ihs-5+k]),
 	.ly1		(ly1hs_pad[ihs+4+k:ihs-4+k]),
 	.ly2		(ly2hs_pad[ihs+0+k:ihs-0+k]),	//key on ly2
@@ -1052,8 +1052,8 @@
 
 	generate
 	for (ihs=0; ihs<=15; ihs=ihs+1) begin: patgen_me1a
-	pattern_unit upat_me1a (
-	.clock_2x	(clock_2x),
+	pattern_unit_ccLUT upat_me1a (
+	//.clock_2x	(clock_2x),
 	.ly0		(ly0hs_pad_me1a[ihs+5+k:ihs-5+k]),
 	.ly1		(ly1hs_pad_me1a[ihs+2+k:ihs-2+k]),
 	.ly2		(ly2hs_pad_me1a[ihs+0+k:ihs-0+k]),	//key on ly2
@@ -1061,15 +1061,15 @@
 	.ly4		(ly4hs_pad_me1a[ihs+4+k:ihs-4+k]),
 	.ly5		(ly5hs_pad_me1a[ihs+5+k:ihs-5+k]),
 	.pat_nhits	(hs_hit_me1a[ihs]),
-	.pat_id		(hs_pid_me1a[ihs])
+	.pat_id		(hs_pid_me1a[ihs]),
         .pat_carry      (hs_carry_me1a[ihs]));
 	end
 	endgenerate
 
 	generate
 	for (ihs=0; ihs<=63; ihs=ihs+1) begin: patgen_me1b
-	pattern_unit upat_me1b (
-	.clock_2x	(clock_2x),
+	pattern_unit_ccLUT upat_me1b (
+	//.clock_2x	(clock_2x),
 	.ly0		(ly0hs_pad_me1b[ihs+5+k:ihs-5+k]),
 	.ly1		(ly1hs_pad_me1b[ihs+2+k:ihs-2+k]),
 	.ly2		(ly2hs_pad_me1b[ihs+0+k:ihs-0+k]),	//key on ly2
@@ -1077,7 +1077,7 @@
 	.ly4		(ly4hs_pad_me1b[ihs+4+k:ihs-4+k]),
 	.ly5		(ly5hs_pad_me1b[ihs+5+k:ihs-5+k]),
 	.pat_nhits	(hs_hit_me1b[ihs]),
-	.pat_id		(hs_pid_me1b[ihs]);
+	.pat_id		(hs_pid_me1b[ihs]),
         .pat_carry      (hs_carry_me1b[ihs]));
 	end
 	endgenerate
@@ -1365,11 +1365,11 @@
         .key3(hs_key_s1[3]),
         .key4(hs_key_s1[4]),
       // carry inputs from fit lut
-        .carry0(hs_carry_s1[0]),
-        .carry1(hs_carry_s1[1]),
-        .carry2(hs_carry_s1[2]),
-        .carry3(hs_carry_s1[3]),
-        .carry4(hs_carry_s1[4]),
+        .carry0(hs_car_s1[0]),
+        .carry1(hs_car_s1[1]),
+        .carry2(hs_car_s1[2]),
+        .carry3(hs_car_s1[3]),
+        .carry4(hs_car_s1[4]),
       // offs inputs from fit lut
         .offs0(hs_offs_s1[0]),
         .offs1(hs_offs_s1[1]),
@@ -1628,6 +1628,8 @@
 	wire [MXPATB-1:0] hs_pat_s4 [4:0];
 	wire [MXKEYB-1:0] hs_key_s4 [4:0];	// partial key for 1 of 32
 	wire [MXPATC-1:0] hs_car_s4 [4:0];	// partial key for 1 of 32
+	wire [MXOFFSB-1:0]   hs_offs_s4  [MXCFEB - 1:0];//CCLUT, Tao
+   wire [MXBNDB -1:0]   hs_bend_s4  [MXCFEB - 1:0];
 	wire [4:0] 		  hs_bsy_s4;
 	
 	generate

@@ -3564,7 +3564,7 @@
 	.l1a_offset				(l1a_offset[MXL1ARX-1:0]),			// Out	L1A counter preset value
 
         .hmt_enable         (hmt_enable),        // out ME1a enable or not in HMT
-        .hmt_me1a_enable    (hmt_me1a_enable),        // out ME1a enable or not in HMT
+        //.hmt_me1a_enable    (hmt_me1a_enable),        // out ME1a enable or not in HMT
         .hmt_nhits_trig_vme (hmt_nhits_trig_vme[9:0]),        //In, nhit counter for  HMT
         .hmt_nhits_trig_bx678_vme  (hmt_nhits_trig_bx678_vme[9:0]),// In HMT nhits for trigger
         .hmt_nhits_trig_bx2345_vme (hmt_nhits_trig_bx2345_vme[9:0]),// In HMT nhits for trigger

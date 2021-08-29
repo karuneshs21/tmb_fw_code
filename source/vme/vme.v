@@ -857,9 +857,12 @@
 	parameter AUTO_PHASER		=  1'b1;			// Auto init digital phase shifters
 	parameter ALCT_MUONIC		=  1'b1;			// Floats ALCT board  in clock-space with independent time-of-flight delay
 	parameter CFEB_MUONIC		=  1'b1;			// Floats CFEB boards in clock-space with independent time-of-flight delay
-	parameter CCB_BX0_EMULATOR	=  1'b0;			// Turns on bx0 emulator at power up, must be 0 for all CERN versions
+	parameter CCB_BX0_EMULATOR	=  1'b0;			// Turns on bx0 emulator at power up, must be 0 for all CERN versions  
+	parameter VERSION_FORMAT      = 4'h0;     // Version branch
+  parameter VERSION_MAJOR       = 4'h0;     // Major version
+  parameter VERSION_MINOR       = 5'h0;     // Minor version
 
-	`include "source/tmb_virtex2_fw_version.v"
+  `include "source/tmb_virtex2_fw_version.v"
 
 	initial begin
 	$display ("vme.FIRMWARE_TYPE    = %H",FIRMWARE_TYPE);
@@ -873,7 +876,11 @@
 	$display ("vme.AUTO_PHASER      = %H",AUTO_PHASER);
 	$display ("vme.ALCT_MUONIC      = %H",ALCT_MUONIC);
 	$display ("vme.CFEB_MUONIC      = %H",CFEB_MUONIC);
-	$display ("vme.CCB_BX0_EMULATOR = %H",CCB_BX0_EMULATOR);
+	$display ("vme.CCB_BX0_EMULATOR = %H",CCB_BX0_EMULATOR);  
+	$display ("vme.VERSION_FORMAT   = %H",VERSION_FORMAT);
+  $display ("vme.VERSION_MAJOR    = %H",VERSION_MAJOR);
+  $display ("vme.VERSION_MINOR    = %H",VERSION_MINOR);
+
 	end
 
 //------------------------------------------------------------------------------------------------------------------
