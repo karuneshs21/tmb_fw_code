@@ -6,27 +6,38 @@
 //  01/08/2021  results from CCLUT: [4:0] is bending, include 4bit for value, 1bit for L/R; [8:5] is the 4bits for offset
 //-------------------------------------------------------------------------------------------------------------------
   module pattern_lut_ccLUT_tmb (
-    input                    clock,
+     clock,
 
-    input      [MXKEYB-1:0]  key00, key01,
+     key00, key01,
 
-    input      [MXPATB-1:0]  pat00, pat01,
+     pat00, pat01,
 
-    input      [MXPATC-1:0]  carry00, carry01,
+     carry00, carry01,
 
-    output reg [MXKEYBX - 1:0] best_key0,best_key1, 
-    output reg [MXXKYB  - 1:0] best_subkey0,best_subkey1, 
-    output reg [MXOFFSB - 1:0]  offs0, offs1,
-    //output reg [MXKEYOFFSB -1:0]  key_offs0, key_offs1,
-    //output reg [MXSUBKEYOFFSB -1:0]  subkey_offs0, subkey_offs1,
-    
-    output reg [MXBNDB-1:0]  bend0, bend1
+     best_key0,best_key1, 
+     best_subkey0,best_subkey1, 
+     offs0, offs1,
+     bend0, bend1
 
   );
 
 // Constants
 
 `include "pattern_params.v"
+    input                    clock;
+
+    input      [MXKEYB-1:0]  key00, key01;
+
+    input      [MXPATB-1:0]  pat00, pat01;
+
+    input      [MXPATC-1:0]  carry00, carry01;
+
+    output reg [MXKEYBX - 1:0] best_key0,best_key1;
+    output reg [MXXKYB  - 1:0] best_subkey0,best_subkey1;
+    output reg [MXOFFSB - 1:0]  offs0, offs1;
+    output reg [MXBNDB-1:0]  bend0, bend1;
+
+
 
 parameter MXADRB  = MXPATC;
 parameter MXDATB  = 9;//drop 9bits for quality
@@ -187,8 +198,8 @@ always @(*) begin
   best_key0<= {3'd4,key00} + rd0[8:7]+(rd0[6]&rd0[5])-8'd2;
   best_key1<= {3'd4,key01} + rd1[8:7]+(rd1[6]&rd1[5])-8'd2;
 
-  best_subkey0 <= {({3'd4,key00} + rd0[8:7]+(rd0[6]&rd0[5])-8'd2), rd0[6:5]+1'b1};
-  best_subkey1 <= {({3'd4,key01} + rd1[8:7]+(rd1[6]&rd1[5])-8'd2), rd1[6:5]+1'b1};
+  best_subkey0 <= {({3'd4,key00} + rd0[8:7]+(rd0[6]&rd0[5])-8'd2), rd0[6:5]+2'b01};
+  best_subkey1 <= {({3'd4,key01} + rd1[8:7]+(rd1[6]&rd1[5])-8'd2), rd1[6:5]+2'b01};
 
 end
 

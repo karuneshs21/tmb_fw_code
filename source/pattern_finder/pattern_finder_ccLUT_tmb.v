@@ -911,7 +911,7 @@
 	.ly5		(ly5hs_pad[ihs+5+k:ihs-5+k]),
 	.pat_nhits	(hs_hit[ihs]),
 	.pat_id		(hs_pid[ihs]),
-        .pat_carry      (hs_carry[ihs]));
+    .pat_carry      (hs_carry[ihs]));
 	end
 	endgenerate
 
@@ -1052,7 +1052,7 @@
 
 	generate
 	for (ihs=0; ihs<=15; ihs=ihs+1) begin: patgen_me1a
-	pattern_unit_ccLUT upat_me1a (
+	pattern_unit upat_me1a (
 	.clock_2x	(clock_2x),
 	.ly0		(ly0hs_pad_me1a[ihs+5+k:ihs-5+k]),
 	.ly1		(ly1hs_pad_me1a[ihs+2+k:ihs-2+k]),
@@ -1068,7 +1068,7 @@
 
 	generate
 	for (ihs=0; ihs<=63; ihs=ihs+1) begin: patgen_me1b
-	pattern_unit_ccLUT upat_me1b (
+	pattern_unit upat_me1b (
 	.clock_2x	(clock_2x),
 	.ly0		(ly0hs_pad_me1b[ihs+5+k:ihs-5+k]),
 	.ly1		(ly1hs_pad_me1b[ihs+2+k:ihs-2+k]),
@@ -1346,12 +1346,13 @@
 // Best 1 of 5 1/2-strip patterns
 	wire [MXPATB-1:0]	hs_pat_s2;
 	wire [MXKEYBX-1:0]	hs_key_s2;		// full key for 1 of 160
+	wire [MXKEYBX-1:0]	hs_key_s2_nolut;		// full key for 1 of 160
         wire [MXXKYB - 1:0]   hs_xky_s2; // CCLUT, Tao
         wire [MXBNDB - 1:0]   hs_bnd_s2;
         wire [MXPATC - 1:0]   hs_car_s2; //hit carry, comparator code
+        wire [MXOFFSB -1:0]  hs_offs_s2; //keyhs offset, CCLUT
 
-      best_1of5_ccLUT #(.PATLUT(PATLUT))
-      ubest1of5_1st (
+      best_1of5_ccLUT_tmb ubest1of5_1st (
       // pattern inputs
         .pat0(hs_pat_s1[0]),
         .pat1(hs_pat_s1[1]),
@@ -1371,24 +1372,12 @@
         .carry3(hs_car_s1[3]),
         .carry4(hs_car_s1[4]),
       // offs inputs from fit lut
-        .offs0(hs_offs_s1[0]),
-        .offs1(hs_offs_s1[1]),
-        .offs2(hs_offs_s1[2]),
-        .offs3(hs_offs_s1[3]),
-        .offs4(hs_offs_s1[4]),
-      // bend inputs from fit lut
-        .bend0(hs_bend_s1[0]),
-        .bend1(hs_bend_s1[1]),
-        .bend2(hs_bend_s1[2]),
-        .bend3(hs_bend_s1[3]),
-        .bend4(hs_bend_s1[4]),
       // best pattern output
         .best_pat (hs_pat_s2),
-        .best_key (hs_key_s2),
+        .best_key (hs_key_s2_nolut),
       // best fit result
-        .best_subkey (hs_xky_s2),
-        .best_carry  (hs_car_s2),
-        .best_bend   (hs_bnd_s2)
+        .best_carry  (hs_car_s2)
+        //.best_bend   (hs_bnd_s2)
       );
 
       // Latch final hs pattern data for 1st CLCT
@@ -1628,8 +1617,6 @@
 	wire [MXPATB-1:0] hs_pat_s4 [4:0];
 	wire [MXKEYB-1:0] hs_key_s4 [4:0];	// partial key for 1 of 32
 	wire [MXPATC-1:0] hs_car_s4 [4:0];	// partial key for 1 of 32
-	wire [MXOFFSB-1:0]   hs_offs_s4  [MXCFEB - 1:0];//CCLUT, Tao
-   wire [MXBNDB -1:0]   hs_bend_s4  [MXCFEB - 1:0];
 	wire [4:0] 		  hs_bsy_s4;
 	
 	generate
@@ -1658,18 +1645,19 @@
 // Best 1 of 5 1/2-strip patterns
 	wire [MXPATB-1:0]	hs_pat_s5;
 	wire [MXKEYBX-1:0]	hs_key_s5;		// full key for 1 of 160
+	wire [MXKEYBX-1:0]	hs_key_s5_nolut;		// full key for 1 of 160
 	wire [MXHITB-1:0]	hs_hit_s5;
 	wire				hs_bsy_s5;
 
         //add CCLUT
-  wire [MXXKYB -1:0]    hs_xky_s5; // CCLUT, Tao
-  wire [MXBNDB -1:0]    hs_bnd_s5;
-  wire [MXPATC -1:0]    hs_car_s5;
+      wire [MXXKYB -1:0]    hs_xky_s5; // CCLUT, Tao
+      wire [MXBNDB -1:0]    hs_bnd_s5;
+      wire [MXPATC -1:0]    hs_car_s5;
+      wire [MXOFFSB -1:0]  hs_offs_s5; //keyhs offset, CCLUT
 
 
   // CCLUT, Tao, best_1of7_busy_ccLUT
-  best_1of5_busy_ccLUT #(.PATLUT(PATLUT))
-  ubest1of5_2nd (
+  best_1of5_busy_ccLUT_tmb ubest1of5_2nd (
   // pattern inputs
     .pat0(hs_pat_s4[0]),
     .pat1(hs_pat_s4[1]),
@@ -1688,19 +1676,6 @@
     .carry2(hs_car_s4[2]),
     .carry3(hs_car_s4[3]),
     .carry4(hs_car_s4[4]),
-  // offs inputs from fit lut
-    .offs0(hs_offs_s4[0]),
-    .offs1(hs_offs_s4[1]),
-    .offs2(hs_offs_s4[2]),
-    .offs3(hs_offs_s4[3]),
-    .offs4(hs_offs_s4[4]),
-  // quality inputs from fit lut
-  // bend inputs from fit lut
-    .bend0(hs_bend_s4[0]),
-    .bend1(hs_bend_s4[1]),
-    .bend2(hs_bend_s4[2]),
-    .bend3(hs_bend_s4[3]),
-    .bend4(hs_bend_s4[4]),
   // best pattern output
     .bsy0(hs_bsy_s4[0]),
     .bsy1(hs_bsy_s4[1]),
@@ -1709,10 +1684,10 @@
     .bsy4(hs_bsy_s4[4]),
   // best pattern output
     .best_pat(hs_pat_s5),
-    .best_key(hs_key_s5),
-  // best fit result
-    .best_subkey(hs_xky_s5),
-    .best_bend  (hs_bnd_s5),
+    .best_key(hs_key_s5_nolut),
+  //// best fit result
+   // .best_subkey(hs_xky_s5),
+   // .best_bend  (hs_bnd_s5),
     .best_carry (hs_car_s5),
   // busy flags
     .best_bsy(hs_bsy_s5)
@@ -1769,32 +1744,39 @@
   //--------------------------------------------------------------------------------------------------------------------
   // Pattern LUT Uses Dual Port RAM to Operate Simultanously on first and second CLCTs (from different BX)
   //--------------------------------------------------------------------------------------------------------------------
-
-  generate
-  for (i = 0; i <=  MXCFEB - 1; i = i + 1) begin: pat_lut
-  pattern_lut_ccLUT upattern_lut (
+  //use falling edge to avoid latency
+  pattern_lut_ccLUT_tmb upattern_lut (
     // 40 MHz clock input
     .clock(clock),
+    
+    .key00(hs_key_s2_nolut),
+    .key01(hs_key_s5_nolut),
 
-    // Sortable pattern inputs
-    .pat00(hs_pat_s1[i]),
-    .pat01(hs_pat_s4[i]),
+    // pattern inputs
+    .pat00(hs_pat_s2),
+    .pat01(hs_pat_s5),
 
     // Carried half-strip bits
-    .carry00(hs_car_s1[i]),
-    .carry01(hs_car_s4[i]),
+    .carry00(hs_car_s2),
+    .carry01(hs_car_s5),
+
+    //CCLUT halfstrip
+    .best_key0(hs_key_s2),
+    .best_key1(hs_key_s5),
+
+    //CCLUT 1/8 strip
+    .best_subkey0(hs_xky_s2),
+    .best_subkey1(hs_xky_s5),
 
     // LUT Quarterstrip output
-    .offs0(hs_offs_s1[i]),
-    .offs1(hs_offs_s4[i]),
+    .offs0(hs_offs_s2),
+    .offs1(hs_offs_s5),
 
     // LUT Bend angle output
-    .bend0(hs_bend_s1[i]),
-    .bend1(hs_bend_s4[i])
+    .bend0(hs_bnd_s2),
+    .bend1(hs_bnd_s5)
 
   );
-  end
-  endgenerate
 
 
 //========================

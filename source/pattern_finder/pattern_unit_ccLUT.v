@@ -55,6 +55,7 @@
 
 `include "pattern_params.v"
 //CCLUT, v2
+  input clock_2x;
   input [10:0] ly0; //  2,3,4,5, 6, 7,8,9,10
   input [ 9:1] ly1; //   3,4,5,6,7,8,9
   input [ 5:5] ly2; // 5,6,7 Key layer 2
