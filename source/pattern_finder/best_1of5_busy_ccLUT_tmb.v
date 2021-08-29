@@ -30,7 +30,11 @@
 
 // Constants
 
-`include "pattern_params.v"
+	parameter MXPATB		=	3+4;		// Pattern bits
+	parameter MXKEYB		=	5;			// Number of 1/2-strip key bits on 1 CFEB
+	//parameter MXKEY			=	32;			// Number of key 1/2-strips on 1 CFEB
+        parameter MXPATC                = 11;
+	parameter MXKEYBX		=	8;			// Number of 1/2-strip key bits
 
   input  [MXPATB  - 1:0]  pat0   , pat1   , pat2   , pat3   , pat4   ; 
   input  [MXKEYB  - 1:0]  key0   , key1   , key2   , key3   , key4   ;

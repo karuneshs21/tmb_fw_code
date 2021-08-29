@@ -22,8 +22,15 @@
   );
 
 // Constants
+	parameter MXPATB		=	3+4;		// Pattern bits
+	parameter MXKEYB		=	5;			// Number of 1/2-strip key bits on 1 CFEB
+	parameter MXXKEYB		=	10;			// Number of key 1/2-strips on 1 CFEB
+        parameter MXPATC                = 11;
+	parameter MXKEYBX		=	8;			// Number of 1/2-strip key bits
+	parameter MXOFFSB = 4;                 // Quarter-strip bits
+	parameter MXBNDB  = 5;                 // Bend bits
 
-`include "pattern_params.v"
+
     input                    clock;
 
     input      [MXKEYB-1:0]  key00, key01;

@@ -42,8 +42,11 @@
   );
 
 // Constants
+	parameter MXPATB		=	3+4;		// Pattern bits
+	parameter MXKEYB		=	5;			// Number of 1/2-strip key bits on 1 CFEB
+	parameter MXKEY			=	32;			// Number of key 1/2-strips on 1 CFEB
+        parameter MXPATC                =       11;
 
-`include "pattern_params.v"
 
   input clock;
   input  [MXKEY-1:0]   bsy;
