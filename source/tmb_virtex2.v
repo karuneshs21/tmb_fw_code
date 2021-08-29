@@ -1288,7 +1288,7 @@
 //-------------------------------------------------------------------------------------------------------------------
 // CFEB Instantiation
 //-------------------------------------------------------------------------------------------------------------------
-
+   wire  [9:0]         cfeb_nhits [MXCFEB-1:0];
   //=====================================================
   // HMT trigger 
   //=====================================================
@@ -1424,7 +1424,7 @@
 	.ly4hs				(cfeb_ly4hs[icfeb][MXHS-1:0]),		// Out	Decoded 1/2-strip pulses
 	.ly5hs				(cfeb_ly5hs[icfeb][MXHS-1:0]),		// Out	Decoded 1/2-strip pulses
 
-        .nhits_per_cfeb (cfeb_nhits[icfeb]),  // Out nhits per cfeb for HMT   
+   .nhits_per_cfeb (cfeb_nhits[icfeb]),  // Out nhits per cfeb for HMT   
 // Status
 	.demux_tp_1st		(demux_tp_1st[icfeb]),				// Out	Demultiplexer test point first-in-time
 	.demux_tp_2nd		(demux_tp_2nd[icfeb]),				// Out	Demultiplexer test point second-in-time
@@ -1465,11 +1465,6 @@
   wire [MXXKYB-1     : 0] hs_xky_1st; // new position with 1/8 precision
   wire [MXPATC-1     : 0] hs_carry_1st; // CC code 
   wire  [MXPIDB-1:0]  hs_run2pid_1st;
-
-  wire  [MXHITB-1:0]  hs_hit_2nd;
-  wire  [MXPIDB-1:0]  hs_pid_2nd;
-  wire  [MXKEYBX-1:0] hs_key_2nd;
-  wire                hs_bsy_2nd;
 
   // 2nd pattern lookup results, ccLUT,Tao
   wire [MXBNDB - 1   : 0] hs_bnd_2nd; // new bending 
@@ -1792,12 +1787,14 @@
 	wire	[MXCLCT-1:0]	clct1_vme;
 	wire	[MXCLCTC-1:0]	clctc_vme;
 	wire	[MXCFEB-1:0]	clctf_vme;
-        wire [MXBNDB - 1   : 0]   clct0_bnd_vme; // new bending
-        wire [MXXKYB-1     : 0]   clct0_xky_vme; // new position with 1/8 precision
-        wire [MXPATC-1     : 0] clct0_carry_vme; // CC code
-        wire [MXBNDB - 1   : 0]   clct1_bnd_vme; // new bending
-        wire [MXXKYB-1     : 0]   clct1_xky_vme; // new position with 1/8 precision
-        wire [MXPATC-1     : 0] clct1_carry_vme; // CC code
+
+  wire [MXBNDB - 1   : 0] clct0_vme_bnd; // new bending 
+  wire [MXXKYB-1     : 0] clct0_vme_xky; // new position with 1/8 precision
+  wire [MXPATC-1:0]       clct0_vme_carry;
+
+  wire [MXBNDB - 1   : 0] clct1_vme_bnd; // new bending 
+  wire [MXXKYB-1     : 0] clct1_vme_xky; // new position with 1/8 precision
+  wire [MXPATC-1:0]       clct1_vme_carry;
 
 	wire	[MXRAMADR-1:0]	dmb_adr;
 	wire	[MXRAMDATA-1:0]	dmb_wdata;
@@ -2017,7 +2014,6 @@
 	.hs_pid_2nd				(hs_pid_2nd[MXPIDB-1:0]),			// In	2nd CLCT pattern ID
 	.hs_key_2nd				(hs_key_2nd[MXKEYBX-1:0]),			// In	2nd CLCT key 1/2-strip
 	.hs_bsy_2nd				(hs_bsy_2nd),						// In	2nd CLCT busy, logic error indicator
-        .hs_qlt_2nd (hs_qlt_2nd[MXQLTB - 1   : 0]),
         .hs_bnd_2nd (hs_bnd_2nd[MXBNDB - 1   : 0]),
         .hs_xky_2nd (hs_xky_2nd[MXXKYB-1 : 0]),
         .hs_carry_2nd (hs_carry_2nd[MXPATC-1:0]),
@@ -2119,12 +2115,13 @@
 	.bxn_clct_vme			(bxn_clct_vme[MXBXN-1:0]),			// Out	CLCT BXN at pre-trigger
 	.bxn_l1a_vme			(bxn_l1a_vme[MXBXN-1:0]),			// Out	CLCT BXN at L1A
 
-        .clct0_vme_bnd   (clct0_vme_bnd[MXBNDB - 1   : 0]), //Out  clct0 new bending
-        .clct0_vme_xky   (clct0_vme_xky[MXXKYB-1 : 0]),     //Out  clct0 new key position with 1/8 strip resolution
-        .clct0_vme_carry (clct0_vme_carry[MXPATC-1   : 0]), //Out  clct0 Comparator code
-        .clct1_vme_bnd   (clct1_vme_bnd[MXBNDB - 1   : 0]), //Out 
-        .clct1_vme_xky   (clct1_vme_xky[MXXKYB-1 : 0]),     //Out
-        .clct1_vme_carry (clct1_vme_carry[MXPATC-1   : 0]), //Out 
+  .clct0_vme_bnd   (clct0_vme_bnd[MXBNDB - 1   : 0]), // Out, clct0 new bending 
+  .clct0_vme_xky   (clct0_vme_xky[MXXKYB-1 : 0]),     // Out, clct0 new position with 1/8 strip resolution
+  .clct0_vme_carry (clct0_vme_carry[MXPATC-1   : 0]), // Out ,clct0 comparator code
+
+  .clct1_vme_bnd   (clct1_vme_bnd[MXBNDB - 1   : 0]),  // out 
+  .clct1_vme_xky   (clct1_vme_xky[MXXKYB-1 : 0]),     // out
+  .clct1_vme_carry (clct1_vme_carry[MXPATC-1   : 0]),  // out
 // RPC VME Configuration Ports
 	.rpc_exists				(rpc_exists[MXRPC-1:0]),			// In	RPC Readout list
 	.rpc_read_enable		(rpc_read_enable),					// In	1 Enable RPC Readout
@@ -2258,16 +2255,15 @@
 	.clct1_xtmb				(clct1_xtmb[MXCLCT-1:0]),		// Out	Second CLCT
 	.clctc_xtmb				(clctc_xtmb[MXCLCTC-1:0]),		// Out	Common to CLCT0/1 to TMB
 	.clctf_xtmb				(clctf_xtmb[MXCFEB-1:0]),		// Out	Active cfeb list to TMB
+        //CCLUT, Tao  .clct0_bnd_xtmb   (clct0_bnd_xtmb[MXBNDB - 1   : 0]),
+  .clct0_xky_xtmb   (clct0_xky_xtmb[MXXKYB-1 : 0]),
+  .clct0_carry_xtmb (clct0_carry_xtmb[MXPATC-1:0]),  // Out  First  CLCT
+
+  .clct1_bnd_xtmb   (clct1_bnd_xtmb[MXBNDB - 1   : 0]),
+  .clct1_xky_xtmb   (clct1_xky_xtmb[MXXKYB-1 : 0]),
+  .clct1_carry_xtmb (clct1_carry_xtmb[MXPATC-1:0]),  // Out  Second CLCT
 	.bx0_xmpc				(bx0_xmpc),						// Out	bx0 to tmb aligned with clct0/1
 	.bx0_match				(bx0_match),					// In	ALCT bx0 and CLCT bx0 match in time
-
-        //CCLUT, Tao
-        .clct0_xtmb_bnd   (clct0_xtmb_bnd[MXBNDB - 1   : 0]), // out clct0 new bending
-        .clct0_xtmb_xky   (clct0_xtmb_xky[MXXKYB-1 : 0]),     // out clct0 new key position with 1/8 strip resolution
-        .clct0_xtmb_carry (clct0_xtmb_carry[MXPATC-1   : 0]), // out clct0 Comparator code
-        .clct1_xtmb_bnd   (clct1_xtmb_bnd[MXBNDB - 1   : 0]), // out
-        .clct1_xtmb_xky   (clct1_xtmb_xky[MXXKYB-1 : 0]),     // out
-        .clct1_xtmb_carry (clct1_xtmb_carry[MXPATC-1   : 0]), // out
 
 	.tmb_trig_pulse			(tmb_trig_pulse),				// In	ALCT or CLCT or both triggered
 	.tmb_trig_keep			(tmb_trig_keep),				// In	ALCT or CLCT or both triggered, and trigger is allowed
@@ -2868,16 +2864,18 @@
 	.clct0_xtmb			(clct0_xtmb[MXCLCT-1:0]),		// In	First  CLCT
 	.clct1_xtmb			(clct1_xtmb[MXCLCT-1:0]),		// In	Second CLCT
 	.clctc_xtmb			(clctc_xtmb[MXCLCTC-1:0]),		// In	Common to CLCT0/1 to TMB
-	.clctf_xtmb			(clctf_xtmb[MXCFEB-1:0]),		// In	Active cfeb list to TMB
+	.clctf_xtmb			(clctf_xtmb[MXCFEB-1:0]),		// In	Active cfeb list to TMB  .clct0_qlt_xtmb   (clct0_qlt_xtmb[MXQLTB - 1   : 0]), //In
+        //CCLUT, Tao .clct0_bnd_xtmb   (clct0_bnd_xtmb[MXBNDB - 1   : 0]), //In
+  .clct0_bnd_xtmb   (clct0_bnd_xtmb[MXBNDB - 1   : 0]), //In
+  .clct0_xky_xtmb   (clct0_xky_xtmb[MXXKYB-1 : 0]),    //In
+  .clct0_carry_xtmb (clct0_carry_xtmb[MXPATC-1:0]),  // In  First  CLCT
+  .clct1_bnd_xtmb   (clct1_bnd_xtmb[MXBNDB - 1   : 0]),  // In
+  .clct1_xky_xtmb   (clct1_xky_xtmb[MXXKYB-1 : 0]),   // In 
+  .clct1_carry_xtmb (clct1_carry_xtmb[MXPATC-1:0]),  // In  Second CLCT
+	
 	.bx0_xmpc			(bx0_xmpc),						// In	bx0 to mpc
 
-        //CCLUT, Tao
-        .clct0_xtmb_bnd   (clct0_xtmb_bnd[MXBNDB - 1   : 0]), // In clct0 new bending
-        .clct0_xtmb_xky   (clct0_xtmb_xky[MXXKYB-1 : 0]),     // In clct0 new key position with 1/8 strip resolution
-        .clct0_xtmb_carry (clct0_xtmb_carry[MXPATC-1   : 0]), // In clct0 Comparator code
-        .clct1_xtmb_bnd   (clct1_xtmb_bnd[MXBNDB - 1   : 0]), // In
-        .clct1_xtmb_xky   (clct1_xtmb_xky[MXXKYB-1 : 0]),     // In
-        .clct1_xtmb_carry (clct1_xtmb_carry[MXPATC-1   : 0]), // In
+
 
 	.tmb_trig_pulse		(tmb_trig_pulse),				// Out	ALCT or CLCT or both triggered
 	.tmb_trig_keep		(tmb_trig_keep),				// Out	ALCT or CLCT or both triggered, and trigger is allowed
@@ -3589,12 +3587,13 @@
 	.clct_bx0_sync_err		(clct_bx0_sync_err),				// In	Sync error: BXN counter==0 did not match bx0
 
         //CCLUT, Tao
-        .clct0_vme_bnd   (clct0_vme_bnd[MXBNDB - 1   : 0]), // In clct0 new bending
-        .clct0_vme_xky   (clct0_vme_xky[MXXKYB-1 : 0]),     // In clct0 new key position with 1/8 strip resolution
-        .clct0_vme_carry (clct0_vme_carry[MXPATC-1   : 0]), // In clct0 Comparator code
-        .clct1_vme_bnd   (clct1_vme_bnd[MXBNDB - 1   : 0]), // In
-        .clct1_vme_xky   (clct1_vme_xky[MXXKYB-1 : 0]),    // IN
-        .clct1_vme_carry (clct1_vme_carry[MXPATC-1   : 0]),  // in
+
+      .clct0_vme_bnd   (clct0_vme_bnd[MXBNDB - 1   : 0]), // In clct0 new bending 
+      .clct0_vme_xky   (clct0_vme_xky[MXXKYB-1 : 0]),     // In clct0 new key position with 1/8 strip resolution
+      .clct0_vme_carry (clct0_vme_carry[MXPATC-1   : 0]), // In clct0 Comparator code
+      .clct1_vme_bnd   (clct1_vme_bnd[MXBNDB - 1   : 0]), // In 
+      .clct1_vme_xky   (clct1_vme_xky[MXXKYB-1 : 0]),    // IN 
+      .clct1_vme_carry (clct1_vme_carry[MXPATC-1   : 0]),  // in
 
 // Sequencer Ports: Raw Hits Ram
 	.dmb_wr					(dmb_wr),							// Out	Raw hits RAM VME write enable

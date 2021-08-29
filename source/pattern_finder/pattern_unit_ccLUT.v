@@ -34,17 +34,17 @@
   (
 // Inputs
 //CCLUT, v2
-  input [10:0] ly0, //  2,3,4,5, 6, 7,8,9,10
-  input [ 9:1] ly1, //   3,4,5,6,7,8,9
-  input [ 5:5] ly2, // 5,6,7 Key layer 2
-  input [ 7:3] ly3,   
-  input [ 9:1] ly4, //  1,2,3,4,5, 6, 7,8,9,10,11
-  input [10:0] ly5, // 1/2-strips 1 layer 1 cell
+   ly0, //  2,3,4,5, 6, 7,8,9,10
+   ly1, //   3,4,5,6,7,8,9
+   ly2, // 5,6,7 Key layer 2
+   ly3,   
+   ly4, //  1,2,3,4,5, 6, 7,8,9,10,11
+   ly5, // 1/2-strips 1 layer 1 cell
 
 // Outputs
-  output [MXHITB-1:0] pat_nhits, // Number layers hit for highest pattern
-  output [MXPIDB-1:0] pat_id,    // Highest pattern found
-  output [MXPATC-1:0] pat_carry  // Highest pattern found
+   pat_nhits, // Number layers hit for highest pattern
+   pat_id,    // Highest pattern found
+   pat_carry  // Highest pattern found
   );
 
 //------------------------------------------------------------------------------------------------------------------------
@@ -52,7 +52,18 @@
 //------------------------------------------------------------------------------------------------------------------------
 
 `include "pattern_params.v"
-//`include "pattern_mask_ccLUT.v"
+//CCLUT, v2
+  input [10:0] ly0; //  2,3,4,5, 6, 7,8,9,10
+  input [ 9:1] ly1; //   3,4,5,6,7,8,9
+  input [ 5:5] ly2; // 5,6,7 Key layer 2
+  input [ 7:3] ly3;   
+  input [ 9:1] ly4; //  1,2,3,4,5, 6, 7,8,9,10,11
+  input [10:0] ly5; // 1/2-strips 1 layer 1 cell
+
+// Outputs
+  output [MXHITB-1:0] pat_nhits; // Number layers hit for highest pattern
+  output [MXPIDB-1:0] pat_id;    // Highest pattern found
+  output [MXPATC-1:0] pat_carry;  // Highest pattern found
 
 //------------------------------------------------------------------------------------------------------------------------
 // Finds best 1-of-9 1/2-strip patterns for 1 key 1/2-strip

@@ -162,7 +162,7 @@
 	ly3hs,
 	ly4hs,
 	ly5hs,
-        hits_per_cfeb,
+   nhits_per_cfeb,
 
 // Status
 	demux_tp_1st,

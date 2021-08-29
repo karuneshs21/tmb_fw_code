@@ -13,7 +13,8 @@
 //  02/19/2013  Expand to best 1 of 7
 //  20/07/2020  create one for ccLUT algorithm
 //-------------------------------------------------------------------------------------------------------------------
-  module best_1of5_busy_ccLUT
+//-------------------------------------------------------------------------------------------------------------------
+  module best_1of5_busy_ccLUT_tmb
   (
    pat0   , pat1   , pat2   , pat3   , pat4   , 
    key0   , key1   , key2   , key3   , key4   ,
@@ -48,7 +49,7 @@
   output reg [MXBNDB  - 1:0] best_bend;
   output reg [MXPATC  - 1:0] best_carry;
   output reg [MXXKYB  - 1:0] best_subkey;
-  output reg               best_bsy;
+  output reg best_bsy;
 
 
 reg [MXOFFSB-1:0] best_offs;
@@ -70,11 +71,12 @@ reg [MXOFFSB-1:0] best_offs;
           (sort_key4 > sort_key0) && !bsy4)
       begin
       best_pat   = pat4;
-      //best_key   = {3'd4,key4};
-      best_key   = {3'd4,key4} + offs4[3:2]+(offs4[1]&offs4[0])-8'd2;
-      best_bend  = bend4;
       best_carry = carry4;
-      best_offs  = offs4;
+      best_key   = {3'd4,key4};
+      //best_key   = {3'd4,key4} + offs4[3:2]+(offs4[1]&offs4[0])-8'd2;
+      //best_qlt   = qlt4;
+      //best_bend  = bend4;
+      //best_offs  = offs4;
       best_bsy   = 0;
       end
 
@@ -83,11 +85,12 @@ reg [MXOFFSB-1:0] best_offs;
           (sort_key3 > sort_key0) && !bsy3)
       begin
       best_pat   = pat3;
-      best_bend  = bend3;
       best_carry = carry3;
-      best_offs  = offs3;
-      best_key   = {3'd3,key3} + offs3[3:2]+(offs3[1]&offs3[0])-8'd2;
-      //best_key   = {3'd3,key3};
+      best_key   = {3'd3,key3};
+      //best_qlt   = qlt3;
+      //best_bend  = bend3;
+      //best_offs  = offs3;
+      //best_key   = {3'd3,key3} + offs3[3:2]+(offs3[1]&offs3[0])-8'd2;
       best_bsy   = 0;
       end
 
@@ -95,42 +98,46 @@ reg [MXOFFSB-1:0] best_offs;
           (sort_key2 > sort_key0) && !bsy2)
       begin
       best_pat   = pat2;
-      best_bend  = bend2;
       best_carry = carry2;
-      best_offs  = offs2;
-      best_key   = {3'd2,key2} + offs2[3:2]+(offs2[1]&offs2[0])-8'd2;
-      ///best_key   = {3'd2,key2};
+      best_key   = {3'd2,key2};
+      //best_qlt   = qlt2;
+      //best_bend  = bend2;
+      //best_offs  = offs2;
+      //best_key   = {3'd2,key2} + offs2[3:2]+(offs2[1]&offs2[0])-8'd2;
       best_bsy   = 0;
       end
 
   else if((sort_key1 > sort_key0) && !bsy1)
       begin
       best_pat   = pat1;
-      best_bend  = bend1;
       best_carry = carry1;
-      best_offs  = offs1;
-      //best_key   = {3'd1,key1};
-      best_key   = {3'd1,key1} + offs1[3:2]+(offs1[1]&offs1[0])-8'd2;
+      best_key   = {3'd1,key1};
+      //best_qlt   = qlt1;
+      //best_bend  = bend1;
+      //best_offs  = offs1;
+      //best_key   = {3'd1,key1} + offs1[3:2]+(offs1[1]&offs1[0])-8'd2;
       best_bsy   = 0;
       end
 
   else if (!bsy0)
       begin
       best_pat   = pat0;
-      best_bend  = bend0;
       best_carry = carry0;
-      best_offs  = offs0;
-      //best_key   = {3'd0,key0};
-      best_key   = {3'd0,key0} + offs0[3:2]+(offs0[1]&offs0[0])-8'd2;
+      best_key   = {3'd0,key0};
+      //best_qlt   = qlt0;
+      //best_bend  = bend0;
+      //best_offs  = offs0;
+      //best_key   = {3'd0,key0} + offs0[3:2]+(offs0[1]&offs0[0])-8'd2;
       best_bsy   = 0;
       end
 
   else  begin
       best_pat   = 0;
-      best_key   = 0;
-      best_bend  = 0;
       best_carry = 0;
-      best_offs  = 0;
+      best_key   = 0;
+      //best_qlt   = 0;
+      //best_bend  = 0;
+      //best_offs  = 0;
       best_bsy   = 1;
       end
   end
@@ -152,10 +159,10 @@ reg [MXOFFSB-1:0] best_offs;
   //    best_subkey <= best_subkey_signed;
   //end
 
-  always @(*) begin
-      best_subkey <= {best_key, best_offs[1:0]+1'b1};// 
-      //best_subkey <= {best_key, best_offs[1:0]+1'b1} + 1;// 
-  end 
+  //always @(*) begin
+  //    best_subkey <= {best_key, best_offs[1:0]+1'b1};// 
+  //    //best_subkey <= {best_key, best_offs[1:0]+1'b1} + 1;// 
+  //end 
 //-------------------------------------------------------------------------------------------------------------------
   endmodule
 //-------------------------------------------------------------------------------------------------------------------

@@ -481,11 +481,11 @@
       nlayers_hit_vme,
       clct_bx0_sync_err,
 
-      clct0_vme_qlt,
+   
       clct0_vme_bnd,
       clct0_vme_xky,
       clct0_vme_carry,
-      clct1_vme_qlt,
+
       clct1_vme_bnd,
       clct1_vme_xky,
       clct1_vme_carry,

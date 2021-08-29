@@ -477,7 +477,6 @@
 	hs_pid_2nd,
 	hs_key_2nd,
 	hs_bsy_2nd,
-        hs_qlt_2nd,
         hs_bnd_2nd,
         hs_xky_2nd,
         hs_carry_2nd,
@@ -578,6 +577,15 @@
 	nlayers_hit_vme,
 	bxn_clct_vme,
 	bxn_l1a_vme,
+
+  clct0_vme_bnd,
+  clct0_vme_xky,
+  clct0_vme_carry,
+
+  clct1_vme_bnd,
+  clct1_vme_xky,
+  clct1_vme_carry,
+	
 
 // RPC VME Configuration
 	rpc_exists,
@@ -711,6 +719,14 @@
 	clct1_xtmb,
 	clctc_xtmb,
 	clctf_xtmb,
+
+  clct0_bnd_xtmb,
+  clct0_xky_xtmb,
+  clct0_carry_xtmb, // Out  First  CLCT
+
+  clct1_bnd_xtmb,
+  clct1_xky_xtmb,
+  clct1_carry_xtmb, // Out  Second CLCT
 	bx0_xmpc,
 	bx0_match,
 
@@ -1189,7 +1205,7 @@
 	input	[MXKEYBX-1:0]	hs_key_2nd;				// 2nd CLCT key 1/2-strip
 	input			hs_bsy_2nd;				// 2nd CLCT busy, logic error indicator
         input [MXXKYB     - 1 : 0] hs_xky_2nd; // 1st CLCT key 1/8-strip
-        input [MXQLTB     - 1 : 0] hs_qlt_2nd; // 1st CLCT pattern lookup quality
+      
         input [MXBNDB     - 1 : 0] hs_bnd_2nd; // 1st CLCT pattern lookup bend angle
         input [MXPATC     - 1 : 0] hs_carry_2nd; // 1st CLCT pattern lookup comparator-code
         input  [MXPIDB-1:0]   hs_run2pid_2nd;
@@ -1292,10 +1308,10 @@
 
         output  [MXPATC-1:0]   clct0_vme_carry;         // First  CLCT
         output  [MXPATC-1:0]   clct1_vme_carry;         // Second CLCT
-        output  [MXBNDB - 1   : 0] clct0_vme_bnd = 0; // new bending
-        output  [MXXKYB-1     : 0] clct0_vme_xky = 0; // new position with 1/8 precision
-        output  [MXBNDB - 1   : 0] clct1_vme_bnd = 0; // new bending
-        output  [MXXKYB-1     : 0] clct1_vme_xky = 0; // new position with 1/8 precision
+        output  [MXBNDB - 1   : 0] clct0_vme_bnd; // new bending
+        output  [MXXKYB-1     : 0] clct0_vme_xky ; // new position with 1/8 precision
+        output  [MXBNDB - 1   : 0] clct1_vme_bnd; // new bending
+        output  [MXXKYB-1     : 0] clct1_vme_xky; // new position with 1/8 precision
 
 // RPC VME Configuration Ports
 	input	[MXRPC-1:0]		rpc_exists;			// RPC Readout list
@@ -1429,11 +1445,11 @@
 	output	[MXCLCT-1:0]	clct1_xtmb;			// 2nd CLCT to TMB
 	output	[MXCLCTC-1:0]	clctc_xtmb;			// Common to CLCT0/1 to TMB
 	output	[MXCFEB-1:0]	clctf_xtmb;			// Active cfeb list to TMB
-        output [MXQLTB - 1   : 0] clct0_qlt_xtmb; // new quality
+      
         output [MXBNDB - 1   : 0] clct0_bnd_xtmb; // new bending
         output [MXXKYB-1     : 0] clct0_xky_xtmb; // new position with 1/8 precision
         output [MXPATC-1     : 0] clct0_carry_xtmb; // CC code
-        output [MXQLTB - 1   : 0] clct1_qlt_xtmb; // new quality
+       
         output [MXBNDB - 1   : 0] clct1_bnd_xtmb; // new bending
         output [MXXKYB-1     : 0] clct1_xky_xtmb; // new position with 1/8 precision
         output [MXPATC-1     : 0] clct1_carry_xtmb; // CC code
@@ -2604,10 +2620,8 @@
 	clctf_vme		<=	0;
           clct0_vme_carry <= 0;
           clct1_vme_carry <= 0;
-          clct0_vme_qlt   <= 0;
           clct0_vme_bnd   <= 0;
           clct0_vme_xky   <= 0;
-          clct1_vme_qlt   <= 0;
           clct1_vme_bnd   <= 0;
           clct1_vme_xky   <= 0;
           hmt_nhits_trig_vme <= 0;
@@ -2622,10 +2636,10 @@
 	clctf_vme		<=	clctf_xtmb;
           clct0_vme_carry <= clct0_carry_xtmb;
           clct1_vme_carry <= clct1_carry_xtmb;
-          clct0_vme_qlt   <= clct0_qlt_xtmb;
+   
           clct0_vme_bnd   <= clct0_bnd_xtmb;
           clct0_vme_xky   <= clct0_xky_xtmb;
-          clct1_vme_qlt   <= clct1_qlt_xtmb;
+
           clct1_vme_bnd   <= clct1_bnd_xtmb;
           clct1_vme_xky   <= clct1_xky_xtmb;
           // should latch hmt in other case ?? may consider the trigger result of hmt_nhits_trig
@@ -3517,11 +3531,11 @@
 	wire [5:0]	r_layers_hit		=	r_clcta_xtmb[5:0];	// Layers hit
 	wire 		r_clct1_busy		=	r_clcta_xtmb[6];	// CLCT1 busy internal check
 
-      wire [MXQLTB - 1   : 0] r_clct0_qlt_xtmb; // new quality
+      
       wire [MXBNDB - 1   : 0] r_clct0_bnd_xtmb; // new bending
       wire [MXXKYB-1     : 0] r_clct0_xky_xtmb; // new position with 1/8 precision
       wire [MXPATC-1     : 0] r_clct0_carry_xtmb; // CC code
-      wire [MXQLTB - 1   : 0] r_clct1_qlt_xtmb; // new quality
+
       wire [MXBNDB - 1   : 0] r_clct1_bnd_xtmb; // new bending
       wire [MXXKYB-1     : 0] r_clct1_xky_xtmb; // new position with 1/8 precision
       wire [MXPATC-1     : 0] r_clct1_carry_xtmb; // CC code

@@ -21,31 +21,48 @@
 //-------------------------------------------------------------------------------------------------------------------
   module best_1of32_busy_ccLUT
   (
-  input                clock,
+        clock,
+	bsy,
+	pat00, pat01, pat02, pat03, pat04, pat05, pat06, pat07,
+	pat08, pat09, pat10, pat11, pat12, pat13, pat14, pat15,
+	pat16, pat17, pat18, pat19, pat20, pat21, pat22, pat23,
+	pat24, pat25, pat26, pat27, pat28, pat29, pat30, pat31,
+        carry00, carry01, carry02, carry03, carry04, carry05, carry06, carry07,
+        carry08, carry09, carry10, carry11, carry12, carry13, carry14, carry15,
+        carry16, carry17, carry18, carry19, carry20, carry21, carry22, carry23,
+        carry24, carry25, carry26, carry27, carry28, carry29, carry30, carry31,
 
-  input  [MXKEY-1:0]   bsy,
 
-  input  [MXPATB-1:0]  pat00, pat01, pat02, pat03, pat04, pat05, pat06, pat07,
-  input  [MXPATB-1:0]  pat08, pat09, pat10, pat11, pat12, pat13, pat14, pat15,
-  input  [MXPATB-1:0]  pat16, pat17, pat18, pat19, pat20, pat21, pat22, pat23,
-  input  [MXPATB-1:0]  pat24, pat25, pat26, pat27, pat28, pat29, pat30, pat31,
+	best_pat,
+	best_key,
+        best_carry,
 
-  input  [MXPATC-1:0]  carry00, carry01, carry02, carry03, carry04, carry05, carry06, carry07,
-  input  [MXPATC-1:0]  carry08, carry09, carry10, carry11, carry12, carry13, carry14, carry15,
-  input  [MXPATC-1:0]  carry16, carry17, carry18, carry19, carry20, carry21, carry22, carry23,
-  input  [MXPATC-1:0]  carry24, carry25, carry26, carry27, carry28, carry29, carry30, carry31,
+        best_bsy
 
-  output  [MXPATB-1:0]  best_pat,
-  output  [MXKEYB-1:0]  best_key,
-  output  [MXPATC-1:0]  best_carry,
-
-  output                best_bsy
   );
 
 // Constants
 
 `include "pattern_params.v"
 
+  input clock;
+  input  [MXKEY-1:0]   bsy;
+
+  input  [MXPATB-1:0]  pat00, pat01, pat02, pat03, pat04, pat05, pat06, pat07;
+  input  [MXPATB-1:0]  pat08, pat09, pat10, pat11, pat12, pat13, pat14, pat15;
+  input  [MXPATB-1:0]  pat16, pat17, pat18, pat19, pat20, pat21, pat22, pat23;
+  input  [MXPATB-1:0]  pat24, pat25, pat26, pat27, pat28, pat29, pat30, pat31;
+
+  input  [MXPATC-1:0]  carry00, carry01, carry02, carry03, carry04, carry05, carry06, carry07;
+  input  [MXPATC-1:0]  carry08, carry09, carry10, carry11, carry12, carry13, carry14, carry15;
+  input  [MXPATC-1:0]  carry16, carry17, carry18, carry19, carry20, carry21, carry22, carry23;
+  input  [MXPATC-1:0]  carry24, carry25, carry26, carry27, carry28, carry29, carry30, carry31;
+
+  output  [MXPATB-1:0]  best_pat;
+  output  [MXKEYB-1:0]  best_key;
+  output  [MXPATC-1:0]  best_carry;
+
+  output                best_bsy;
 // Local 2d Arrays
   wire [MXPATB-1:0]  pat_s0  [15:0];
   wire [MXPATB-1:0]  pat_s1  [7:0];
