@@ -1,4 +1,6 @@
 # tmb_fw_code
+Firwmare code for TMB (virtex2)
+
 ## master branch: Run1 Run2 legacy code
 ## TMB_FW_2021 branch
 Remove obsolete modules (RPC and Miniscope) on top of master branch 
@@ -9,9 +11,16 @@ This branch included new features ported from new OTMB firmware, developed on to
    - new trigger data format and DAQ data format
    - new VME registers to control above features
 
-But unfortunately the compilation failed because too many resource are used. Need to test the version with less new features probably
+But unfortunately the compilation failed because too many resource are used. Need to test the version with less new features probably.  The following the resouce usage from last try
 
-Firwmare code for TMB (virtex2)
+Interim Summary
+
+Logic Utilization:
+
+  Number of Slice Flip Flops:        24,974 out of  46,080   54%
+  
+  Number of 4 input LUTs:            64,820 out of  46,080  140% (OVERMAPPED)
+
 
 
 
