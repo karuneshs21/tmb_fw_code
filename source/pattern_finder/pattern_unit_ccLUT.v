@@ -25,6 +25,7 @@
 //  02/11/2013  Remove clock_2x
 //  03/21/2013  Replace adders with ROM, reduces area ratio from 26% to 20%
 //
+// for TMB firmware add back clock_2x
 //  for CCLUT: patA => pid4, pat9=> pid3, pat8=>pid2, pat7=>pid1, pat6=>pid0
 //------------------------------------------------------------------------------------------------------------------------
 // convention of 12-bits comparator code: [11:0]
@@ -34,6 +35,7 @@
   (
 // Inputs
 //CCLUT, v2
+   clock_2x,
    ly0, //  2,3,4,5, 6, 7,8,9,10
    ly1, //   3,4,5,6,7,8,9
    ly2, // 5,6,7 Key layer 2
@@ -196,22 +198,30 @@
   endgenerate
 
 // Best 1 of 8 Priority Encoder, perfers higher pattern number if hits are equal
-  wire [MXHITB-1:0] nhits_s0 [2:0];
+  //wire [MXHITB-1:0] nhits_s0 [2:0];
+  reg  [MXHITB-1:0] nhits_s0 [2:0];
   wire [MXHITB-1:0] nhits_s1 [1:0];
   wire [MXHITB-1:0] nhits_s2 [0:0];
 
-  wire [MXPATC-1:0] carry_s0 [2:0];
+  reg  [MXPATC-1:0] carry_s0 [2:0];
+  //wire [MXPATC-1:0] carry_s0 [2:0];
   wire [MXPATC-1:0] carry_s1 [1:0];
   wire [MXPATC-1:0] carry_s2 [0:0];
 
-  wire [2:0] pid_s0;
+  //wire [2:0] pid_s0;
+  reg  [2:0] pid_s0;
   wire [1:0] pid_s1 [1:0];
   wire [2:0] pid_s2 [0:0];
 
+  always @(posedge clock_2x) begin
 // 5 to 3
-  assign {nhits_s0[2],pid_s0[2],carry_s0[2]} =                         {nhits[4],1'b0,carry[4]};
-  assign {nhits_s0[1],pid_s0[1],carry_s0[1]} = (nhits[2] > nhits[3]) ? {nhits[2],1'b0,carry[2]} : {nhits[3],1'b1,carry[3]};
-  assign {nhits_s0[0],pid_s0[0],carry_s0[0]} = (nhits[0] > nhits[1]) ? {nhits[0],1'b0,carry[0]} : {nhits[1],1'b1,carry[1]};
+   {nhits_s0[2],pid_s0[2],carry_s0[2]} <=                         {nhits[4],1'b0,carry[4]};
+   {nhits_s0[1],pid_s0[1],carry_s0[1]} <= (nhits[2] > nhits[3]) ? {nhits[2],1'b0,carry[2]} : {nhits[3],1'b1,carry[3]};
+   {nhits_s0[0],pid_s0[0],carry_s0[0]} <= (nhits[0] > nhits[1]) ? {nhits[0],1'b0,carry[0]} : {nhits[1],1'b1,carry[1]};
+  end
+  //assign {nhits_s0[2],pid_s0[2],carry_s0[2]} =                         {nhits[4],1'b0,carry[4]};
+  //assign {nhits_s0[1],pid_s0[1],carry_s0[1]} = (nhits[2] > nhits[3]) ? {nhits[2],1'b0,carry[2]} : {nhits[3],1'b1,carry[3]};
+  //assign {nhits_s0[0],pid_s0[0],carry_s0[0]} = (nhits[0] > nhits[1]) ? {nhits[0],1'b0,carry[0]} : {nhits[1],1'b1,carry[1]};
 
 // 3 to 2
   assign {nhits_s1[1],pid_s1[1],carry_s1[1]} =                               {nhits_s0[2],{1'b0,pid_s0[2]},carry_s0[2]};

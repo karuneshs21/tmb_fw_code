@@ -902,7 +902,7 @@
 	generate
 	for (ihs=0; ihs<=MXHSX/2-1; ihs=ihs+1) begin: patgen
 	pattern_unit_ccLUT upat (
-	//.clock_2x	(clock_2x),
+	.clock_2x	(clock_2x),
 	.ly0		(ly0hs_pad[ihs+5+k:ihs-5+k]),
 	.ly1		(ly1hs_pad[ihs+4+k:ihs-4+k]),
 	.ly2		(ly2hs_pad[ihs+0+k:ihs-0+k]),	//key on ly2
@@ -1053,7 +1053,7 @@
 	generate
 	for (ihs=0; ihs<=15; ihs=ihs+1) begin: patgen_me1a
 	pattern_unit_ccLUT upat_me1a (
-	//.clock_2x	(clock_2x),
+	.clock_2x	(clock_2x),
 	.ly0		(ly0hs_pad_me1a[ihs+5+k:ihs-5+k]),
 	.ly1		(ly1hs_pad_me1a[ihs+2+k:ihs-2+k]),
 	.ly2		(ly2hs_pad_me1a[ihs+0+k:ihs-0+k]),	//key on ly2
@@ -1069,7 +1069,7 @@
 	generate
 	for (ihs=0; ihs<=63; ihs=ihs+1) begin: patgen_me1b
 	pattern_unit_ccLUT upat_me1b (
-	//.clock_2x	(clock_2x),
+	.clock_2x	(clock_2x),
 	.ly0		(ly0hs_pad_me1b[ihs+5+k:ihs-5+k]),
 	.ly1		(ly1hs_pad_me1b[ihs+2+k:ihs-2+k]),
 	.ly2		(ly2hs_pad_me1b[ihs+0+k:ihs-0+k]),	//key on ly2

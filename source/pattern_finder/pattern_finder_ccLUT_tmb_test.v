@@ -910,7 +910,7 @@
 	.ly4		(ly4hs_pad[ihs+4+k:ihs-4+k]),
 	.ly5		(ly5hs_pad[ihs+5+k:ihs-5+k]),
 	.pat_nhits	(hs_hit[ihs]),
-	.pat_id		(hs_pid[ihs])
+	.pat_id		(hs_pid[ihs]),
         .pat_carry      (hs_carry[ihs]);
 	end
 	endgenerate
@@ -1061,7 +1061,7 @@
 	.ly4		(ly4hs_pad_me1a[ihs+4+k:ihs-4+k]),
 	.ly5		(ly5hs_pad_me1a[ihs+5+k:ihs-5+k]),
 	.pat_nhits	(hs_hit_me1a[ihs]),
-	.pat_id		(hs_pid_me1a[ihs])
+	.pat_id		(hs_pid_me1a[ihs]),
         .pat_carry      (hs_carry_me1a[ihs]));
 	end
 	endgenerate
@@ -1077,7 +1077,7 @@
 	.ly4		(ly4hs_pad_me1b[ihs+4+k:ihs-4+k]),
 	.ly5		(ly5hs_pad_me1b[ihs+5+k:ihs-5+k]),
 	.pat_nhits	(hs_hit_me1b[ihs]),
-	.pat_id		(hs_pid_me1b[ihs]);
+	.pat_id		(hs_pid_me1b[ihs]),
         .pat_carry      (hs_carry_me1b[ihs]));
 	end
 	endgenerate
@@ -1350,6 +1350,7 @@
         wire [MXXKYB - 1:0]   hs_xky_s2; // CCLUT, Tao
         wire [MXBNDB - 1:0]   hs_bnd_s2;
         wire [MXPATC - 1:0]   hs_car_s2; //hit carry, comparator code
+        wire [MXOFFSB -1:0]  hs_offs_s2; //keyhs offset, CCLUT
 
       best_1of5_ccLUT_tmb #(.PATLUT(PATLUT))
       ubest1of5_1st (
@@ -1366,11 +1367,11 @@
         .key3(hs_key_s1[3]),
         .key4(hs_key_s1[4]),
       // carry inputs from fit lut
-        .carry0(hs_carry_s1[0]),
-        .carry1(hs_carry_s1[1]),
-        .carry2(hs_carry_s1[2]),
-        .carry3(hs_carry_s1[3]),
-        .carry4(hs_carry_s1[4]),
+        .carry0(hs_car_s1[0]),
+        .carry1(hs_car_s1[1]),
+        .carry2(hs_car_s1[2]),
+        .carry3(hs_car_s1[3]),
+        .carry4(hs_car_s1[4]),
       // offs inputs from fit lut
       // best pattern output
         .best_pat (hs_pat_s2),
@@ -1650,9 +1651,10 @@
 	wire				hs_bsy_s5;
 
         //add CCLUT
-  wire [MXXKYB -1:0]    hs_xky_s5; // CCLUT, Tao
-  wire [MXBNDB -1:0]    hs_bnd_s5;
-  wire [MXPATC -1:0]    hs_car_s5;
+      wire [MXXKYB -1:0]    hs_xky_s5; // CCLUT, Tao
+      wire [MXBNDB -1:0]    hs_bnd_s5;
+      wire [MXPATC -1:0]    hs_car_s5;
+       wire [MXOFFSB -1:0]  hs_offs_s5; //keyhs offset, CCLUT
   wire hs_bsy_s5;
 
   // CCLUT, Tao, best_1of7_busy_ccLUT
@@ -1786,8 +1788,8 @@
     .offs1(hs_offs_s5),
 
     // LUT Bend angle output
-    .bend0(hs_bend_s2),
-    .bend1(hs_bend_s5)
+    .bend0(hs_bnd_s2),
+    .bend1(hs_bnd_s5)
 
   );
 
