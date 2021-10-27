@@ -23,7 +23,7 @@
 	`define FPGAID				16'h4000	// FPGA Type 4000 XC2V4000
 
        // version_format is control by gem_enable, ccLUT_enable
-        `define VERSION_FORMAT       04'h2   // [12:09]; 0=TMB standard, 1=OTMB Standard, 2=OTMB CCLUT, 3=OTMB GEM+CCLUT,  4=TMB+CCLUT(Run3)
+        `define VERSION_FORMAT       04'h4   // [12:09]; 0=TMB standard, 1=OTMB Standard, 2=OTMB CCLUT, 3=OTMB GEM+CCLUT,  4=TMB+CCLUT(Run3)
         `define VERSION_MAJOR        04'h0   // [08:05];5 bits = Major Version (major features which breaks compatibility, requires c    hanges to other board firmware)
         `define VERSION_MINOR        05'h0   // [04:00];6 bits = Minor version  (minor features, internal fixes, bug fixes, etc).
 
