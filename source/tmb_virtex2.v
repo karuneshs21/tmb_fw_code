@@ -1471,6 +1471,10 @@
 
       wire       seq_trigger_nodeadtime;
 
+//===============================================================
+//pattern_finder_ccLUT_tmb: real CCLUT
+//pattern_finder_ccLUT_simple: use run2 legacy pattern finding and convert run2 results into CCLUT results without using CC
+//===============================================================
 
         `ifdef CCLUT
 	//pattern_finder_ccLUT_tmb upattern_finder_cclut

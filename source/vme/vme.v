@@ -862,6 +862,7 @@
       algo2016_cross_bx_algorithm,
       algo2016_clct_use_corrected_bx,
       evenchamber,
+      seq_trigger_nodeadtime,
 
 // Sump
 	vme_sump
@@ -957,6 +958,7 @@
         parameter MXPID   = 11;                // Number of patterns
         parameter MXPAT   = 5;                 // Number of patterns
         parameter MXHMTB     =  4;// bits for HMT
+        parameter NHMTHITB   = 10;
 
 // Raw hits RAM parameters
 	parameter RAM_DEPTH		= 2048;			// Storage bx depth
@@ -1219,6 +1221,8 @@
 	parameter ADR_V6_HCM645				= 9'h178;	// CFEB6 Ly4,Ly5 Hot Channel Mask
 
 	parameter ADR_V6_EXTEND				= 9'h17A;	// DCFEB 7-bit extensions
+
+        parameter ADR_ALGO2016_CTRL = 9'h198; // Controls parameters of new trigger algorithm  
 
   // Tao,CCLUT register starts from 10'h19A = 410
   parameter ADR_CLCT0_CC              = 10'h19A;  // Comparator code, for 1st CLCT, readonly
@@ -2503,6 +2507,9 @@
 	wire	[15:0]	alct_startup_delay_rd;
 	wire	[15:0]	alct_startup_status_rd;
 
+        reg  [15:0] algo2016_ctrl_wr;
+      wire [15:0] algo2016_ctrl_rd;
+
           wire [15:0] clct0_cc_rd;
           wire [15:0] clct1_cc_rd;
           //wire [15:0] clct0_qlt_rd;
@@ -2649,6 +2656,7 @@
 	wire			wr_cfeb_badbits_ctrl;
 	wire			wr_cfeb_badbits_nbx;
 	wire			wr_alct_startup_delay;
+        wire wr_algo2016_ctrl;
 
       //CCLUT
       wire      wr_run3_format_ctrl;
@@ -3031,6 +3039,7 @@
 
 	ADR_ALCT_STARTUP_DELAY:		data_out <=	alct_startup_delay_rd;
 	ADR_ALCT_STARTUP_STATUS:	data_out <=	alct_startup_status_rd;
+        ADR_ALGO2016_CTRL: data_out <= algo2016_ctrl_rd; // Adr 198
           //CCLUT, Tao
           ADR_CLCT0_CC:              data_out <= clct0_cc_rd;
           ADR_CLCT1_CC:              data_out <= clct1_cc_rd;
@@ -3180,6 +3189,7 @@
 	assign wr_cfeb_badbits_nbx		= (reg_adr==ADR_CFEB_BADBITS_TIMER	&& clk_en);
 
 	assign wr_alct_startup_delay	= (reg_adr==ADR_ALCT_STARTUP_DELAY	&& clk_en);
+        assign wr_algo2016_ctrl = (reg_adr==ADR_ALGO2016_CTRL && clk_en);
         //CCLUT
       assign wr_run3_format_ctrl      =  (reg_adr==ADR_RUN3_FORMAT_CTRL       && clk_en);
       assign wr_hmt_ctrl              =  (reg_adr==ADR_HMT_CTRL               && clk_en);
@@ -6459,8 +6469,8 @@
 
   assign hmt_ctrl_rd[0] = hmt_enable;
   assign hmt_ctrl_rd[1] = hmt_me1a_enable;
-  assign hmt_ctrl_rd[11: 2] = hmt_nhits_trig_vme[9:0];
-  assign hmt_ctrl_rd[15:12]= hmt_trigger_vme[MXHMTB-1:0];  //reserved for HMT results
+  assign hmt_ctrl_rd[11: 2] = hmt_nhits_bx7_vme[9:0];
+  assign hmt_ctrl_rd[15:12] = hmt_cathode_vme[MXHMTB-1:0];  //reserved for HMT results
   //reserved for HMT results 
 
 //------------------------------------------------------------------------------------------------------------------
@@ -6627,6 +6637,7 @@
 	if (wr_sync_err_ctrl)			sync_err_ctrl_wr		<=	d[15:0];
 	if (wr_cfeb_badbits_ctrl)		cfeb_badbits_ctrl_wr	<=	d[15:0];
 	if (wr_cfeb_badbits_nbx)		cfeb_badbits_nbx_wr		<=	d[15:0];
+        if (wr_algo2016_ctrl) algo2016_ctrl_wr <= d[15:0];
         //CCLUT
       if (wr_run3_format_ctrl)      run3_format_ctrl_wr     <= d[15:0];
       if (wr_hmt_ctrl)              hmt_ctrl_wr             <= d[15:0];
