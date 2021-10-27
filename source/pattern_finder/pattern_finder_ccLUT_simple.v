@@ -1365,7 +1365,8 @@
 	end
 	else begin										// else assert final 1st clct
 	hs_key_1st <= hs_key_1st_dly;
-	hs_pid_1st <= hs_pat_1st_dly[MXPIDB-1:0];
+	//hs_pid_1st <= hs_pat_1st_dly[MXPIDB-1:0];
+        hs_pid_1st    <= {hs_pat_1st_dly[MXPIDB-1:2], hs_pat_1st_dly[0]};
 	hs_hit_1st <= hs_pat_1st_dly[MXPATB-1:MXPIDB];
           //hs_bnd_1st <= 0;
           hs_car_1st <= 0;
@@ -1597,7 +1598,8 @@
           hs_run2pid_2nd <= 0;
 	end
 	else begin									// else assert final 2nd clct
-	hs_pid_2nd	<= hs_pat_s5[MXPIDB-1:0];
+	//hs_pid_2nd	<= hs_pat_s5[MXPIDB-1:0];
+        hs_pid_2nd    <= {hs_pat_s5[MXPIDB-1:2], hs_pat_s5[0]};
 	hs_hit_2nd	<= hs_pat_s5[MXPATB-1:MXPIDB];
 	hs_key_2nd	<= hs_key_s5;
 	hs_bsy_2nd	<= hs_bsy_s5;
@@ -1607,12 +1609,12 @@
           hs_run2pid_2nd <= hs_pat_s5[MXPIDB-1:0];
 
           case ( hs_pat_s5[MXPIDB-1:1])
-              3'd5 : hs_bnd_2nd = 4'd1;
-              3'd4 : hs_bnd_2nd = 4'd4;
-              3'd3 : hs_bnd_2nd = 4'd7;
-              3'd2 : hs_bnd_2nd = 4'd10;
-              3'd1 : hs_bnd_2nd = 4'd13;
-              default : hs_bnd_2nd = 4'd15;
+              3'd5 :     hs_bnd_2nd = 4'd1;
+              3'd4 :     hs_bnd_2nd = 4'd4;
+              3'd3 :     hs_bnd_2nd = 4'd7;
+              3'd2 :     hs_bnd_2nd = 4'd10;
+              3'd1 :     hs_bnd_2nd = 4'd13;
+              default :  hs_bnd_2nd = 4'd15;
           endcase
           end//end of else case
       end//end always
