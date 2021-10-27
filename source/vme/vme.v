@@ -6526,9 +6526,9 @@
 // ADR_HMT_NHITS_SIG=0x1B4  Nhits for HMT in bx678, Signal
 // ADR_HMT_NHITS_BKG=0x1B6  Nhits for HMT in bx2345, background/control region
 //------------------------------------------------------------------------------------------------------------------
-  assign hmt_nhits_sig_rd[9:0]   = hmt_nhits_trig_sig_vme[9:0];
+  assign hmt_nhits_sig_rd[9:0]   = hmt_nhits_sig_vme[9:0];
   assign hmt_nhits_sig_rd[15:10] = 6'b0;
-  assign hmt_nhits_bkg_rd[9:0]   = hmt_nhits_trig_bkg_vme[9:0];
+  assign hmt_nhits_bkg_rd[9:0]   = hmt_nhits_bkg_vme[9:0];
   assign hmt_nhits_bkg_rd[15:10] = 6'b0;
 
 //------------------------------------------------------------------------------------------------------------------

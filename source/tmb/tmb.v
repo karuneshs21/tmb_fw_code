@@ -434,7 +434,8 @@
         parameter MXPID   = 11;                // Number of patterns
         parameter MXPAT   = 5;                 // Number of patterns
         parameter MXHMTB     =  4;// bits for HMT
-		  parameter MXCCLUTB = MXBNDB+MXXKYB;
+        parameter NHMTHITB   = 10;
+      parameter MXCCLUTB = MXBNDB+MXXKYB;
 		  
 //------------------------------------------------------------------------------------------------------------------
 //Ports

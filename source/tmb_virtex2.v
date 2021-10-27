@@ -448,6 +448,7 @@
         parameter MXPID   = 11;                // Number of patterns
         parameter MXPAT   = 5;                 // Number of patterns
         parameter MXHMTB     =  4;// bits for HMT
+        parameter NHMTHITB   = 10;
 
 // Sequencer Constants
 	parameter INJ_MXTBIN	=	5;				// Injector time bin counter width

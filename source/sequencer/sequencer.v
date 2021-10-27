@@ -1091,6 +1091,7 @@
         parameter MXPID   = 11;                // Number of patterns
         parameter MXPAT   = 5;                 // Number of patterns
         parameter MXHMTB     =  4;// bits for HMT
+        parameter NHMTHITB   = 10;
 //------------------------------------------------------------------------------------------------------------------
 // I/O Ports:
 //------------------------------------------------------------------------------------------------------------------
@@ -1423,7 +1424,6 @@
 	input					wr_avail_rmpc;		// Buffer available at MPC received
 
 // TMB LCT Match
-        output  [MXHMTB-1:0]   hmt_trigger_xtmb; // HMT nhits passing thresholds
 	output	[MXCLCT-1:0]	clct0_xtmb;			// 1st CLCT to TMB
 	output	[MXCLCT-1:0]	clct1_xtmb;			// 2nd CLCT to TMB
 	output	[MXCLCTC-1:0]	clctc_xtmb;			// Common to CLCT0/1 to TMB
@@ -3962,7 +3962,7 @@
 //	assign	header10_[14:0]		=	r_pretrig_counter[29:15];	// CLCT pre-trigger counter
         assign  header10_run3_[11: 0]   =  r_clct0_carry_xtmb[MXPATC-1:0];
         assign  header10_run3_[13:12]   =  r_clct0_xky_xtmb[1:0];
-        assign  header10_run3_[14]      =  r_hmt_nhits_sig_xtmb[0];
+        assign  header10_run3_[14]      =  r_hmt_nhits_sig_header[0];
         assign  header10_[14:0]         =  run3_daq_df ? header10_run3_[14:0] : r_pretrig_counter[29:15]; // CLCT pre-trigger counter
 
 	assign	header10_[18:15]	=	0;							// DDU+DMB control flags
@@ -3977,7 +3977,7 @@
 	//assign	header14_[14:0]		=	r_trig_counter[29:15];		// TMB trigger counter
         assign  header14_run3_[11: 0]   =  r_clct1_carry_xtmb[MXPATC-1:0];
         assign  header14_run3_[13:12]   =  r_clct1_xky_xtmb[1:0];
-        assign  header14_run3_[14]      =  r_hmt_nhits_sig_xtmb[1];
+        assign  header14_run3_[14]      =  r_hmt_nhits_sig_header[1];
         assign  header14_[14:0]         =  run3_daq_df ? header14_run3_[14:0] : r_trig_counter[29:15]; // TMB trigger counter
 	assign	header14_[18:15]	=	0;							// DDU+DMB control flags
 
@@ -4074,7 +4074,7 @@
 	assign	header29_[14]		=	hs_layer_trig;				// Layer-mode trigger
 	assign	header29_[18:15]	=	0;							// DDU+DMB control flags
 
-	assign	header30_[4:0]		=	run3_daq_df ? r_hmt_nhits_sig_xtmb[6:2] : r_alct_bxn[4:0];			// ALCT0/1 bxn
+	assign	header30_[4:0]		=	run3_daq_df ? r_hmt_nhits_sig_header[6:2] : r_alct_bxn[4:0];			// ALCT0/1 bxn
 	assign	header30_[6:5]		=	r_alct_ecc_err[1:0];		// ALCT trigger path ECC error code
 	assign	header30_[11:7]		=	cfeb_badbits_found[4:0];	// CFEB[n] has at least 1 bad bit
 	assign	header30_[12]		=	cfeb_badbits_blocked;		// A CFEB had bad bits that were blocked
