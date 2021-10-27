@@ -63,7 +63,7 @@
 //	11/24/10 Replace inferred clct separation ram with library instance, finally ditch that clct_sep_ram_init.dat file
 //	12/01/10 Remove leftover sep ram array
 //-------------------------------------------------------------------------------------------------------------------
-	module pattern_finder_ccLUT_simple
+	module pattern_finder
 	(
 // Clock Ports
 	clock,
@@ -1361,7 +1361,7 @@
 	hs_pid_1st	<= 1;								// Pattern id=1 for layer triggers
 	hs_hit_1st	<= hs_nlayers_hit_dly;				// Insert number of layers hit
 	hs_key_1st	<= 0;								// Dummy key
-           hs_bnd_1st <= 0;
+          hs_bnd_1st <= 0;
           hs_car_1st <= 0;
           hs_xky_1st <= 0;
           hs_run2pid_1st <= 0;
@@ -1622,7 +1622,7 @@ function [3: 0] run3bnd;
       3'd1 :     bnd = 4'd13;
       default :  bnd = 4'd15;
     endcase
-    run3bnd = bnd
+    run3bnd = bnd;
   end
   endfunction
 
