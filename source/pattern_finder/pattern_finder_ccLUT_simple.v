@@ -258,7 +258,6 @@
         output [MXXKYB     - 1 : 0] hs_xky_1st; // 1st CLCT key 1/8-strip
         output [MXBNDB     - 1 : 0] hs_bnd_1st; // 1st CLCT pattern lookup bend angle
         output [MXPATC     - 1 : 0] hs_car_1st; // 1st CLCT pattern lookup comparator-code
-        //output [MXPIDB - 1: 0]  hs_run2pid_1st; // 1st CLCT pattern ID
         output [MXPIDB-1: 0]  hs_run2pid_1st; // 1st CLCT pattern ID
 
 	output	[MXHITB-1:0]	hs_hit_2nd;			// 2nd CLCT pattern hits
@@ -1361,10 +1360,10 @@
 	hs_pid_1st	<= 1;								// Pattern id=1 for layer triggers
 	hs_hit_1st	<= hs_nlayers_hit_dly;				// Insert number of layers hit
 	hs_key_1st	<= 0;								// Dummy key
-          hs_bnd_1st <= 0;
-          hs_car_1st <= 0;
-          hs_xky_1st <= 0;
-          hs_run2pid_1st <= 0;
+        hs_bnd_1st <= 0;
+        hs_car_1st <= 0;
+        hs_xky_1st <= 0;
+        hs_run2pid_1st <= 0;
 	end
 	else begin										// else assert final 1st clct
 	hs_key_1st <= hs_key_1st_dly;
