@@ -1298,7 +1298,6 @@
 
 	assign cfeb_exists[icfeb] = 1;							// Existence flag
 	
-        defparam ucfeb.TMBHMT    = `TMBHMT; 
 	cfeb ucfeb
 	(
 // Clock
@@ -1723,7 +1722,7 @@
   wire [MXHMTB-1:0] hmt_trigger_tmb_ro;// results aligned with ALCT vpf
 
 
-`define TMBHMT
+`ifdef  TMBHMT
    hmt uhmt
   (
   .clock       (clock),          // In clock

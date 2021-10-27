@@ -1236,11 +1236,11 @@
 	wire [MXHS-1:0] hs_key_hitpid3 = hs_key_hit3 & hs_key_pid3;
 	wire [MXHS-1:0] hs_key_hitpid4 = hs_key_hit4 & hs_key_pid4;
 
-	wire [MXHS-1:0] hs_key_dmb0 = hs_key_dmb0 & hs_key_pid0;	// hits on key satify both hit and pid thresholds
-	wire [MXHS-1:0] hs_key_dmb1 = hs_key_dmb1 & hs_key_pid1;
-	wire [MXHS-1:0] hs_key_dmb2 = hs_key_dmb2 & hs_key_pid2;
-	wire [MXHS-1:0] hs_key_dmb3 = hs_key_dmb3 & hs_key_pid3;
-	wire [MXHS-1:0] hs_key_dmb4 = hs_key_dmb4 & hs_key_pid4;
+	wire [MXHS-1:0] hs_key_dmbpid0 = hs_key_dmb0 & hs_key_pid0;	// hits on key satify both hit and pid thresholds
+	wire [MXHS-1:0] hs_key_dmbpid1 = hs_key_dmb1 & hs_key_pid1;
+	wire [MXHS-1:0] hs_key_dmbpid2 = hs_key_dmb2 & hs_key_pid2;
+	wire [MXHS-1:0] hs_key_dmbpid3 = hs_key_dmb3 & hs_key_pid3;
+	wire [MXHS-1:0] hs_key_dmbpid4 = hs_key_dmb4 & hs_key_pid4;
 
 	wire cfeb_layer_trigger = cfeb_layer_trig && layer_trig_en_ff;
 
@@ -1250,21 +1250,21 @@
 	assign cfeb_hit[3] = ((|hs_key_hitpid3) || cfeb_layer_trigger) && cfeb_en_ff[3];
 	assign cfeb_hit[4] = ((|hs_key_hitpid4) || cfeb_layer_trigger) && cfeb_en_ff[4];
 
-	assign cfeb_dmb[0] = ((|hs_key_dmb0) || cfeb_layer_trigger) && cfeb_en_ff[0];
-	assign cfeb_dmb[1] = ((|hs_key_dmb1) || cfeb_layer_trigger) && cfeb_en_ff[1];
-	assign cfeb_dmb[2] = ((|hs_key_dmb2) || cfeb_layer_trigger) && cfeb_en_ff[2];
-	assign cfeb_dmb[3] = ((|hs_key_dmb3) || cfeb_layer_trigger) && cfeb_en_ff[3];
-	assign cfeb_dmb[4] = ((|hs_key_dmb4) || cfeb_layer_trigger) && cfeb_en_ff[4];
+	assign cfeb_dmb[0] = ((|hs_key_dmbpid0) || cfeb_layer_trigger) && cfeb_en_ff[0];
+	assign cfeb_dmb[1] = ((|hs_key_dmbpid1) || cfeb_layer_trigger) && cfeb_en_ff[1];
+	assign cfeb_dmb[2] = ((|hs_key_dmbpid2) || cfeb_layer_trigger) && cfeb_en_ff[2];
+	assign cfeb_dmb[3] = ((|hs_key_dmbpid3) || cfeb_layer_trigger) && cfeb_en_ff[3];
+	assign cfeb_dmb[4] = ((|hs_key_dmbpid4) || cfeb_layer_trigger) && cfeb_en_ff[4];
 
-	assign cfebnm1_dmb[1]	= | (hs_key_dmb1 & adjcfeb_mask_nm1);
-	assign cfebnm1_dmb[2]	= | (hs_key_dmb2 & adjcfeb_mask_nm1);
-	assign cfebnm1_dmb[3]	= | (hs_key_dmb3 & adjcfeb_mask_nm1);
-	assign cfebnm1_dmb[4]	=(| (hs_key_dmb4 & adjcfeb_mask_nm1)) && !csc_me1ab;	// Turn off adjacency for me1ab
+	assign cfebnm1_dmb[1]	= | (hs_key_dmbpid1 & adjcfeb_mask_nm1);
+	assign cfebnm1_dmb[2]	= | (hs_key_dmbpid2 & adjcfeb_mask_nm1);
+	assign cfebnm1_dmb[3]	= | (hs_key_dmbpid3 & adjcfeb_mask_nm1);
+	assign cfebnm1_dmb[4]	=(| (hs_key_dmbpid4 & adjcfeb_mask_nm1)) && !csc_me1ab;	// Turn off adjacency for me1ab
 
-	assign cfebnp1_dmb[0]	= | (hs_key_dmb0 & adjcfeb_mask_np1);
-	assign cfebnp1_dmb[1]	= | (hs_key_dmb1 & adjcfeb_mask_np1);
-	assign cfebnp1_dmb[2]	= | (hs_key_dmb2 & adjcfeb_mask_np1);
-	assign cfebnp1_dmb[3]	=(| (hs_key_dmb3 & adjcfeb_mask_np1)) && !csc_me1ab;	// Turn off adjacency for me1ab
+	assign cfebnp1_dmb[0]	= | (hs_key_dmbpid0 & adjcfeb_mask_np1);
+	assign cfebnp1_dmb[1]	= | (hs_key_dmbpid1 & adjcfeb_mask_np1);
+	assign cfebnp1_dmb[2]	= | (hs_key_dmbpid2 & adjcfeb_mask_np1);
+	assign cfebnp1_dmb[3]	=(| (hs_key_dmbpid3 & adjcfeb_mask_np1)) && !csc_me1ab;	// Turn off adjacency for me1ab
 
 // Output active FEB signal, and adjacent FEBs if hit is near board boundary
 	assign cfeb_active[0]	=	(cfeb_dmb[0] ||                   cfebnm1_dmb[1] || (| hs_key_dmb0)) && cfeb_en_ff[0];
