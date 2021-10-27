@@ -3358,8 +3358,8 @@
 
       //CCLUT algorithm
       wire run2_revcode_enable = run2_revcode && !run3_daq_df;//switch to Run2 legacy revision code
-      wire [15:0] run2_legacy_revcode;//2016.03.16
-      assign run2_legacy_revcode[8:0]    = 8'd112;//3*32 + 16
+      wire [15:0] run2_legacy_revcode;//2016.04.14
+      assign run2_legacy_revcode[8:0]    = 8'd142;//4*32 + 14
       assign run2_legacy_revcode[12:9]   = 4'h6 + 4'hA;
       assign run2_legacy_revcode[15:13]  = FPGAID[15:13];
       assign revcode[14:0]    = run2_revcode_enable ? run2_legacy_revcode[14:0] : ((ccLUT_enable) ? revcode_vme_new[14:0] : revcode_vme[14:0]);  // Sequencer format is 15 bits, VME is 16
