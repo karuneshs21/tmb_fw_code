@@ -1345,6 +1345,8 @@
 	wire   blank_1st	  = ((hs_hit_1st_dly==0) && (clct_blanking==1)) || purging;
 	wire   lyr_trig_1st	  = (hs_layer_latch && layer_trig_en_ff);
 
+        wire  [MXBNDB - 2:0] hs_bnd_1st_dly = run3bnd(hs_pat_1st_dly[MXPIDB-1:1]);
+
 	always @(posedge clock) begin
 	if (blank_1st) begin							// blank 1st clct
 	hs_pid_1st	<= 0;
@@ -1369,19 +1371,11 @@
 	//hs_pid_1st <= hs_pat_1st_dly[MXPIDB-1:0];
         hs_pid_1st    <= {hs_pat_1st_dly[MXPIDB-1:2], hs_pat_1st_dly[0]};
 	hs_hit_1st <= hs_pat_1st_dly[MXPATB-1:MXPIDB];
-          //hs_bnd_1st <= 0;
+          hs_bnd_1st <= {hs_pat_1st_dly[0], hs_bnd_1st_dly};
           hs_car_1st <= 0;
           hs_xky_1st <= {hs_key_1st_dly, 2'b10};
           hs_run2pid_1st <= hs_pat_1st_dly[MXPIDB-1:0];
 
-          case ( hs_pat_1st_dly[MXPIDB-1:1])
-              3'd5 : hs_bnd_1st = 4'd1;
-              3'd4 : hs_bnd_1st = 4'd4;
-              3'd3 : hs_bnd_1st = 4'd7;
-              3'd2 : hs_bnd_1st = 4'd10;
-              3'd1 : hs_bnd_1st = 4'd13;
-              default : hs_bnd_1st = 4'd15;
-          endcase
 	end
 	end
 
@@ -1575,6 +1569,7 @@
 	assign hs_hit_s5    = hs_pat_s5[MXPATB-1:MXPIDB];
 	wire   blank_2nd    = ((hs_hit_s5==0) && (clct_blanking==1)) || purging;
 	wire   lyr_trig_2nd = (hs_layer_latch && layer_trig_en_ff);
+        wire [MXBNDB     - 2:0]  hs_bnd_s5 = run3bnd(hs_pat_s5[MXPIDB-1:1]);
 
 	always @(posedge clock) begin
 	if (blank_2nd) begin
@@ -1604,21 +1599,33 @@
 	hs_hit_2nd	<= hs_pat_s5[MXPATB-1:MXPIDB];
 	hs_key_2nd	<= hs_key_s5;
 	hs_bsy_2nd	<= hs_bsy_s5;
-          //hs_bnd_2nd <= 0;
+          hs_bnd_2nd <=  {hs_pat_s5[0],  hs_bnd_s5};
           hs_car_2nd <= 0;
           hs_xky_2nd <= {hs_key_s5, 2'b10};
           hs_run2pid_2nd <= hs_pat_s5[MXPIDB-1:0];
 
-          case ( hs_pat_s5[MXPIDB-1:1])
-              3'd5 :     hs_bnd_2nd = 4'd1;
-              3'd4 :     hs_bnd_2nd = 4'd4;
-              3'd3 :     hs_bnd_2nd = 4'd7;
-              3'd2 :     hs_bnd_2nd = 4'd10;
-              3'd1 :     hs_bnd_2nd = 4'd13;
-              default :  hs_bnd_2nd = 4'd15;
-          endcase
           end//end of else case
       end//end always
+
+//========================
+// LUt to convert run2 pattern id into Run3 bending for CCLUT
+function [3: 0] run3bnd;
+  input [2: 0] pat;
+  reg   [3: 0] bnd;
+
+  begin
+    case (pat[2: 0])
+      3'd5 :     bnd = 4'd1;
+      3'd4 :     bnd = 4'd4;
+      3'd3 :     bnd = 4'd7;
+      3'd2 :     bnd = 4'd10;
+      3'd1 :     bnd = 4'd13;
+      default :  bnd = 4'd15;
+    endcase
+    run3bnd = bnd
+  end
+  endfunction
+
 
 //-------------------------------------------------------------------------------------------------------------------
 	endmodule
