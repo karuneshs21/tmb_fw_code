@@ -557,6 +557,7 @@
 
 	seq_trigger,
 	sequencer_state,
+        seq_trigger_nodeadtime,
 	
 	event_clear_vme,
 	clct0_vme,
@@ -1278,6 +1279,7 @@
 
 	output					seq_trigger;		// Sequencer requests L1A from CCB
 	output	[11:0]			sequencer_state;	// Sequencer state for vme read
+        input   seq_trigger_nodeadtime;
 
 	input					event_clear_vme;	// Event clear for aff,alct,clct,mpc vme diagnostic registers
 	output	[MXCLCT-1:0]	clct0_vme;			// First  CLCT
@@ -3079,7 +3081,8 @@
 	reg seq_trigger=0;
 
 	always @(posedge clock) begin
-	seq_trigger	<=	tmb_trig_pulse && (tmb_trig_keep || tmb_non_trig_keep) && !seq_trigger;
+	//seq_trigger	<=	tmb_trig_pulse && (tmb_trig_keep || tmb_non_trig_keep) && !seq_trigger;
+        seq_trigger <= tmb_trig_pulse && (tmb_trig_keep || tmb_non_trig_keep) && (!seq_trigger || seq_trigger_nodeadtime) && !fmm_trig_stop;
 	end
 
 // Scintillator Veto for FAST sites, Assert veto on l1a request, persist until clear on VME, copy to VME

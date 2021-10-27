@@ -1469,6 +1469,8 @@
       wire       algo2016_clct_use_corrected_bx;      // NOT YET IMPLEMENTED: Use median of hits for CLCT timing: 0 - "old" no CLCT timing corrections, 1 - algo2016 CLCT timing calculated based on median of hits,  NOT USED, Tao
       wire       evenchamber;  // from VME register 0x198, 1 for even chamber and 0 for odd chamber
 
+      wire       seq_trigger_nodeadtime;
+
 
         `ifdef CCLUT
 	//pattern_finder_ccLUT_tmb upattern_finder_cclut
@@ -2185,6 +2187,7 @@
 
 	.seq_trigger			(seq_trigger),						// Out	Sequencer requests L1A from CCB
 	.sequencer_state		(sequencer_state[11:0]),			// Out	Sequencer state for vme
+        .seq_trigger_nodeadtime (seq_trigger_nodeadtime),  //IN no dead time for seq-trigger
 
 	.event_clear_vme		(event_clear_vme),					// In	Event clear for aff,clct,mpc vme diagnostic registers
 	.clct0_vme				(clct0_vme[MXCLCT-1:0]),			// Out	First  CLCT
@@ -4047,6 +4050,7 @@
       .algo2016_drop_used_clcts            (algo2016_drop_used_clcts),            // Out Drop CLCTs from matching in ALCT-centric algorithm: 0 - algo2016 do NOT drop CLCTs, 1 - drop used CLCTs
       .algo2016_cross_bx_algorithm         (algo2016_cross_bx_algorithm),         // Out LCT sorting using cross BX algorithm: 0 - "old" no cross BX algorithm used, 1 - algo2016 uses cross BX algorithm
       .algo2016_clct_use_corrected_bx      (algo2016_clct_use_corrected_bx),      // Out Use median of hits for CLCT timing: 0 - "old" no CLCT timing corrections, 1 - algo2016 CLCT timing calculated based on median of hits NOT YET IMPLEMENTED:
+      .seq_trigger_nodeadtime (seq_trigger_nodeadtime),  //Out no dead time for seq-trigger      attern_finder_ccLUT_tmb upattern_finder_cclut
       .evenchamber                         (evenchamber),   // evenodd parity. 1 for even chamber and 0 for odd chamber
 
 

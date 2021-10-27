@@ -2095,6 +2095,7 @@
       output       algo2016_cross_bx_algorithm;         // LCT sorting using cross BX algorithm: 0 - "old" no cross BX algorithm used, 1 - algo2016 uses cross BX algorithm
       output       algo2016_clct_use_corrected_bx;      // Use median of hits for CLCT timing: 0 - "old" no CLCT timing corrections, 1 - algo2016 CLCT timing calculated based on median of hits
       output       evenchamber;
+      output       seq_trigger_nodeadtime;
 // Sump
 	output					vme_sump;				// Unused signals
 
