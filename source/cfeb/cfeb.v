@@ -162,6 +162,7 @@
 	ly3hs,
 	ly4hs,
 	ly5hs,
+   nhits_per_cfeb,
 
 // Status
 	demux_tp_1st,
@@ -186,6 +187,7 @@
 	,fifo_rdata_lyr5
 `endif
 	);
+
 //------------------------------------------------------------------------------------------------------------------
 // Bus Widths
 //------------------------------------------------------------------------------------------------------------------
@@ -271,6 +273,7 @@
 	output	[MXHS-1:0]		ly4hs;
 	output	[MXHS-1:0]		ly5hs;
 
+        output [5:0] nhits_per_cfeb;
 // Status
 	output					demux_tp_1st;		// Demultiplexer test point first-in-time
 	output					demux_tp_2nd;		// Demultiplexer test point second-in-time
@@ -311,6 +314,9 @@
 	`ifdef  CFEB_INJECT_STAGGER initial $display ("CFEB Pattern injector layer staggering is ON");  `endif
 	`ifndef CFEB_INJECT_STAGGER initial $display ("CFEB Pattern injector layer staggering is OFF"); `endif
 
+    `ifdef TMBHMT    initial $display ("HMT is enabled=%H", `TMBHMT); 
+    `else initial $display ("HMT is NOT enabled"); 
+    `endif
 //-------------------------------------------------------------------------------------------------------------------
 // State machine power-up reset + global reset
 //-------------------------------------------------------------------------------------------------------------------
@@ -799,15 +805,41 @@
 	wire [MXDS-1:0] tskip [MXLY-1:0];	// Skipped triads
 	wire [MXHS-1:0] hs    [MXLY-1:0];	// Decoded 1/2-strip pulses
 
+        wire [MXDS-1:0] hs_fired [MXLY-1:0];  // whether hs is fired at this bx. valid only for 1BX
+
 	generate
 	for (ily=0; ily<=MXLY-1; ily=ily+1) begin: ily_loop
 	for (ids=0; ids<=MXDS-1; ids=ids+1) begin: ids_loop
-	triad_decode utriad(clock,treset,persist,persist1,triad_s2[ily][ids],hs[ily][3+ids*4:ids*4],tskip[ily][ids]);
+	triad_decode utriad(clock,treset,persist,persist1,triad_s2[ily][ids],  hs_fired[ily][ids], hs[ily][3+ids*4:ids*4],tskip[ily][ids]);
 	end
 	end
 	endgenerate
 
 	assign triad_skip = (|tskip[0]) | (|tskip[1]) | (|tskip[2]) | (|tskip[3]) | (|tskip[4]) | (|tskip[5]);
+      reg [5:0] nhits_s0 = 6'b0;
+      `ifdef TMBHMT
+      always  @(posedge clock) begin
+      nhits_s0       <= hs_fired[0][0] + hs_fired[0][1] + hs_fired[0][2] + hs_fired[0][3] + hs_fired[0][4] + hs_fired[0][5] + hs_fired[0][6] + hs_fired[0][7] + 
+                        hs_fired[1][0] + hs_fired[1][1] + hs_fired[1][2] + hs_fired[1][3] + hs_fired[1][4] + hs_fired[1][5] + hs_fired[1][6] + hs_fired[1][7] + 
+                        hs_fired[2][0] + hs_fired[2][1] + hs_fired[2][2] + hs_fired[2][3] + hs_fired[2][4] + hs_fired[2][5] + hs_fired[2][6] + hs_fired[2][7] + 
+                        hs_fired[3][0] + hs_fired[3][1] + hs_fired[3][2] + hs_fired[3][3] + hs_fired[3][4] + hs_fired[3][5] + hs_fired[3][6] + hs_fired[3][7] + 
+                        hs_fired[4][0] + hs_fired[4][1] + hs_fired[4][2] + hs_fired[4][3] + hs_fired[4][4] + hs_fired[4][5] + hs_fired[4][6] + hs_fired[4][7] + 
+                        hs_fired[5][0] + hs_fired[5][1] + hs_fired[5][2] + hs_fired[5][3] + hs_fired[5][4] + hs_fired[5][5] + hs_fired[5][6] + hs_fired[5][7];
+                    //another option to find nhit using rom
+     //       nhits_s0       <= count1s(hs_fired[0][5:0]) + 
+     //                   count1s(hs_fired[1][5:0]) + 
+     //                   count1s(hs_fired[2][5:0]) + 
+     //                   count1s(hs_fired[3][5:0]) + 
+     //                   count1s(hs_fired[4][5:0]) +
+     //                   count1s(hs_fired[5][5:0]) +
+     //                   count1s({hs_fired[0][7:6], hs_fired[1][7:6], hs_fired[2][7:6]}) +
+     //                   count1s({hs_fired[3][7:6], hs_fired[4][7:6], hs_fired[5][7:6]});
+     // 
+      end 
+      `endif
+
+      assign nhits_per_cfeb = nhits_s0;
+
 
 // Expand 2d arrays for transmission to next module
 	assign ly0hs = hs[0];
@@ -819,6 +851,86 @@
 
 // Unused signals
 	assign cfeb_sump = | dopa;
+
+//------------------------------------------------------------------------------------------------------------------
+// function to count1s 
+//------------------------------------------------------------------------------------------------------------------
+function [2: 0] count1s;
+  input [5: 0] inp;
+  reg   [2: 0] rom;
+
+  begin
+    case (inp[5: 0])
+      6'b000000: rom = 0;
+      6'b000001: rom = 1;
+      6'b000010: rom = 1;
+      6'b000011: rom = 2;
+      6'b000100: rom = 1;
+      6'b000101: rom = 2;
+      6'b000110: rom = 2;
+      6'b000111: rom = 3;
+      6'b001000: rom = 1;
+      6'b001001: rom = 2;
+      6'b001010: rom = 2;
+      6'b001011: rom = 3;
+      6'b001100: rom = 2;
+      6'b001101: rom = 3;
+      6'b001110: rom = 3;
+      6'b001111: rom = 4;
+      6'b010000: rom = 1;
+      6'b010001: rom = 2;
+      6'b010010: rom = 2;
+      6'b010011: rom = 3;
+      6'b010100: rom = 2;
+      6'b010101: rom = 3;
+      6'b010110: rom = 3;
+      6'b010111: rom = 4;
+      6'b011000: rom = 2;
+      6'b011001: rom = 3;
+      6'b011010: rom = 3;
+      6'b011011: rom = 4;
+      6'b011100: rom = 3;
+      6'b011101: rom = 4;
+      6'b011110: rom = 4;
+      6'b011111: rom = 5;
+      6'b100000: rom = 1;
+      6'b100001: rom = 2;
+      6'b100010: rom = 2;
+      6'b100011: rom = 3;
+      6'b100100: rom = 2;
+      6'b100101: rom = 3;
+      6'b100110: rom = 3;
+      6'b100111: rom = 4;
+      6'b101000: rom = 2;
+      6'b101001: rom = 3;
+      6'b101010: rom = 3;
+      6'b101011: rom = 4;
+      6'b101100: rom = 3;
+      6'b101101: rom = 4;
+      6'b101110: rom = 4;
+      6'b101111: rom = 5;
+      6'b110000: rom = 2;
+      6'b110001: rom = 3;
+      6'b110010: rom = 3;
+      6'b110011: rom = 4;
+      6'b110100: rom = 3;
+      6'b110101: rom = 4;
+      6'b110110: rom = 4;
+      6'b110111: rom = 5;
+      6'b111000: rom = 3;
+      6'b111001: rom = 4;
+      6'b111010: rom = 4;
+      6'b111011: rom = 5;
+      6'b111100: rom = 4;
+      6'b111101: rom = 5;
+      6'b111110: rom = 5;
+      6'b111111: rom = 6;
+    endcase
+
+    count1s = rom;
+  end
+
+endfunction
 
 //------------------------------------------------------------------------------------------------------------------
 // Debug

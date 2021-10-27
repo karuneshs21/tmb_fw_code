@@ -4,7 +4,7 @@
 // Firmware version global definitions
 	`define FIRMWARE_TYPE		04'hC		// C=Normal CLCT/TMB, D=Debug PCB loopback version
 	`define VERSION				04'hE		// Version revision number, A=TMB2004 and earlier, E=TMB2005E production
-	`define MONTHDAY			16'h0803	// Version date
+	`define MONTHDAY			16'h0901	// Version date
 	`define YEAR				16'h2021	// Version date
 
 	`define AUTO_VME			01'h1		// Automatically initialize VME registers from PROM data,   0=do not
@@ -21,6 +21,15 @@
 	`define MEZCARD				04'hC		// Mezzanine Card: A=V23K, B=V24K prototype, C=V24K production
 	`define ISE_VERSION			16'h0101	// ISE Compiler version 8.2 or 10.1
 	`define FPGAID				16'h4000	// FPGA Type 4000 XC2V4000
+
+       // version_format is control by gem_enable, ccLUT_enable
+        `define VERSION_FORMAT       04'h2   // [12:09]; 0=TMB standard, 1=OTMB Standard, 2=CCLUT, 3=GEM+CCLUT
+        `define VERSION_MAJOR        04'h0   // [08:05];5 bits = Major Version (major features which breaks compatibility, requires c    hanges to other board firmware)
+        `define VERSION_MINOR        05'h0   // [04:00];6 bits = Minor version  (minor features, internal fixes, bug fixes, etc).
+
+        `define CCLUT                01'h1  // 1=turn on CCLUT
+        `define TMBHMT                01'h1  // 1=turn on CCLUT
+       // `define CCLUT                01'h1  // 1=turn on CCLUT
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 // Conditional compile flags: Enable only one CSC_TYPE

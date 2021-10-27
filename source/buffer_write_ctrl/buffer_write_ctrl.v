@@ -223,7 +223,9 @@
 	assign prestore_setback =  READ_ADR_OFFSET+1+PRESTORE_SAFETY;
 
 	always @(posedge clock) begin
-	buf_setback <= pretrig_setback-prestore_setback;
+	//buf_setback <= pretrig_setback-prestore_setback;
+        //old bug fix
+	buf_setback <= pretrig_setback+prestore_setback;
 	end
 
 	assign next_fence_adr = buf_queue_adr-buf_setback;	// compensate for pre-trig latency

@@ -63,7 +63,7 @@
 //	11/24/10 Replace inferred clct separation ram with library instance, finally ditch that clct_sep_ram_init.dat file
 //	12/01/10 Remove leftover sep ram array
 //-------------------------------------------------------------------------------------------------------------------
-	module pattern_finder
+	module pattern_finder_ccLUT_simple
 	(
 // Clock Ports
 	clock,
@@ -125,11 +125,19 @@
 	hs_hit_1st,
 	hs_pid_1st,
 	hs_key_1st,
+        hs_bnd_1st,
+        hs_xky_1st,
+        hs_car_1st,
+        hs_run2pid_1st,
 
 	hs_hit_2nd,
 	hs_pid_2nd,
 	hs_key_2nd,
 	hs_bsy_2nd,
+        hs_bnd_2nd,
+        hs_xky_2nd,
+        hs_car_2nd,
+        hs_run2pid_2nd,
 
 	hs_layer_trig,
 	hs_nlayers_hit,
@@ -173,6 +181,9 @@
 	parameter MXHITB		=	3;				// Hits on pattern bits
 	parameter MXPATB		=	3+4;			// Pattern bits
 
+    parameter MXPATC  = 11;                // Pattern Carry Bits
+    parameter MXOFFSB = 4;                 // Quarter-strip bits
+    parameter MXBNDB  = 5;                 // Bend bits
 //-------------------------------------------------------------------------------------------------------------------
 // Ports
 //-------------------------------------------------------------------------------------------------------------------
@@ -243,10 +254,20 @@
 	output	[MXPIDB-1:0]	hs_pid_1st;			// 1st CLCT pattern ID
 	output	[MXKEYBX-1:0]	hs_key_1st;			// 1st CLCT key 1/2-strip
 
+        output [MXXKYB     - 1 : 0] hs_xky_1st; // 1st CLCT key 1/8-strip
+        output [MXBNDB     - 1 : 0] hs_bnd_1st; // 1st CLCT pattern lookup bend angle
+        output [MXPATC     - 1 : 0] hs_car_1st; // 1st CLCT pattern lookup comparator-code
+        //output [MXPIDB - 1: 0]  hs_run2pid_1st; // 1st CLCT pattern ID
+        output [MXPIDB-1: 0]  hs_run2pid_1st; // 1st CLCT pattern ID
+
 	output	[MXHITB-1:0]	hs_hit_2nd;			// 2nd CLCT pattern hits
 	output	[MXPIDB-1:0]	hs_pid_2nd;			// 2nd CLCT pattern ID
 	output	[MXKEYBX-1:0]	hs_key_2nd;			// 2nd CLCT key 1/2-strip
-	output					hs_bsy_2nd;			// 2nd CLCT busy, logic error indicator
+	output			hs_bsy_2nd;			// 2nd CLCT busy, logic error indicator
+        output [MXXKYB     - 1 : 0] hs_xky_2nd; // 1st CLCT key 1/8-strip
+        output [MXBNDB     - 1 : 0] hs_bnd_2nd; // 1st CLCT pattern lookup bend angle
+        output [MXPATC     - 1 : 0] hs_car_2nd; // 1st CLCT pattern lookup comparator-code
+        output [MXPIDB-1: 0]  hs_run2pid_2nd; // 1st CLCT pattern ID
 
 	output					hs_layer_trig;		// Layer triggered
 	output	[MXHITB-1:0]	hs_nlayers_hit;		// Number of layers hit
@@ -1314,6 +1335,11 @@
 	reg  [MXHITB-1:0]	hs_hit_1st;
 	reg  [MXKEYBX-1:0]	hs_key_1st;
 
+          reg [MXBNDB - 1:0] hs_bnd_1st;
+      reg [MXPATC - 1:0] hs_car_1st;
+      reg [MXXKYB - 1:0] hs_xky_1st;
+      reg [MXPIDB - 1:0] hs_run2pid_1st;
+
 	assign hs_hit_1st_dly = hs_pat_1st_dly[MXPATB-1:MXPIDB];
 	wire   blank_1st	  = ((hs_hit_1st_dly==0) && (clct_blanking==1)) || purging;
 	wire   lyr_trig_1st	  = (hs_layer_latch && layer_trig_en_ff);
@@ -1323,16 +1349,37 @@
 	hs_pid_1st	<= 0;
 	hs_hit_1st	<= 0;
 	hs_key_1st	<= 0;
+           hs_bnd_1st <= 0;
+          hs_car_1st <= 0;
+          hs_xky_1st <= 0;
+          hs_run2pid_1st <= 0;
 	end
 	else if (lyr_trig_1st) begin					// layer-trigger mode
 	hs_pid_1st	<= 1;								// Pattern id=1 for layer triggers
 	hs_hit_1st	<= hs_nlayers_hit_dly;				// Insert number of layers hit
 	hs_key_1st	<= 0;								// Dummy key
+           hs_bnd_1st <= 0;
+          hs_car_1st <= 0;
+          hs_xky_1st <= 0;
+          hs_run2pid_1st <= 0;
 	end
 	else begin										// else assert final 1st clct
 	hs_key_1st <= hs_key_1st_dly;
 	hs_pid_1st <= hs_pat_1st_dly[MXPIDB-1:0];
 	hs_hit_1st <= hs_pat_1st_dly[MXPATB-1:MXPIDB];
+          //hs_bnd_1st <= 0;
+          hs_car_1st <= 0;
+          hs_xky_1st <= {hs_key_1st_dly, 2'b10};
+          hs_run2pid_1st <= hs_pat_1st_dly[MXPIDB-1:0];
+
+          case ( hs_pat_1st_dly[MXPIDB-1:1])
+              3'd5 : hs_bnd_1st = 4'd1;
+              3'd4 : hs_bnd_1st = 4'd4;
+              3'd3 : hs_bnd_1st = 4'd7;
+              3'd2 : hs_bnd_1st = 4'd10;
+              3'd1 : hs_bnd_1st = 4'd13;
+              default : hs_bnd_1st = 4'd15;
+          endcase
 	end
 	end
 
@@ -1518,6 +1565,10 @@
 	reg	 [MXHITB-1:0]	hs_hit_2nd;
 	reg	 [MXKEYBX-1:0]	hs_key_2nd;
 	reg					hs_bsy_2nd;
+          reg [MXBNDB     - 1:0] hs_bnd_2nd;
+          reg [MXPATC     - 1:0] hs_car_2nd;
+          reg [MXXKYB - 1:0]     hs_xky_2nd;
+          reg [MXPIDB     - 1:0] hs_run2pid_2nd;
 
 	assign hs_hit_s5    = hs_pat_s5[MXPATB-1:MXPIDB];
 	wire   blank_2nd    = ((hs_hit_s5==0) && (clct_blanking==1)) || purging;
@@ -1529,20 +1580,42 @@
 	hs_hit_2nd	<= 0;
 	hs_key_2nd	<= 0;
 	hs_bsy_2nd	<= hs_bsy_s5;
+
+          hs_bnd_2nd <= 0;
+          hs_car_2nd <= 0;
+          hs_xky_2nd <= 0;
+          hs_run2pid_2nd <= 0;
 	end
 	else if (lyr_trig_2nd) begin				// layer-trigger mode
 	hs_pid_2nd	<= 0;
 	hs_hit_2nd	<= 0;
 	hs_key_2nd	<= 0;
 	hs_bsy_2nd	<= hs_bsy_s5;
+          hs_bnd_2nd <= 0;
+          hs_car_2nd <= 0;
+          hs_xky_2nd <= 0;
+          hs_run2pid_2nd <= 0;
 	end
 	else begin									// else assert final 2nd clct
 	hs_pid_2nd	<= hs_pat_s5[MXPIDB-1:0];
 	hs_hit_2nd	<= hs_pat_s5[MXPATB-1:MXPIDB];
 	hs_key_2nd	<= hs_key_s5;
 	hs_bsy_2nd	<= hs_bsy_s5;
-	end
-	end
+          //hs_bnd_2nd <= 0;
+          hs_car_2nd <= 0;
+          hs_xky_2nd <= {hs_key_s5, 2'b10};
+          hs_run2pid_2nd <= hs_pat_s5[MXPIDB-1:0];
+
+          case ( hs_pat_s5[MXPIDB-1:1])
+              3'd5 : hs_bnd_2nd = 4'd1;
+              3'd4 : hs_bnd_2nd = 4'd4;
+              3'd3 : hs_bnd_2nd = 4'd7;
+              3'd2 : hs_bnd_2nd = 4'd10;
+              3'd1 : hs_bnd_2nd = 4'd13;
+              default : hs_bnd_2nd = 4'd15;
+          endcase
+          end//end of else case
+      end//end always
 
 //-------------------------------------------------------------------------------------------------------------------
 	endmodule
