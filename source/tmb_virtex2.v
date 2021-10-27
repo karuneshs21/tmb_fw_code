@@ -1298,6 +1298,7 @@
 
 	assign cfeb_exists[icfeb] = 1;							// Existence flag
 	
+        defparam ucfeb.TMBHMT    = `TMBHMT; 
 	cfeb ucfeb
 	(
 // Clock
