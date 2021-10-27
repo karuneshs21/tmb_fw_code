@@ -1479,7 +1479,7 @@
 
  `ifdef CCLUT
 	//pattern_finder_ccLUT_tmb upattern_finder
-	pattern_finder_ccLUT_simple upattern_finder
+	pattern_finder upattern_finder
 	(
 // Ports
 	.clock			(clock),								// In	40MHz TMB main clock
