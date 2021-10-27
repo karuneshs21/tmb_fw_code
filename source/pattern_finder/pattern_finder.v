@@ -1205,8 +1205,8 @@
 
 // Output active FEB signal, and adjacent FEBs if hit is near board boundary
 //Tao, Fixed the active cfeb flag bug here!!!  replace cfeb_hit by cfeb_dmb for active cfeb flag!
-	wire [4:1] cfebnm1_hit;	// Adjacent CFEB-1 has a pattern over threshold
-	wire [3:0] cfebnp1_hit;	// Adjacent CFEB+1 has a pattern over threshold
+	wire [4:1] cfebnm1_dmb;	// Adjacent CFEB-1 has a pattern over threshold
+	wire [3:0] cfebnp1_dmb;	// Adjacent CFEB+1 has a pattern over threshold
         wire [MXCFEB - 1: 0] cfeb_dmb; // This CFEB has a pattern over DMB-trigger threshold    
 
 	wire [MXHS-1:0] hs_key_hitpid0 = hs_key_hit0 & hs_key_pid0;	// hits on key satify both hit and pid thresholds

@@ -703,7 +703,7 @@
 	wr_avail_rmpc,
 
 // TMB LCT Match
-        hmt_trigger_xtmb,
+
 	clct0_xtmb,
 	clct1_xtmb,
 	clctc_xtmb,

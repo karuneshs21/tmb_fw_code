@@ -1477,9 +1477,9 @@
 //pattern_finder_ccLUT_simple: use run2 legacy pattern finding and convert run2 results into CCLUT results without using CC
 //===============================================================
 
-        `ifdef CCLUT
-	//pattern_finder_ccLUT_tmb upattern_finder_cclut
-	pattern_finder_ccLUT_simple upattern_finder_cclut
+ `ifdef CCLUT
+	//pattern_finder_ccLUT_tmb upattern_finder
+	pattern_finder_ccLUT_simple upattern_finder
 	(
 // Ports
 	.clock			(clock),								// In	40MHz TMB main clock
@@ -1579,7 +1579,7 @@
 	.hs_nlayers_hit		(hs_nlayers_hit[MXHITB-1:0]),		// Out	Number of layers hit
 	.hs_layer_or		(hs_layer_or[MXLY-1:0])				// Out	Layer ORs
 	);
-       `else  // normal OTMB firmware with traditional pattern finding  
+ `else  // normal OTMB firmware with traditional pattern finding  
 	pattern_finder upattern_finder
 	(
 // Ports
@@ -1671,7 +1671,7 @@
 	.hs_nlayers_hit		(hs_nlayers_hit[MXHITB-1:0]),		// Out	Number of layers hit
 	.hs_layer_or		(hs_layer_or[MXLY-1:0])				// Out	Layer ORs
 	);
-        `endif
+ `endif
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //  HMT instantiation
@@ -2006,6 +2006,8 @@
 	wire	[MXBADR-1:0]	deb_buf_pop_adr;		// Queue pop  address at last pop
 	wire	[MXBDATA-1:0]	deb_buf_push_data;		// Queue push data at last push
 	wire	[MXBDATA-1:0]	deb_buf_pop_data;		// Queue pop  data at last pop
+	
+	  wire [3:0] tmb_hmt_match_win;
 
 	sequencer usequencer
 	(
@@ -2922,7 +2924,7 @@
 	wire	[1:0]			mpc_accept_vme;
 	wire	[1:0]			mpc_reserved_vme;
 
-          wire [3:0] tmb_hmt_match_win;
+
 
   wire [NHMTHITB-1:0]             hmt_nhits_bx7_vme;
   wire [NHMTHITB-1:0]             hmt_nhits_sig_vme;
