@@ -1427,9 +1427,9 @@
 
    wire ccLUT_enable;
    assign ccLUT_enable = reg_ccLUT_enable;
-   wire run3_trig_df; // Run3 trigger data format
-   wire run3_daq_df;// Run3 daq data format
-   wire run3_alct_df;
+   wire run3_trig_df   = reg_ccLUT_enable; // Run3 trigger data format
+   wire run3_daq_df    = reg_ccLUT_enable;// Run3 daq data format
+   wire run3_alct_df = 1'b0;
 
 
 	wire	[MXCFEB-1:0]	cfeb_hit;						// This CFEB has a pattern over pre-trigger threshold
@@ -2356,8 +2356,6 @@
 	.tmb_trig_pulse			(tmb_trig_pulse),				// In	ALCT or CLCT or both triggered
 	.tmb_trig_keep			(tmb_trig_keep),				// In	ALCT or CLCT or both triggered, and trigger is allowed
 	.tmb_non_trig_keep		(tmb_non_trig_keep),			// In	Event did not trigger, but keep it for readout
-	.tmb_match				(tmb_match),					// In	ALCT and CLCT matched in time
-	.tmb_alct_only			(tmb_alct_only),				// In	Only ALCT triggered
 	.tmb_clct_only			(tmb_clct_only),				// In	Only CLCT triggered
 	.tmb_match_win			(tmb_match_win[3:0]),			// In	Location of alct in clct window
 	.tmb_match_pri			(tmb_match_pri[3:0]),			// In	Priority of clct in clct window
@@ -2385,13 +2383,13 @@
 	.tmb_alct1				(tmb_alct1[10:0]),				// In	ALCT second best muon latched at trigger
 	.tmb_alctb				(tmb_alctb[4:0]),				// In	ALCT bxn latched at trigger
 	.tmb_alcte				(tmb_alcte[1:0]),				// In	ALCT ecc error syndrome latched at trigger
-        .tmb_hmt_match_win         (tmb_hmt_match_win[3:0]), //In  alct/anode hmt in cathode hmt tagged window
+       .tmb_hmt_match_win         (tmb_hmt_match_win[3:0]), //In  alct/anode hmt in cathode hmt tagged window
        .hmt_nhits_sig_ff (hmt_nhits_sig_ff[NHMTHITB-1:0]), // In hmt nhits for header
 
-        //Enable CCLUT or not
+        ////Enable CCLUT or not
         .ccLUT_enable       (ccLUT_enable),  // In
-        .run3_trig_df       (run3_trig_df), // output, enable run3 trigger format or not
-        .run3_daq_df        (run3_daq_df),  // output, enable run3 daq format or not
+        .run3_trig_df       (run3_trig_df), // input, enable run3 trigger format or not
+        .run3_daq_df        (run3_daq_df),  // input, enable run3 daq format or not
 // MPC Status
 	.mpc_frame_ff			(mpc_frame_ff),					// In	MPC frame latch strobe
 	.mpc0_frame0_ff			(mpc0_frame0_ff[MXFRAME-1:0]),	// In	MPC best muon 1st frame
@@ -3007,10 +3005,10 @@
 	.tmb_alctb			(tmb_alctb[4:0]),				// Out	ALCT bxn latched at trigger
 	.tmb_alcte			(tmb_alcte[1:0]),				// Out	ALCT ecc error syndrome latched at trigger
 
-        //Enable CCLUT or not
-        //.ccLUT_enable       (ccLUT_enable),  // In
-        .run3_trig_df       (run3_trig_df), // output, enable run3 trigger format or not
-        //.run3_daq_df        (run3_daq_df),  // output, enable run3 daq format or not
+    //Enable CCLUT or not
+    //.ccLUT_enable       (ccLUT_enable),  // In
+    .run3_trig_df       (run3_trig_df), // output, enable run3 trigger format or not
+    //.run3_daq_df        (run3_daq_df),  // output, enable run3 daq format or not
 
 // MPC Status
 	.mpc_frame_ff		(mpc_frame_ff),					// Out	MPC frame latch strobe
@@ -3210,9 +3208,9 @@
 	defparam uvme.ALCT_MUONIC		= `ALCT_MUONIC;				// Floats ALCT board  in clock-space with independent time-of-flight delay
 	defparam uvme.CFEB_MUONIC		= `CFEB_MUONIC;				// Floats CFEB boards in clock-space with independent time-of-flight delay
 	defparam uvme.CCB_BX0_EMULATOR	= `CCB_BX0_EMULATOR;		// Turns on bx0 emulator at power up, must be 0 for all CERN versions
-        defparam uvme.VERSION_FORMAT   = `VERSION_FORMAT;
-        defparam uvme.VERSION_MAJOR    = `VERSION_MAJOR;
-        defparam uvme.VERSION_MINOR    = `VERSION_MINOR;
+    defparam uvme.VERSION_FORMAT   = `VERSION_FORMAT;
+    defparam uvme.VERSION_MAJOR    = `VERSION_MAJOR;
+    defparam uvme.VERSION_MINOR    = `VERSION_MINOR;
 
 
 	vme uvme
@@ -3498,10 +3496,10 @@
 	.pid_thresh_pretrig		(pid_thresh_pretrig[MXPIDB-1:0]),	// Out	Pattern shape ID pre-trigger threshold
 	.dmb_thresh_pretrig		(dmb_thresh_pretrig[MXHITB-1:0]),	// Out	Hits on pattern template DMB active-feb threshold
 	.adjcfeb_dist			(adjcfeb_dist[MXKEYB-1+1:0]),		// Out	Distance from key to cfeb boundary for marking adjacent cfeb as hit
-        //Enable CCLUT or not
-        .ccLUT_enable       (ccLUT_enable),  // In
-        .run3_trig_df       (run3_trig_df), // output, enable run3 trigger format or not
-        .run3_daq_df        (run3_daq_df),  // output, enable run3 daq format or not
+    ////Enable CCLUT or not
+    //.ccLUT_enable       (ccLUT_enable),  // In
+    //.run3_trig_df       (run3_trig_df), // output, enable run3 trigger format or not
+    //.run3_daq_df        (run3_daq_df),  // output, enable run3 daq format or not
 
 // CFEB Ports: Hot Channel Mask
 	.cfeb0_ly0_hcm			(cfeb_ly0_hcm[0][MXDS-1:0]),	// Out	1=enable DiStrip
@@ -3661,26 +3659,26 @@
 	.lhc_cycle				(lhc_cycle[MXBXN-1:0]),				// Out	LHC period, max BXN count+1
 	.l1a_offset				(l1a_offset[MXL1ARX-1:0]),			// Out	L1A counter preset value
 
-        //HMT port 
-        .hmt_enable         (hmt_enable),        // In ME1a enable or not in HMT
-        .hmt_nhits_bx7_vme    (hmt_nhits_bx7_vme   [NHMTHITB-1:0]),//In  HMT nhits for trigger
-        .hmt_nhits_sig_vme  (hmt_nhits_sig_vme [NHMTHITB-1:0]),//In  HMT nhits for trigger
-        .hmt_nhits_bkg_vme (hmt_nhits_bkg_vme[NHMTHITB-1:0]),//In  HMT nhits for trigger
-        .hmt_cathode_vme           (hmt_cathode_vme[MXHMTB-1:0]), // In HMT trigger results, cathode
-        .hmt_thresh1        (hmt_thresh1[7:0]),    // Out  loose HMT thresh
-        .hmt_thresh2        (hmt_thresh2[7:0]),    // Out  median HMT thresh
-        .hmt_thresh3        (hmt_thresh3[7:0]),    // Out  tight HMT thresh
-        .hmt_aff_thresh      (hmt_aff_thresh[6:0]),    //Out hmt thresh
-        .cfeb_allow_hmt_ro  (cfeb_allow_hmt_ro), //Out read out CFEB when hmt is fired
-        .hmt_delay          (hmt_delay[3:0]),        //Out hmt delay for matching
-        .hmt_alct_win_size  (hmt_alct_win_size[3:0]),//Out hmt-alct match window size
-        .hmt_allow_cathode   (hmt_allow_cathode),//Out hmt allow to trigger on cathode
-        .hmt_allow_anode     (hmt_allow_anode),  //Out hmt allow to trigger on anode
-        .hmt_allow_match     (hmt_allow_match),  //Out hmt allow to trigger on canode X anode match
-        .hmt_allow_cathode_ro(hmt_allow_cathode_ro), //Out hmt allow to readout on cathode
-        .hmt_allow_anode_ro  (hmt_allow_anode_ro),   //Out hmt allow to readout on anode
-        .hmt_allow_match_ro  (hmt_allow_match_ro),   //Out hmt allow to readout on match
-        .hmt_outtime_check   (hmt_outtime_check),//In hmt fired shoudl check anode bg lower than threshold
+    ////HMT port 
+    //.hmt_enable         (hmt_enable),        // In ME1a enable or not in HMT
+    //.hmt_nhits_bx7_vme    (hmt_nhits_bx7_vme   [NHMTHITB-1:0]),//In  HMT nhits for trigger
+    //.hmt_nhits_sig_vme  (hmt_nhits_sig_vme [NHMTHITB-1:0]),//In  HMT nhits for trigger
+    //.hmt_nhits_bkg_vme (hmt_nhits_bkg_vme[NHMTHITB-1:0]),//In  HMT nhits for trigger
+    //.hmt_cathode_vme           (hmt_cathode_vme[MXHMTB-1:0]), // In HMT trigger results, cathode
+    //.hmt_thresh1        (hmt_thresh1[7:0]),    // Out  loose HMT thresh
+    //.hmt_thresh2        (hmt_thresh2[7:0]),    // Out  median HMT thresh
+    //.hmt_thresh3        (hmt_thresh3[7:0]),    // Out  tight HMT thresh
+    //.hmt_aff_thresh      (hmt_aff_thresh[6:0]),    //Out hmt thresh
+    //.cfeb_allow_hmt_ro  (cfeb_allow_hmt_ro), //Out read out CFEB when hmt is fired
+    //.hmt_delay          (hmt_delay[3:0]),        //Out hmt delay for matching
+    //.hmt_alct_win_size  (hmt_alct_win_size[3:0]),//Out hmt-alct match window size
+    //.hmt_allow_cathode   (hmt_allow_cathode),//Out hmt allow to trigger on cathode
+    //.hmt_allow_anode     (hmt_allow_anode),  //Out hmt allow to trigger on anode
+    //.hmt_allow_match     (hmt_allow_match),  //Out hmt allow to trigger on canode X anode match
+    //.hmt_allow_cathode_ro(hmt_allow_cathode_ro), //Out hmt allow to readout on cathode
+    //.hmt_allow_anode_ro  (hmt_allow_anode_ro),   //Out hmt allow to readout on anode
+    //.hmt_allow_match_ro  (hmt_allow_match_ro),   //Out hmt allow to readout on match
+    //.hmt_outtime_check   (hmt_outtime_check),//In hmt fired shoudl check anode bg lower than threshold
 
 // Sequencer Ports: Latched CLCTs + Status
 	.event_clear_vme		(event_clear_vme),					// Out	Event clear for vme diagnostic registers

@@ -295,10 +295,10 @@
 	dmb_thresh_pretrig,
 	adjcfeb_dist,
 
-        ccLUT_enable,
-        run3_trig_df,
-        run3_daq_df,
-        run3_alct_df,
+    //ccLUT_enable,
+    //run3_trig_df,
+    //run3_daq_df,
+    //run3_alct_df,
 
 // CFEB Ports: Hot Channel Mask
 	cfeb0_ly0_hcm,
@@ -458,27 +458,27 @@
 	lhc_cycle,
 	l1a_offset,
 
-       //HMT part
-      hmt_enable,
-      hmt_nhits_bx7_vme,
-      hmt_nhits_sig_vme,
-      hmt_nhits_bkg_vme,
-      hmt_cathode_vme,
-    //output
-      hmt_thresh1,
-      hmt_thresh2,
-      hmt_thresh3,
-      hmt_aff_thresh   ,
-      cfeb_allow_hmt_ro,
-      hmt_delay        ,
-      hmt_alct_win_size,
-      hmt_allow_anode      ,
-      hmt_allow_cathode    ,
-      hmt_allow_match      ,
-      hmt_allow_anode_ro   ,
-      hmt_allow_cathode_ro ,
-      hmt_allow_match_ro   ,
-      hmt_outtime_check  ,
+      // //HMT part
+      //hmt_enable,
+      //hmt_nhits_bx7_vme,
+      //hmt_nhits_sig_vme,
+      //hmt_nhits_bkg_vme,
+      //hmt_cathode_vme,
+    ////output
+      //hmt_thresh1,
+      //hmt_thresh2,
+      //hmt_thresh3,
+      //hmt_aff_thresh   ,
+      //cfeb_allow_hmt_ro,
+      //hmt_delay        ,
+      //hmt_alct_win_size,
+      //hmt_allow_anode      ,
+      //hmt_allow_cathode    ,
+      //hmt_allow_match      ,
+      //hmt_allow_anode_ro   ,
+      //hmt_allow_cathode_ro ,
+      //hmt_allow_match_ro   ,
+      //hmt_outtime_check  ,
 
     // Sequencer Ports: Latched CLCTs + Status
       event_clear_vme,
@@ -1222,21 +1222,21 @@
 
 	parameter ADR_V6_EXTEND				= 9'h17A;	// DCFEB 7-bit extensions
 
-        parameter ADR_ALGO2016_CTRL = 9'h198; // Controls parameters of new trigger algorithm  
+  //      parameter ADR_ALGO2016_CTRL = 9'h198; // Controls parameters of new trigger algorithm  
 
-  // Tao,CCLUT register starts from 10'h19A = 410
-  parameter ADR_CLCT0_CC              = 10'h19A;  // Comparator code, for 1st CLCT, readonly
-  parameter ADR_CLCT1_CC              = 10'h19C;  // Comparator code, for 2nd CLCT, readonly
-  parameter ADR_CLCT0_BNDXKY          = 10'h19E;  // new bending
-  parameter ADR_CLCT1_BNDXKY          = 10'h1A0; 
+  //// Tao,CCLUT register starts from 10'h19A = 410
+  //parameter ADR_CLCT0_CC              = 10'h19A;  // Comparator code, for 1st CLCT, readonly
+  //parameter ADR_CLCT1_CC              = 10'h19C;  // Comparator code, for 2nd CLCT, readonly
+  //parameter ADR_CLCT0_BNDXKY          = 10'h19E;  // new bending
+  //parameter ADR_CLCT1_BNDXKY          = 10'h1A0; 
 
-  parameter ADR_RUN3_FORMAT_CTRL      = 10'h1AA; // control for CCLUT, data format
-  parameter ADR_HMT_CTRL              = 10'h1AC; // control for HMT
-  parameter ADR_HMT_THRESH1           = 10'h1AE; // threshold1 for HMT
-  parameter ADR_HMT_THRESH2           = 10'h1B0; // threshold2 for HMT
-  parameter ADR_HMT_THRESH3           = 10'h1B2; // threshold3 for HMT
-  parameter ADR_HMT_NHITS_SIG         = 10'h1B4;
-  parameter ADR_HMT_NHITS_BKG         = 10'h1B6;
+  //parameter ADR_RUN3_FORMAT_CTRL      = 10'h1AA; // control for CCLUT, data format
+  //parameter ADR_HMT_CTRL              = 10'h1AC; // control for HMT
+  //parameter ADR_HMT_THRESH1           = 10'h1AE; // threshold1 for HMT
+  //parameter ADR_HMT_THRESH2           = 10'h1B0; // threshold2 for HMT
+  //parameter ADR_HMT_THRESH3           = 10'h1B2; // threshold3 for HMT
+  //parameter ADR_HMT_NHITS_SIG         = 10'h1B4;
+  //parameter ADR_HMT_NHITS_BKG         = 10'h1B6;
 
 //------------------------------------------------------------------------------------------------------------------
 // Ports
@@ -1524,12 +1524,13 @@
 	output	[MXHITB-1:0]	dmb_thresh_pretrig;		// Hits on pattern template DMB active-feb threshold
 	output	[MXKEYB-1+1:0]	adjcfeb_dist;			// Distance from key to cfeb boundary for marking adjacent cfeb as hit
 
-        input ccLUT_enable; // In
-        output run3_trig_df;
-        output run3_daq_df;
-        output run3_alct_df;
-      //output run2_revcode;
-      wire run2_revcode;
+    //input ccLUT_enable; // In
+    //output run3_trig_df;
+    //output run3_daq_df;
+    //output run3_alct_df;
+  //output run2_revcode;
+  //wire run2_revcode;
+  wire run3_daq_df = 1'b1;
 
 
 
@@ -1693,27 +1694,27 @@
 	output	[MXBXN-1:0]		lhc_cycle;				// LHC period, max BXN count+1
 	output	[MXL1ARX-1:0]	l1a_offset;				// L1A counter preset value
 
-        //HMT part
-      output hmt_enable;
-      input [NHMTHITB-1:0] hmt_nhits_bx7_vme;
-      input [NHMTHITB-1:0] hmt_nhits_sig_vme;
-      input [NHMTHITB-1:0] hmt_nhits_bkg_vme;
-      input [MXHMTB-1:0] hmt_cathode_vme;
+      //  //HMT part
+      //output hmt_enable;
+      //input [NHMTHITB-1:0] hmt_nhits_bx7_vme;
+      //input [NHMTHITB-1:0] hmt_nhits_sig_vme;
+      //input [NHMTHITB-1:0] hmt_nhits_bkg_vme;
+      //input [MXHMTB-1:0] hmt_cathode_vme;
 
-      output [7:0] hmt_thresh1;
-      output [7:0] hmt_thresh2;
-      output [7:0] hmt_thresh3;
-      output       cfeb_allow_hmt_ro;
-      output [6:0] hmt_aff_thresh   ;
-      output [3:0] hmt_delay        ;
-      output [3:0] hmt_alct_win_size;
-      output       hmt_allow_anode      ;
-      output       hmt_allow_cathode    ;
-      output       hmt_allow_match      ;
-      output       hmt_allow_anode_ro   ;
-      output       hmt_allow_cathode_ro ;
-      output       hmt_allow_match_ro   ;
-      output       hmt_outtime_check;
+      //output [7:0] hmt_thresh1;
+      //output [7:0] hmt_thresh2;
+      //output [7:0] hmt_thresh3;
+      //output       cfeb_allow_hmt_ro;
+      //output [6:0] hmt_aff_thresh   ;
+      //output [3:0] hmt_delay        ;
+      //output [3:0] hmt_alct_win_size;
+      //output       hmt_allow_anode      ;
+      //output       hmt_allow_cathode    ;
+      //output       hmt_allow_match      ;
+      //output       hmt_allow_anode_ro   ;
+      //output       hmt_allow_cathode_ro ;
+      //output       hmt_allow_match_ro   ;
+      //output       hmt_outtime_check;
 
 // Sequencer Ports: Latched CLCTs
 	output					event_clear_vme;		// Event clear for aff,clct,mpc vme diagnostic registers
@@ -2507,33 +2508,29 @@
 	wire	[15:0]	alct_startup_delay_rd;
 	wire	[15:0]	alct_startup_status_rd;
 
-        reg  [15:0] algo2016_ctrl_wr;
-      wire [15:0] algo2016_ctrl_rd;
+     //   reg  [15:0] algo2016_ctrl_wr;
+     // wire [15:0] algo2016_ctrl_rd;
 
-          wire [15:0] clct0_cc_rd;
-          wire [15:0] clct1_cc_rd;
-          //wire [15:0] clct0_qlt_rd;
-          //wire [15:0] clct1_qlt_rd;
-          wire [15:0] clct0_bndxky_rd;
-          wire [15:0] clct1_bndxky_rd;
-          //wire [15:0] clct0_xky_rd;
-          //wire [15:0] clct1_xky_rd;
+     //     wire [15:0] clct0_cc_rd;
+     //     wire [15:0] clct1_cc_rd;
+     //     wire [15:0] clct0_bndxky_rd;
+     //     wire [15:0] clct1_bndxky_rd;
 
-          reg  [15:0] run3_format_ctrl_wr;
-          wire [15:0] run3_format_ctrl_rd;
+     //     reg  [15:0] run3_format_ctrl_wr;
+     //     wire [15:0] run3_format_ctrl_rd;
 
-          reg  [15:0] hmt_ctrl_wr;
-          wire [15:0] hmt_ctrl_rd;
+     //     reg  [15:0] hmt_ctrl_wr;
+     //     wire [15:0] hmt_ctrl_rd;
 
-          reg  [15:0] hmt_thresh1_wr;
-          wire [15:0] hmt_thresh1_rd;
-          reg  [15:0] hmt_thresh2_wr;
-          wire [15:0] hmt_thresh2_rd;
-          reg  [15:0] hmt_thresh3_wr;
-          wire [15:0] hmt_thresh3_rd;
+     //     reg  [15:0] hmt_thresh1_wr;
+     //     wire [15:0] hmt_thresh1_rd;
+     //     reg  [15:0] hmt_thresh2_wr;
+     //     wire [15:0] hmt_thresh2_rd;
+     //     reg  [15:0] hmt_thresh3_wr;
+     //     wire [15:0] hmt_thresh3_rd;
 
-          wire [15:0] hmt_nhits_sig_rd;
-          wire [15:0] hmt_nhits_bkg_rd;
+     //     wire [15:0] hmt_nhits_sig_rd;
+     //     wire [15:0] hmt_nhits_bkg_rd;
 //------------------------------------------------------------------------------------------------------------------
 // Address Write Decodes
 //------------------------------------------------------------------------------------------------------------------
@@ -2656,14 +2653,14 @@
 	wire			wr_cfeb_badbits_ctrl;
 	wire			wr_cfeb_badbits_nbx;
 	wire			wr_alct_startup_delay;
-        wire wr_algo2016_ctrl;
+    //wire wr_algo2016_ctrl;
 
-      //CCLUT
-      wire      wr_run3_format_ctrl;
-      wire      wr_hmt_ctrl;
-      wire      wr_hmt_thresh1;
-      wire      wr_hmt_thresh2;
-      wire      wr_hmt_thresh3;
+    ////CCLUT
+    //wire      wr_run3_format_ctrl;
+    //wire      wr_hmt_ctrl;
+    //wire      wr_hmt_thresh1;
+    //wire      wr_hmt_thresh2;
+    //wire      wr_hmt_thresh3;
 	wire			wr_adr_cap;
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -3039,25 +3036,25 @@
 
 	ADR_ALCT_STARTUP_DELAY:		data_out <=	alct_startup_delay_rd;
 	ADR_ALCT_STARTUP_STATUS:	data_out <=	alct_startup_status_rd;
-        ADR_ALGO2016_CTRL: data_out <= algo2016_ctrl_rd; // Adr 198
-          //CCLUT, Tao
-          ADR_CLCT0_CC:              data_out <= clct0_cc_rd;
-          ADR_CLCT1_CC:              data_out <= clct1_cc_rd;
-          ADR_CLCT0_BNDXKY:          data_out <= clct0_bndxky_rd;  // new bending
-          ADR_CLCT1_BNDXKY:          data_out <= clct1_bndxky_rd; 
-          //ADR_CLCT0_QLT:             data_out <= clct0_qlt_rd;  // new Quality
-          //ADR_CLCT1_QLT:             data_out <= clct1_qlt_rd; 
-          //ADR_CLCT0_XKY:             data_out <= clct0_xky_rd; // new position with 1/8 strip precision
-          //ADR_CLCT1_XKY:             data_out <= clct1_xky_rd; 
+    //ADR_ALGO2016_CTRL: data_out <= algo2016_ctrl_rd; // Adr 198
+    ////CCLUT, Tao
+    //ADR_CLCT0_CC:              data_out <= clct0_cc_rd;
+    //ADR_CLCT1_CC:              data_out <= clct1_cc_rd;
+    //ADR_CLCT0_BNDXKY:          data_out <= clct0_bndxky_rd;  // new bending
+    //ADR_CLCT1_BNDXKY:          data_out <= clct1_bndxky_rd; 
+    ////ADR_CLCT0_QLT:             data_out <= clct0_qlt_rd;  // new Quality
+    ////ADR_CLCT1_QLT:             data_out <= clct1_qlt_rd; 
+    ////ADR_CLCT0_XKY:             data_out <= clct0_xky_rd; // new position with 1/8 strip precision
+    ////ADR_CLCT1_XKY:             data_out <= clct1_xky_rd; 
 
-          ADR_RUN3_FORMAT_CTRL:      data_out <= run3_format_ctrl_rd;
-          ADR_HMT_CTRL:              data_out <= hmt_ctrl_rd;
-          ADR_HMT_THRESH1:           data_out <= hmt_thresh1_rd;
-          ADR_HMT_THRESH2:           data_out <= hmt_thresh2_rd;
-          ADR_HMT_THRESH3:           data_out <= hmt_thresh3_rd;
+    //ADR_RUN3_FORMAT_CTRL:      data_out <= run3_format_ctrl_rd;
+    //ADR_HMT_CTRL:              data_out <= hmt_ctrl_rd;
+    //ADR_HMT_THRESH1:           data_out <= hmt_thresh1_rd;
+    //ADR_HMT_THRESH2:           data_out <= hmt_thresh2_rd;
+    //ADR_HMT_THRESH3:           data_out <= hmt_thresh3_rd;
 
-          ADR_HMT_NHITS_SIG:         data_out <= hmt_nhits_sig_rd;
-          ADR_HMT_NHITS_BKG:         data_out <= hmt_nhits_bkg_rd;
+    //ADR_HMT_NHITS_SIG:         data_out <= hmt_nhits_sig_rd;
+    //ADR_HMT_NHITS_BKG:         data_out <= hmt_nhits_bkg_rd;
 
 	default:					data_out <= 16'hDEAF;
 	endcase
@@ -3189,13 +3186,13 @@
 	assign wr_cfeb_badbits_nbx		= (reg_adr==ADR_CFEB_BADBITS_TIMER	&& clk_en);
 
 	assign wr_alct_startup_delay	= (reg_adr==ADR_ALCT_STARTUP_DELAY	&& clk_en);
-        assign wr_algo2016_ctrl = (reg_adr==ADR_ALGO2016_CTRL && clk_en);
-        //CCLUT
-      assign wr_run3_format_ctrl      =  (reg_adr==ADR_RUN3_FORMAT_CTRL       && clk_en);
-      assign wr_hmt_ctrl              =  (reg_adr==ADR_HMT_CTRL               && clk_en);
-      assign wr_hmt_thresh1           =  (reg_adr==ADR_HMT_THRESH1            && clk_en);
-      assign wr_hmt_thresh2           =  (reg_adr==ADR_HMT_THRESH2            && clk_en);
-      assign wr_hmt_thresh3           =  (reg_adr==ADR_HMT_THRESH3            && clk_en);
+     //   assign wr_algo2016_ctrl = (reg_adr==ADR_ALGO2016_CTRL && clk_en);
+     //   //CCLUT
+     // assign wr_run3_format_ctrl      =  (reg_adr==ADR_RUN3_FORMAT_CTRL       && clk_en);
+     // assign wr_hmt_ctrl              =  (reg_adr==ADR_HMT_CTRL               && clk_en);
+     // assign wr_hmt_thresh1           =  (reg_adr==ADR_HMT_THRESH1            && clk_en);
+     // assign wr_hmt_thresh2           =  (reg_adr==ADR_HMT_THRESH2            && clk_en);
+     // assign wr_hmt_thresh3           =  (reg_adr==ADR_HMT_THRESH3            && clk_en);
 
 	assign wr_adr_cap				= (                        			  adr_cap);
 
@@ -6410,126 +6407,126 @@
 // ADR_CLCT0_BNDXKY= 0x19E    1st CLCT new bnd+XKY
 // ADR_CLCT1_BNDXKY= 0x1A0    2nd CLCT new bnd+XKY
 //------------------------------------------------------------------------------------------------------------------
-  assign clct0_cc_rd[MXPATC-1:0] = clct0_vme_carry[MXPATC-1:0]; 
-  assign clct1_cc_rd[MXPATC-1:0] = clct1_vme_carry[MXPATC-1:0]; 
-  assign clct0_cc_rd[11] = 1'b0;
-  assign clct1_cc_rd[11] = 1'b0;//since comparator code is reduced to 11 bits but software is not changed yet
-  assign clct0_cc_rd[15:12]  = 4'b0;
-  assign clct1_cc_rd[15:12]  = 4'b0;
-  //assign clct0_qlt_rd[MXQLTB - 1    : 0] = clct0_vme_qlt[MXQLTB - 1   : 0];
-  //assign clct1_qlt_rd[MXQLTB - 1    : 0] = clct1_vme_qlt[MXQLTB - 1   : 0];
-  assign clct0_bndxky_rd[MXBNDB - 1    : 0]         = clct0_vme_bnd[MXBNDB - 1   : 0];
-  assign clct0_bndxky_rd[MXXKYB - 1+MXBNDB: MXBNDB] = clct0_vme_xky[MXXKYB - 1   : 0];
-  assign clct1_bndxky_rd[MXBNDB - 1    : 0]         = clct1_vme_bnd[MXBNDB - 1   : 0];
-  assign clct1_bndxky_rd[MXXKYB - 1+MXBNDB: MXBNDB] = clct1_vme_xky[MXXKYB - 1   : 0];
-  assign clct0_bndxky_rd[15] = 1'b0;
-  assign clct1_bndxky_rd[15] = 1'b0;
-
-//------------------------------------------------------------------------------------------------------------------
-// ADR_RUN3_FORMAT_CTRL = 0x1AA  CCLUT
-//------------------------------------------------------------------------------------------------------------------
-
-  initial begin
-    run3_format_ctrl_wr[0] = 1'b0;
-    run3_format_ctrl_wr[1] = 1'b0; // default, Run3 trigger format upgrade is off
-    run3_format_ctrl_wr[2] = 1'b0; // default, Run3 daq format upgrade is off
-    run3_format_ctrl_wr[3] = 1'b0; // Run3 ALCT data format enable or not.  Run2 ALCT data format had HMT encoded
-    run3_format_ctrl_wr[4] = 1'b0; // use Run2 legacy revcode or not
-    run3_format_ctrl_wr[15:5] = 12'b0; // NOT used
-  end
-  assign run3_trig_df = run3_format_ctrl_wr[1];
-  assign run3_daq_df  = run3_format_ctrl_wr[2];
-
-  assign run3_alct_df = run3_format_ctrl_wr[3];
-  assign run2_revcode = run3_format_ctrl_wr[4];
-
-  assign run3_format_ctrl_rd[0]    = ccLUT_enable;//assume ccLUT is enabled for TMB firware
-  //assign run3_format_ctrl_rd[1]    = ccLUT_enable ? run3_trig_df : 1'b0;//only enable it for CCLUT case
-  //assign run3_format_ctrl_rd[2]    = ccLUT_enable ? run3_daq_df  : 1'b0;
-  //assign run3_format_ctrl_rd[3]    = ccLUT_enable ? run3_alct_df : 1'b0;
-  assign run3_format_ctrl_rd[1]    = run3_trig_df;//only enable it for CCLUT case
-  assign run3_format_ctrl_rd[2]    = run3_daq_df ;
-  assign run3_format_ctrl_rd[3]    = run3_alct_df;
-  assign run3_format_ctrl_rd[15:4] = run3_format_ctrl_wr[15:4];
-
-//------------------------------------------------------------------------------------------------------------------
-// ADR_HMT_CTRL = 0x1AC  HMT
-//------------------------------------------------------------------------------------------------------------------
-
-  initial begin
-    hmt_ctrl_wr[0] = 1'b1; // RW, enable the HMT or not
-    hmt_ctrl_wr[1] = 1'b1; //RW, enable ME1a or not
-    hmt_ctrl_wr[11:2] = 10'b0; //R only nhits for trigger 
-    hmt_ctrl_wr[13:12] = 2'b0; // result of over threshold, reserved
-  end
-  assign hmt_enable  = hmt_ctrl_wr[0];
-  assign hmt_me1a_enable = hmt_ctrl_wr[1];
-  //assign hmt_me1a_enable = 1'b1;// always enable now 
-
-
-  assign hmt_ctrl_rd[0] = hmt_enable;
-  assign hmt_ctrl_rd[1] = hmt_me1a_enable;
-  assign hmt_ctrl_rd[11: 2] = hmt_nhits_bx7_vme[9:0];
-  assign hmt_ctrl_rd[15:12] = hmt_cathode_vme[MXHMTB-1:0];  //reserved for HMT results
-  //reserved for HMT results 
-
-//------------------------------------------------------------------------------------------------------------------
-// ADR_HMT_THRESH1 = 0x1AE  HMT thresh
-// ADR_HMT_THRESH2 = 0x1B0  HMT thresh
-// ADR_HMT_THRESH3 = 0x1B2  HMT thresh
-//------------------------------------------------------------------------------------------------------------------
-
-  initial begin
-    hmt_thresh1_wr[ 7: 0] = 8'd35; // RW, enable the HMT thresh1
-    hmt_thresh2_wr[ 7: 0] = 8'd40; // RW, enable the HMT thresh1
-    hmt_thresh3_wr[ 7: 0] = 8'd45; // RW, enable the HMT thresh1
-
-    hmt_thresh1_wr[    8] = 1'b1; //  RW, enable HMT to readout cfeb
-    hmt_thresh1_wr[15: 9] = 7'd6; //  RW, thresh for hmt_aff_thresh
-
-    hmt_thresh2_wr[11: 8] = 4'd5; // RW hmt delay for alct-hmt match
-    hmt_thresh2_wr[15:12] = 4'd7; // RW alct-hmt match window size
-
-    hmt_thresh3_wr[    8] = 1'b0; //  RW, hmt allow to trigger on anode hmt
-    hmt_thresh3_wr[    9] = 1'b1; //  RW, hmt allow to trigger on cathode hmt
-    hmt_thresh3_wr[   10] = 1'b0; //  RW, hmt allow to trigger on anode and cathod match hmt
-    hmt_thresh3_wr[   11] = 1'b0; //  RW, hmt allow to readout on anode hmt
-    hmt_thresh3_wr[   12] = 1'b1; //  RW, hmt allow to readout on cathode hmt
-    hmt_thresh3_wr[   13] = 1'b0; //  RW, hmt allow to readout on match hmt
-    hmt_thresh3_wr[   14] = 1'b0; //  RW, hmt anode/cathode out-time counter low than threshold to fire hmt
-    hmt_thresh3_wr[   15] = 1'b0; //  RW, not used
-  end
-
-  assign hmt_thresh1[7:0]  = hmt_thresh1_wr[7:0];
-  assign hmt_thresh2[7:0]  = hmt_thresh2_wr[7:0];
-  assign hmt_thresh3[7:0]  = hmt_thresh3_wr[7:0];
-
-  assign cfeb_allow_hmt_ro    = hmt_thresh1_wr[8];
-  assign hmt_aff_thresh[6:0]  = hmt_thresh1_wr[15:9];
-
-  assign hmt_delay[3:0]            = hmt_thresh2_wr[11:8];
-  assign hmt_alct_win_size[3:0]    = hmt_thresh2_wr[15:12];
-
-  assign hmt_allow_anode      = hmt_thresh3_wr[ 8];
-  assign hmt_allow_cathode    = hmt_thresh3_wr[ 9];
-  assign hmt_allow_match      = hmt_thresh3_wr[10];
-  assign hmt_allow_anode_ro   = hmt_thresh3_wr[11];
-  assign hmt_allow_cathode_ro = hmt_thresh3_wr[12];
-  assign hmt_allow_match_ro   = hmt_thresh3_wr[13];
-  assign hmt_outtime_check    = hmt_thresh3_wr[14];
-
-  assign hmt_thresh1_rd[15:0] = hmt_thresh1_wr[15:0];
-  assign hmt_thresh2_rd[15:0] = hmt_thresh2_wr[15:0];
-  assign hmt_thresh3_rd[15:0] = hmt_thresh3_wr[15:0];
-
-//------------------------------------------------------------------------------------------------------------------
-// ADR_HMT_NHITS_SIG=0x1B4  Nhits for HMT in bx678, Signal
-// ADR_HMT_NHITS_BKG=0x1B6  Nhits for HMT in bx2345, background/control region
-//------------------------------------------------------------------------------------------------------------------
-  assign hmt_nhits_sig_rd[9:0]   = hmt_nhits_sig_vme[9:0];
-  assign hmt_nhits_sig_rd[15:10] = 6'b0;
-  assign hmt_nhits_bkg_rd[9:0]   = hmt_nhits_bkg_vme[9:0];
-  assign hmt_nhits_bkg_rd[15:10] = 6'b0;
+//  assign clct0_cc_rd[MXPATC-1:0] = clct0_vme_carry[MXPATC-1:0]; 
+//  assign clct1_cc_rd[MXPATC-1:0] = clct1_vme_carry[MXPATC-1:0]; 
+//  assign clct0_cc_rd[11] = 1'b0;
+//  assign clct1_cc_rd[11] = 1'b0;//since comparator code is reduced to 11 bits but software is not changed yet
+//  assign clct0_cc_rd[15:12]  = 4'b0;
+//  assign clct1_cc_rd[15:12]  = 4'b0;
+//  //assign clct0_qlt_rd[MXQLTB - 1    : 0] = clct0_vme_qlt[MXQLTB - 1   : 0];
+//  //assign clct1_qlt_rd[MXQLTB - 1    : 0] = clct1_vme_qlt[MXQLTB - 1   : 0];
+//  assign clct0_bndxky_rd[MXBNDB - 1    : 0]         = clct0_vme_bnd[MXBNDB - 1   : 0];
+//  assign clct0_bndxky_rd[MXXKYB - 1+MXBNDB: MXBNDB] = clct0_vme_xky[MXXKYB - 1   : 0];
+//  assign clct1_bndxky_rd[MXBNDB - 1    : 0]         = clct1_vme_bnd[MXBNDB - 1   : 0];
+//  assign clct1_bndxky_rd[MXXKYB - 1+MXBNDB: MXBNDB] = clct1_vme_xky[MXXKYB - 1   : 0];
+//  assign clct0_bndxky_rd[15] = 1'b0;
+//  assign clct1_bndxky_rd[15] = 1'b0;
+//
+////------------------------------------------------------------------------------------------------------------------
+//// ADR_RUN3_FORMAT_CTRL = 0x1AA  CCLUT
+////------------------------------------------------------------------------------------------------------------------
+//
+//  initial begin
+//    run3_format_ctrl_wr[0] = 1'b0;
+//    run3_format_ctrl_wr[1] = 1'b0; // default, Run3 trigger format upgrade is off
+//    run3_format_ctrl_wr[2] = 1'b0; // default, Run3 daq format upgrade is off
+//    run3_format_ctrl_wr[3] = 1'b0; // Run3 ALCT data format enable or not.  Run2 ALCT data format had HMT encoded
+//    run3_format_ctrl_wr[4] = 1'b0; // use Run2 legacy revcode or not
+//    run3_format_ctrl_wr[15:5] = 12'b0; // NOT used
+//  end
+//  assign run3_trig_df = run3_format_ctrl_wr[1];
+//  assign run3_daq_df  = run3_format_ctrl_wr[2];
+//
+//  assign run3_alct_df = run3_format_ctrl_wr[3];
+//  assign run2_revcode = run3_format_ctrl_wr[4];
+//
+//  assign run3_format_ctrl_rd[0]    = ccLUT_enable;//assume ccLUT is enabled for TMB firware
+//  //assign run3_format_ctrl_rd[1]    = ccLUT_enable ? run3_trig_df : 1'b0;//only enable it for CCLUT case
+//  //assign run3_format_ctrl_rd[2]    = ccLUT_enable ? run3_daq_df  : 1'b0;
+//  //assign run3_format_ctrl_rd[3]    = ccLUT_enable ? run3_alct_df : 1'b0;
+//  assign run3_format_ctrl_rd[1]    = run3_trig_df;//only enable it for CCLUT case
+//  assign run3_format_ctrl_rd[2]    = run3_daq_df ;
+//  assign run3_format_ctrl_rd[3]    = run3_alct_df;
+//  assign run3_format_ctrl_rd[15:4] = run3_format_ctrl_wr[15:4];
+//
+////------------------------------------------------------------------------------------------------------------------
+//// ADR_HMT_CTRL = 0x1AC  HMT
+////------------------------------------------------------------------------------------------------------------------
+//
+//  initial begin
+//    hmt_ctrl_wr[0] = 1'b1; // RW, enable the HMT or not
+//    hmt_ctrl_wr[1] = 1'b1; //RW, enable ME1a or not
+//    hmt_ctrl_wr[11:2] = 10'b0; //R only nhits for trigger 
+//    hmt_ctrl_wr[13:12] = 2'b0; // result of over threshold, reserved
+//  end
+//  assign hmt_enable  = hmt_ctrl_wr[0];
+//  assign hmt_me1a_enable = hmt_ctrl_wr[1];
+//  //assign hmt_me1a_enable = 1'b1;// always enable now 
+//
+//
+//  assign hmt_ctrl_rd[0] = hmt_enable;
+//  assign hmt_ctrl_rd[1] = hmt_me1a_enable;
+//  assign hmt_ctrl_rd[11: 2] = hmt_nhits_bx7_vme[9:0];
+//  assign hmt_ctrl_rd[15:12] = hmt_cathode_vme[MXHMTB-1:0];  //reserved for HMT results
+//  //reserved for HMT results 
+//
+////------------------------------------------------------------------------------------------------------------------
+//// ADR_HMT_THRESH1 = 0x1AE  HMT thresh
+//// ADR_HMT_THRESH2 = 0x1B0  HMT thresh
+//// ADR_HMT_THRESH3 = 0x1B2  HMT thresh
+////------------------------------------------------------------------------------------------------------------------
+//
+//  initial begin
+//    hmt_thresh1_wr[ 7: 0] = 8'd35; // RW, enable the HMT thresh1
+//    hmt_thresh2_wr[ 7: 0] = 8'd40; // RW, enable the HMT thresh1
+//    hmt_thresh3_wr[ 7: 0] = 8'd45; // RW, enable the HMT thresh1
+//
+//    hmt_thresh1_wr[    8] = 1'b1; //  RW, enable HMT to readout cfeb
+//    hmt_thresh1_wr[15: 9] = 7'd6; //  RW, thresh for hmt_aff_thresh
+//
+//    hmt_thresh2_wr[11: 8] = 4'd5; // RW hmt delay for alct-hmt match
+//    hmt_thresh2_wr[15:12] = 4'd7; // RW alct-hmt match window size
+//
+//    hmt_thresh3_wr[    8] = 1'b0; //  RW, hmt allow to trigger on anode hmt
+//    hmt_thresh3_wr[    9] = 1'b1; //  RW, hmt allow to trigger on cathode hmt
+//    hmt_thresh3_wr[   10] = 1'b0; //  RW, hmt allow to trigger on anode and cathod match hmt
+//    hmt_thresh3_wr[   11] = 1'b0; //  RW, hmt allow to readout on anode hmt
+//    hmt_thresh3_wr[   12] = 1'b1; //  RW, hmt allow to readout on cathode hmt
+//    hmt_thresh3_wr[   13] = 1'b0; //  RW, hmt allow to readout on match hmt
+//    hmt_thresh3_wr[   14] = 1'b0; //  RW, hmt anode/cathode out-time counter low than threshold to fire hmt
+//    hmt_thresh3_wr[   15] = 1'b0; //  RW, not used
+//  end
+//
+//  assign hmt_thresh1[7:0]  = hmt_thresh1_wr[7:0];
+//  assign hmt_thresh2[7:0]  = hmt_thresh2_wr[7:0];
+//  assign hmt_thresh3[7:0]  = hmt_thresh3_wr[7:0];
+//
+//  assign cfeb_allow_hmt_ro    = hmt_thresh1_wr[8];
+//  assign hmt_aff_thresh[6:0]  = hmt_thresh1_wr[15:9];
+//
+//  assign hmt_delay[3:0]            = hmt_thresh2_wr[11:8];
+//  assign hmt_alct_win_size[3:0]    = hmt_thresh2_wr[15:12];
+//
+//  assign hmt_allow_anode      = hmt_thresh3_wr[ 8];
+//  assign hmt_allow_cathode    = hmt_thresh3_wr[ 9];
+//  assign hmt_allow_match      = hmt_thresh3_wr[10];
+//  assign hmt_allow_anode_ro   = hmt_thresh3_wr[11];
+//  assign hmt_allow_cathode_ro = hmt_thresh3_wr[12];
+//  assign hmt_allow_match_ro   = hmt_thresh3_wr[13];
+//  assign hmt_outtime_check    = hmt_thresh3_wr[14];
+//
+//  assign hmt_thresh1_rd[15:0] = hmt_thresh1_wr[15:0];
+//  assign hmt_thresh2_rd[15:0] = hmt_thresh2_wr[15:0];
+//  assign hmt_thresh3_rd[15:0] = hmt_thresh3_wr[15:0];
+//
+////------------------------------------------------------------------------------------------------------------------
+//// ADR_HMT_NHITS_SIG=0x1B4  Nhits for HMT in bx678, Signal
+//// ADR_HMT_NHITS_BKG=0x1B6  Nhits for HMT in bx2345, background/control region
+////------------------------------------------------------------------------------------------------------------------
+//  assign hmt_nhits_sig_rd[9:0]   = hmt_nhits_sig_vme[9:0];
+//  assign hmt_nhits_sig_rd[15:10] = 6'b0;
+//  assign hmt_nhits_bkg_rd[9:0]   = hmt_nhits_bkg_vme[9:0];
+//  assign hmt_nhits_bkg_rd[15:10] = 6'b0;
 
 //------------------------------------------------------------------------------------------------------------------
 // VME Write-Registers latch data when addressed + latch power-up defaults
@@ -6637,13 +6634,13 @@
 	if (wr_sync_err_ctrl)			sync_err_ctrl_wr		<=	d[15:0];
 	if (wr_cfeb_badbits_ctrl)		cfeb_badbits_ctrl_wr	<=	d[15:0];
 	if (wr_cfeb_badbits_nbx)		cfeb_badbits_nbx_wr		<=	d[15:0];
-        if (wr_algo2016_ctrl) algo2016_ctrl_wr <= d[15:0];
-        //CCLUT
-      if (wr_run3_format_ctrl)      run3_format_ctrl_wr     <= d[15:0];
-      if (wr_hmt_ctrl)              hmt_ctrl_wr             <= d[15:0];
-      if (wr_hmt_thresh1)           hmt_thresh1_wr          <= d[15:0];
-      if (wr_hmt_thresh2)           hmt_thresh2_wr          <= d[15:0];
-      if (wr_hmt_thresh3)           hmt_thresh3_wr          <= d[15:0];
+      //if (wr_algo2016_ctrl) algo2016_ctrl_wr <= d[15:0];
+      //  //CCLUT
+      //if (wr_run3_format_ctrl)      run3_format_ctrl_wr     <= d[15:0];
+      //if (wr_hmt_ctrl)              hmt_ctrl_wr             <= d[15:0];
+      //if (wr_hmt_thresh1)           hmt_thresh1_wr          <= d[15:0];
+      //if (wr_hmt_thresh2)           hmt_thresh2_wr          <= d[15:0];
+      //if (wr_hmt_thresh3)           hmt_thresh3_wr          <= d[15:0];
 	if (wr_alct_startup_delay)		alct_startup_delay_wr	<=	d[15:0];
 	end
 
