@@ -6432,7 +6432,7 @@
   initial begin
     run3_format_ctrl_wr[0] = 1'b0;
     run3_format_ctrl_wr[1] = 1'b0; // default, Run3 trigger format upgrade is off
-    run3_format_ctrl_wr[2] = 1'b0; // default, Run3 daq format upgrade is ON
+    run3_format_ctrl_wr[2] = 1'b0; // default, Run3 daq format upgrade is off
     run3_format_ctrl_wr[3] = 1'b0; // Run3 ALCT data format enable or not.  Run2 ALCT data format had HMT encoded
     run3_format_ctrl_wr[4] = 1'b0; // use Run2 legacy revcode or not
     run3_format_ctrl_wr[15:5] = 12'b0; // NOT used
