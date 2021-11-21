@@ -1470,7 +1470,7 @@
       wire       algo2016_clct_use_corrected_bx;      // NOT YET IMPLEMENTED: Use median of hits for CLCT timing: 0 - "old" no CLCT timing corrections, 1 - algo2016 CLCT timing calculated based on median of hits,  NOT USED, Tao
       wire       evenchamber;  // from VME register 0x198, 1 for even chamber and 0 for odd chamber
 
-      wire       seq_trigger_nodeadtime;
+      wire       seq_trigger_nodeadtime = 1'b0;
 
 //===============================================================
 //pattern_finder_ccLUT_tmb: real CCLUT
@@ -3497,7 +3497,7 @@
 	.dmb_thresh_pretrig		(dmb_thresh_pretrig[MXHITB-1:0]),	// Out	Hits on pattern template DMB active-feb threshold
 	.adjcfeb_dist			(adjcfeb_dist[MXKEYB-1+1:0]),		// Out	Distance from key to cfeb boundary for marking adjacent cfeb as hit
     ////Enable CCLUT or not
-    //.ccLUT_enable       (ccLUT_enable),  // In
+        .ccLUT_enable       (ccLUT_enable),  // In
     //.run3_trig_df       (run3_trig_df), // output, enable run3 trigger format or not
     //.run3_daq_df        (run3_daq_df),  // output, enable run3 daq format or not
 
@@ -4049,14 +4049,14 @@
 	.bx0_match_err_ff			(bx0_match_err_ff),				// In	ALCT alct_bx0 != clct_bx0
 	.clock_lock_lost_err_ff		(clock_lock_lost_err_ff),		// In	40MHz main clock lost lock FF
 
-         .algo2016_use_dead_time_zone         (algo2016_use_dead_time_zone),         // Out Dead time zone switch: 0 - "old" whole chamber is dead when pre-CLCT is registered, 1 - algo2016 only half-strips around pre-CLCT are marked dead
-      .algo2016_dead_time_zone_size        (algo2016_dead_time_zone_size[4:0]),   // Out Constant size of the dead time zone
-      .algo2016_use_dynamic_dead_time_zone (algo2016_use_dynamic_dead_time_zone), // Out Dynamic dead time zone switch: 0 - dead time zone is set by algo2016_use_dynamic_dead_time_zone, 1 - dead time zone depends on pre-CLCT pattern ID
-      .algo2016_drop_used_clcts            (algo2016_drop_used_clcts),            // Out Drop CLCTs from matching in ALCT-centric algorithm: 0 - algo2016 do NOT drop CLCTs, 1 - drop used CLCTs
-      .algo2016_cross_bx_algorithm         (algo2016_cross_bx_algorithm),         // Out LCT sorting using cross BX algorithm: 0 - "old" no cross BX algorithm used, 1 - algo2016 uses cross BX algorithm
-      .algo2016_clct_use_corrected_bx      (algo2016_clct_use_corrected_bx),      // Out Use median of hits for CLCT timing: 0 - "old" no CLCT timing corrections, 1 - algo2016 CLCT timing calculated based on median of hits NOT YET IMPLEMENTED:
-      .seq_trigger_nodeadtime (seq_trigger_nodeadtime),  //Out no dead time for seq-trigger      attern_finder_ccLUT_tmb upattern_finder_cclut
-      .evenchamber                         (evenchamber),   // evenodd parity. 1 for even chamber and 0 for odd chamber
+      //.algo2016_use_dead_time_zone         (algo2016_use_dead_time_zone),         // Out Dead time zone switch: 0 - "old" whole chamber is dead when pre-CLCT is registered, 1 - algo2016 only half-strips around pre-CLCT are marked dead
+      //.algo2016_dead_time_zone_size        (algo2016_dead_time_zone_size[4:0]),   // Out Constant size of the dead time zone
+      //.algo2016_use_dynamic_dead_time_zone (algo2016_use_dynamic_dead_time_zone), // Out Dynamic dead time zone switch: 0 - dead time zone is set by algo2016_use_dynamic_dead_time_zone, 1 - dead time zone depends on pre-CLCT pattern ID
+      //.algo2016_drop_used_clcts            (algo2016_drop_used_clcts),            // Out Drop CLCTs from matching in ALCT-centric algorithm: 0 - algo2016 do NOT drop CLCTs, 1 - drop used CLCTs
+      //.algo2016_cross_bx_algorithm         (algo2016_cross_bx_algorithm),         // Out LCT sorting using cross BX algorithm: 0 - "old" no cross BX algorithm used, 1 - algo2016 uses cross BX algorithm
+      //.algo2016_clct_use_corrected_bx      (algo2016_clct_use_corrected_bx),      // Out Use median of hits for CLCT timing: 0 - "old" no CLCT timing corrections, 1 - algo2016 CLCT timing calculated based on median of hits NOT YET IMPLEMENTED:
+      //.seq_trigger_nodeadtime (seq_trigger_nodeadtime),  //Out no dead time for seq-trigger      attern_finder_ccLUT_tmb upattern_finder_cclut
+      //.evenchamber                         (evenchamber),   // evenodd parity. 1 for even chamber and 0 for odd chamber
 
 
 // Sump

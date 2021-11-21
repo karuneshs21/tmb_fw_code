@@ -295,7 +295,7 @@
 	dmb_thresh_pretrig,
 	adjcfeb_dist,
 
-    //ccLUT_enable,
+    ccLUT_enable,
     //run3_trig_df,
     //run3_daq_df,
     //run3_alct_df,
@@ -854,15 +854,15 @@
 	clock_lock_lost_err_ff,
 
         // ALGO2016 control parameters
-      algo2016_use_dead_time_zone,
-      algo2016_dead_time_zone_size,
-      algo2016_use_dynamic_dead_time_zone,
-      algo2016_clct_to_alct,
-      algo2016_drop_used_clcts,
-      algo2016_cross_bx_algorithm,
-      algo2016_clct_use_corrected_bx,
-      evenchamber,
-      seq_trigger_nodeadtime,
+      //algo2016_use_dead_time_zone,
+      //algo2016_dead_time_zone_size,
+      //algo2016_use_dynamic_dead_time_zone,
+      //algo2016_clct_to_alct,
+      //algo2016_drop_used_clcts,
+      //algo2016_cross_bx_algorithm,
+      //algo2016_clct_use_corrected_bx,
+      //evenchamber,
+      //seq_trigger_nodeadtime,
 
 // Sump
 	vme_sump
@@ -1524,13 +1524,13 @@
 	output	[MXHITB-1:0]	dmb_thresh_pretrig;		// Hits on pattern template DMB active-feb threshold
 	output	[MXKEYB-1+1:0]	adjcfeb_dist;			// Distance from key to cfeb boundary for marking adjacent cfeb as hit
 
-    //input ccLUT_enable; // In
+    input ccLUT_enable; // In
     //output run3_trig_df;
     //output run3_daq_df;
     //output run3_alct_df;
   //output run2_revcode;
-  //wire run2_revcode;
-  wire run3_daq_df = 1'b1;
+  wire run2_revcode = 1'b0;
+  wire run3_daq_df = ccLUT_enable;
 
 
 
@@ -2092,15 +2092,15 @@
 	input					clock_lock_lost_err_ff;	// 40MHz main clock lost lock
 
         // ALGO2016 Control Parameters
-      output       algo2016_use_dead_time_zone;         // Dead time zone switch: 0 - "old" whole chamber is dead when pre-CLCT is registered, 1 - algo2016 only half-strips around pre-CLCT are marked dead
-      output [4:0] algo2016_dead_time_zone_size;        // Constant size of the dead time zone
-      output       algo2016_use_dynamic_dead_time_zone; // Dynamic dead time zone switch: 0 - dead time zone is set by algo2016_use_dynamic_dead_time_zone, 1 - dead time zone depends on pre-CLCT pattern ID
-      output       algo2016_clct_to_alct;               // ALCT-to-CLCT matching switch: 0 - "old" CLCT-centric algorithm, 1 - algo2016 ALCT-centric algorithm
-      output       algo2016_drop_used_clcts;            // Drop CLCTs from matching in ALCT-centric algorithm: 0 - algo2016 do NOT drop CLCTs, 1 - drop used CLCTs
-      output       algo2016_cross_bx_algorithm;         // LCT sorting using cross BX algorithm: 0 - "old" no cross BX algorithm used, 1 - algo2016 uses cross BX algorithm
-      output       algo2016_clct_use_corrected_bx;      // Use median of hits for CLCT timing: 0 - "old" no CLCT timing corrections, 1 - algo2016 CLCT timing calculated based on median of hits
-      output       evenchamber;
-      output       seq_trigger_nodeadtime;
+      //output       algo2016_use_dead_time_zone;         // Dead time zone switch: 0 - "old" whole chamber is dead when pre-CLCT is registered, 1 - algo2016 only half-strips around pre-CLCT are marked dead
+      //output [4:0] algo2016_dead_time_zone_size;        // Constant size of the dead time zone
+      //output       algo2016_use_dynamic_dead_time_zone; // Dynamic dead time zone switch: 0 - dead time zone is set by algo2016_use_dynamic_dead_time_zone, 1 - dead time zone depends on pre-CLCT pattern ID
+      //output       algo2016_clct_to_alct;               // ALCT-to-CLCT matching switch: 0 - "old" CLCT-centric algorithm, 1 - algo2016 ALCT-centric algorithm
+      //output       algo2016_drop_used_clcts;            // Drop CLCTs from matching in ALCT-centric algorithm: 0 - algo2016 do NOT drop CLCTs, 1 - drop used CLCTs
+      //output       algo2016_cross_bx_algorithm;         // LCT sorting using cross BX algorithm: 0 - "old" no cross BX algorithm used, 1 - algo2016 uses cross BX algorithm
+      //output       algo2016_clct_use_corrected_bx;      // Use median of hits for CLCT timing: 0 - "old" no CLCT timing corrections, 1 - algo2016 CLCT timing calculated based on median of hits
+      //output       evenchamber;
+      //output       seq_trigger_nodeadtime;
 // Sump
 	output					vme_sump;				// Unused signals
 
@@ -6363,42 +6363,42 @@
 	assign alct_startup_status_rd[7]	= alct_startup_done;			// R	ALCT FPGA should be configured by now
 	assign alct_startup_status_rd[15:8]	= 0; 							// R	Unassigned
 
-        //------------------------------------------------------------------------------------------------------------------
-    // ADR_ALGO2016_CTRL=198    Controls parameters of new trigger algorithm
-    //------------------------------------------------------------------------------------------------------------------
-    // Power-up defaults
-      initial begin
-        // "Old" algorithm switched ON by default:
-        //algo2016_ctrl_wr[0]   = 1'b0;  // Dead time zone switch: 0 - "old" whole chamber is dead when pre-CLCT is registered, 1 - algo2016 only half-strips around pre-CLCT are marked dead
-        //algo2016_ctrl_wr[5:1] = 5'd15; // Constant size of the dead time zone
-        //algo2016_ctrl_wr[6]   = 1'b0;  // Dynamic dead time zone switch: 0 - dead time zone is set by algo2016_use_dynamic_dead_time_zone, 1 - dead time zone depends on pre-CLCT pattern ID
-        //algo2016_ctrl_wr[7]   = 1'b0;  // ALCT-to-CLCT matching switch: 0 - "old" CLCT-centric algorithm, 1 - algo2016 ALCT-centric algorithm
-        //algo2016_ctrl_wr[8]   = 1'b0;  // Drop CLCTs from matching in ALCT-centric algorithm: 0 - algo2016 do NOT drop CLCTs, 1 - similar to "old" behavior of CLCT-centric algorithm when ALCTs are droped from further usage
-        //algo2016_ctrl_wr[9]   = 1'b0;  // LCT sorting using cross BX algorithm: 0 - "old" no cross BX algorithm used, 1 - algo2016 uses cross BX algorithm
-        //algo2016_ctrl_wr[10]  = 1'b0;  // Use median of hits for CLCT timing: 0 - "old" no CLCT timing corrections, 1 - algo2016 CLCT timing calculated based on median of hits
-        // Algo2016 ON:
-        algo2016_ctrl_wr[0]   = 1'b1;  // Dead time zone switch: 0 - "old" whole chamber is dead when pre-CLCT is registered, 1 - algo2016 only half-strips around pre-CLCT are marked dead
-        algo2016_ctrl_wr[5:1] = 5'd15; // Constant size of the dead time zone
-        algo2016_ctrl_wr[6]   = 1'b1;  // Dynamic dead time zone switch: 0 - dead time zone is set by algo2016_use_dynamic_dead_time_zone, 1 - dead time zone depends on pre-CLCT pattern ID
-        algo2016_ctrl_wr[7]   = 1'b0;  // not used!!
-        algo2016_ctrl_wr[8]   = 1'b0;  // Drop CLCTs from matching in ALCT-centric algorithm: 0 - algo2016 do NOT drop CLCTs, 1 - similar to "old" behavior of CLCT-centric algorithm when ALCTs are droped from further usage
-        algo2016_ctrl_wr[9]   = 1'b1;  // LCT sorting using cross BX algorithm: 0 - "old" no cross BX algorithm used, 1 - algo2016 uses cross BX algorithm
-        algo2016_ctrl_wr[10]  = 1'b0;  // not used!!!
-        algo2016_ctrl_wr[11]  = 1'b0;  // allow seq trigger in a row
-        algo2016_ctrl_wr[12]  = 1'b0;  // even odd parity. software use 1 for odd chamber.  here we use 1 for evenchamber
-      end
+    ////------------------------------------------------------------------------------------------------------------------
+    //// ADR_ALGO2016_CTRL=198    Controls parameters of new trigger algorithm
+    ////------------------------------------------------------------------------------------------------------------------
+    //// Power-up defaults
+    //  initial begin
+    //    // "Old" algorithm switched ON by default:
+    //    //algo2016_ctrl_wr[0]   = 1'b0;  // Dead time zone switch: 0 - "old" whole chamber is dead when pre-CLCT is registered, 1 - algo2016 only half-strips around pre-CLCT are marked dead
+    //    //algo2016_ctrl_wr[5:1] = 5'd15; // Constant size of the dead time zone
+    //    //algo2016_ctrl_wr[6]   = 1'b0;  // Dynamic dead time zone switch: 0 - dead time zone is set by algo2016_use_dynamic_dead_time_zone, 1 - dead time zone depends on pre-CLCT pattern ID
+    //    //algo2016_ctrl_wr[7]   = 1'b0;  // ALCT-to-CLCT matching switch: 0 - "old" CLCT-centric algorithm, 1 - algo2016 ALCT-centric algorithm
+    //    //algo2016_ctrl_wr[8]   = 1'b0;  // Drop CLCTs from matching in ALCT-centric algorithm: 0 - algo2016 do NOT drop CLCTs, 1 - similar to "old" behavior of CLCT-centric algorithm when ALCTs are droped from further usage
+    //    //algo2016_ctrl_wr[9]   = 1'b0;  // LCT sorting using cross BX algorithm: 0 - "old" no cross BX algorithm used, 1 - algo2016 uses cross BX algorithm
+    //    //algo2016_ctrl_wr[10]  = 1'b0;  // Use median of hits for CLCT timing: 0 - "old" no CLCT timing corrections, 1 - algo2016 CLCT timing calculated based on median of hits
+    //    // Algo2016 ON:
+    //    algo2016_ctrl_wr[0]   = 1'b1;  // Dead time zone switch: 0 - "old" whole chamber is dead when pre-CLCT is registered, 1 - algo2016 only half-strips around pre-CLCT are marked dead
+    //    algo2016_ctrl_wr[5:1] = 5'd15; // Constant size of the dead time zone
+    //    algo2016_ctrl_wr[6]   = 1'b1;  // Dynamic dead time zone switch: 0 - dead time zone is set by algo2016_use_dynamic_dead_time_zone, 1 - dead time zone depends on pre-CLCT pattern ID
+    //    algo2016_ctrl_wr[7]   = 1'b0;  // not used!!
+    //    algo2016_ctrl_wr[8]   = 1'b0;  // Drop CLCTs from matching in ALCT-centric algorithm: 0 - algo2016 do NOT drop CLCTs, 1 - similar to "old" behavior of CLCT-centric algorithm when ALCTs are droped from further usage
+    //    algo2016_ctrl_wr[9]   = 1'b1;  // LCT sorting using cross BX algorithm: 0 - "old" no cross BX algorithm used, 1 - algo2016 uses cross BX algorithm
+    //    algo2016_ctrl_wr[10]  = 1'b0;  // not used!!!
+    //    algo2016_ctrl_wr[11]  = 1'b0;  // allow seq trigger in a row
+    //    algo2016_ctrl_wr[12]  = 1'b0;  // even odd parity. software use 1 for odd chamber.  here we use 1 for evenchamber
+    //  end
 
-      assign algo2016_use_dead_time_zone         = algo2016_ctrl_wr[0];   // Dead time zone switch: 0 - "old" whole chamber is dead when pre-CLCT is registered, 1 - algo2016 only half-strips around pre-CLCT are marked dead
-      assign algo2016_dead_time_zone_size[4:0]   = algo2016_ctrl_wr[5:1]; // Constant size of the dead time zone
-      assign algo2016_use_dynamic_dead_time_zone = algo2016_ctrl_wr[6];   // Dynamic dead time zone switch: 0 - dead time zone is set by algo2016_use_dynamic_dead_time_zone, 1 - dead time zone depends on pre-CLCT pattern ID
-      assign algo2016_clct_to_alct               = algo2016_ctrl_wr[7];   // ALCT-to-CLCT matching switch: 0 - "old" CLCT-centric algorithm, 1 - algo2016 ALCT-centric algorithm
-      assign algo2016_drop_used_clcts            = algo2016_ctrl_wr[8];   // Drop CLCTs from matching in ALCT-centric algorithm: 0 - algo2016 do NOT drop CLCTs, 1 - drop used CLCTs
-      assign algo2016_cross_bx_algorithm         = algo2016_ctrl_wr[9];   // LCT sorting using cross BX algorithm: 0 - "old" no cross BX algorithm used, 1 - algo2016 uses cross BX algorithm
-      assign algo2016_clct_use_corrected_bx      = algo2016_ctrl_wr[10];  // Use median of hits for CLCT timing: 0 - "old" no CLCT timing corrections, 1 - algo2016 CLCT timing calculated based on median of hits
-      assign seq_trigger_nodeadtime              = algo2016_ctrl_wr[11];// allow two seq trigger in a row
-      assign evenchamber                         =~algo2016_ctrl_wr[12]; // even odd parity. software use 1 for odd chamber.  here we use 1 for evenchamber
+    //  assign algo2016_use_dead_time_zone         = algo2016_ctrl_wr[0];   // Dead time zone switch: 0 - "old" whole chamber is dead when pre-CLCT is registered, 1 - algo2016 only half-strips around pre-CLCT are marked dead
+    //  assign algo2016_dead_time_zone_size[4:0]   = algo2016_ctrl_wr[5:1]; // Constant size of the dead time zone
+    //  assign algo2016_use_dynamic_dead_time_zone = algo2016_ctrl_wr[6];   // Dynamic dead time zone switch: 0 - dead time zone is set by algo2016_use_dynamic_dead_time_zone, 1 - dead time zone depends on pre-CLCT pattern ID
+    //  assign algo2016_clct_to_alct               = algo2016_ctrl_wr[7];   // ALCT-to-CLCT matching switch: 0 - "old" CLCT-centric algorithm, 1 - algo2016 ALCT-centric algorithm
+    //  assign algo2016_drop_used_clcts            = algo2016_ctrl_wr[8];   // Drop CLCTs from matching in ALCT-centric algorithm: 0 - algo2016 do NOT drop CLCTs, 1 - drop used CLCTs
+    //  assign algo2016_cross_bx_algorithm         = algo2016_ctrl_wr[9];   // LCT sorting using cross BX algorithm: 0 - "old" no cross BX algorithm used, 1 - algo2016 uses cross BX algorithm
+    //  assign algo2016_clct_use_corrected_bx      = algo2016_ctrl_wr[10];  // Use median of hits for CLCT timing: 0 - "old" no CLCT timing corrections, 1 - algo2016 CLCT timing calculated based on median of hits
+    //  assign seq_trigger_nodeadtime              = algo2016_ctrl_wr[11];// allow two seq trigger in a row
+    //  assign evenchamber                         =~algo2016_ctrl_wr[12]; // even odd parity. software use 1 for odd chamber.  here we use 1 for evenchamber
 
-      assign algo2016_ctrl_rd[15:0] = algo2016_ctrl_wr[15:0];
+    //  assign algo2016_ctrl_rd[15:0] = algo2016_ctrl_wr[15:0];
 
 
 //------------------------------------------------------------------------------------------------------------------
