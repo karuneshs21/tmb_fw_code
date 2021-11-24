@@ -1291,6 +1291,8 @@
 // CFEB Instantiation
 //-------------------------------------------------------------------------------------------------------------------
    wire  [5:0]         cfeb_nhits [MXCFEB-1:0];
+   wire  [MXLY-1:0]    cfeb_layers_withhits[MXCFEB-1:0];
+
 
 
 	genvar icfeb;
@@ -1370,6 +1372,7 @@
 	.ly5hs				(cfeb_ly5hs[icfeb][MXHS-1:0]),		// Out	Decoded 1/2-strip pulses
 
    .nhits_per_cfeb (cfeb_nhits[icfeb]),  // Out nhits per cfeb for HMT   
+   .layers_withhits_per_cfeb  (cfeb_layers_withhits[icfeb][MXLY-1:0]),// Out layers with hits for one cfeb
 // Status
 	.demux_tp_1st		(demux_tp_1st[icfeb]),				// Out	Demultiplexer test point first-in-time
 	.demux_tp_2nd		(demux_tp_2nd[icfeb]),				// Out	Demultiplexer test point second-in-time
@@ -1429,7 +1432,7 @@
    assign ccLUT_enable = reg_ccLUT_enable;
    wire run3_trig_df   = reg_ccLUT_enable; // Run3 trigger data format
    wire run3_daq_df    = reg_ccLUT_enable;// Run3 daq data format
-   wire run3_alct_df = 1'b0;
+   wire run3_alct_df = reg_ccLUT_enable;
 
 
 	wire	[MXCFEB-1:0]	cfeb_hit;						// This CFEB has a pattern over pre-trigger threshold
@@ -1453,10 +1456,10 @@
 	//CCLUT is off
   `ifndef CCLUT
    assign hs_bnd_1st[MXBNDB - 1   : 0] = hs_pid_1st;
-   assign hs_xky_1st[MXXKYB - 1   : 0] = {hs_hit_1st, 2'b10};   
+   assign hs_xky_1st[MXXKYB - 1   : 0] = {hs_key_1st, 2'b10};   
 	assign hs_carry_1st[MXPATC - 1 : 0] = 0;
    assign hs_bnd_2nd[MXBNDB - 1   : 0] = hs_pid_2nd;
-   assign hs_xky_2nd[MXXKYB - 1   : 0] = {hs_hit_2nd, 2'b10};
+   assign hs_xky_2nd[MXXKYB - 1   : 0] = {hs_key_2nd, 2'b10};
    assign hs_carry_2nd[MXPATC - 1 : 0] = 0;
    assign hs_run2pid_1st[MXPIDB-1:0]   = hs_pid_1st;
    assign hs_run2pid_2nd[MXPIDB-1:0]   = hs_pid_2nd;
@@ -2008,6 +2011,7 @@
 	wire	[MXBDATA-1:0]	deb_buf_pop_data;		// Queue pop  data at last pop
 	
 	  wire [3:0] tmb_hmt_match_win;
+      wire  [MXHMTB-1:0] tmb_cathode_hmt;
 
 	sequencer usequencer
 	(
@@ -2383,6 +2387,7 @@
 	.tmb_alct1				(tmb_alct1[10:0]),				// In	ALCT second best muon latched at trigger
 	.tmb_alctb				(tmb_alctb[4:0]),				// In	ALCT bxn latched at trigger
 	.tmb_alcte				(tmb_alcte[1:0]),				// In	ALCT ecc error syndrome latched at trigger
+    .tmb_cathode_hmt  (tmb_cathode_hmt[MXHMTB-1:0]),     //out, cathode hmt, aligned with tmb results
        .tmb_hmt_match_win         (tmb_hmt_match_win[3:0]), //In  alct/anode hmt in cathode hmt tagged window
        .hmt_nhits_sig_ff (hmt_nhits_sig_ff[NHMTHITB-1:0]), // In hmt nhits for header
 
@@ -2390,6 +2395,7 @@
         .ccLUT_enable       (ccLUT_enable),  // In
         .run3_trig_df       (run3_trig_df), // input, enable run3 trigger format or not
         .run3_daq_df        (run3_daq_df),  // input, enable run3 daq format or not
+        .run3_alct_df       (run3_alct_df),  // input, enable run3 daq format or not
 // MPC Status
 	.mpc_frame_ff			(mpc_frame_ff),					// In	MPC frame latch strobe
 	.mpc0_frame0_ff			(mpc0_frame0_ff[MXFRAME-1:0]),	// In	MPC best muon 1st frame

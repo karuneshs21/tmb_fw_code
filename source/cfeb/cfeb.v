@@ -163,6 +163,7 @@
 	ly4hs,
 	ly5hs,
    nhits_per_cfeb,
+   layers_withhits_per_cfeb,
 
 // Status
 	demux_tp_1st,
@@ -274,6 +275,7 @@
 	output	[MXHS-1:0]		ly5hs;
 
         output [5:0] nhits_per_cfeb;
+   output [MXLY-1:0] layers_withhits_per_cfeb;
 // Status
 	output					demux_tp_1st;		// Demultiplexer test point first-in-time
 	output					demux_tp_2nd;		// Demultiplexer test point second-in-time
@@ -817,6 +819,7 @@
 
 	assign triad_skip = (|tskip[0]) | (|tskip[1]) | (|tskip[2]) | (|tskip[3]) | (|tskip[4]) | (|tskip[5]);
       reg [5:0] nhits_s0 = 6'b0;
+      reg [MXLY-1:0] layers_with_hit_s0 = 0;
       `ifdef TMBHMT
       always  @(posedge clock) begin
       nhits_s0       <= hs_fired[0][0] + hs_fired[0][1] + hs_fired[0][2] + hs_fired[0][3] + hs_fired[0][4] + hs_fired[0][5] + hs_fired[0][6] + hs_fired[0][7] + 
@@ -825,6 +828,7 @@
                         hs_fired[3][0] + hs_fired[3][1] + hs_fired[3][2] + hs_fired[3][3] + hs_fired[3][4] + hs_fired[3][5] + hs_fired[3][6] + hs_fired[3][7] + 
                         hs_fired[4][0] + hs_fired[4][1] + hs_fired[4][2] + hs_fired[4][3] + hs_fired[4][4] + hs_fired[4][5] + hs_fired[4][6] + hs_fired[4][7] + 
                         hs_fired[5][0] + hs_fired[5][1] + hs_fired[5][2] + hs_fired[5][3] + hs_fired[5][4] + hs_fired[5][5] + hs_fired[5][6] + hs_fired[5][7];
+     layers_with_hit_s0 <= {|hs_fired[5], |hs_fired[4], |hs_fired[3], |hs_fired[2], |hs_fired[1], |hs_fired[0]};
                     //another option to find nhit using rom
      //       nhits_s0       <= count1s(hs_fired[0][5:0]) + 
      //                   count1s(hs_fired[1][5:0]) + 
@@ -839,6 +843,7 @@
       `endif
 
       assign nhits_per_cfeb = nhits_s0;
+      assign layers_withhits_per_cfeb = layers_with_hit_s0;
 
 
 // Expand 2d arrays for transmission to next module

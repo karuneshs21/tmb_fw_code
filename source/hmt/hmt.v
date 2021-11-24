@@ -201,7 +201,7 @@
   wire hmt_reset = |hmt_reset_ff;
 
 
-  wire [MXLY-1:0]   layers_withhits = layers_withhits_cfeb0 | layers_withhits_cfeb1 | layers_withhits_cfeb2 | layers_withhits_cfeb3 | layers_withhits_cfeb4 | layers_withhits_cfeb5;
+  wire [MXLY-1:0]   layers_withhits = layers_withhits_cfeb0 | layers_withhits_cfeb1 | layers_withhits_cfeb2 | layers_withhits_cfeb3 | layers_withhits_cfeb4;
 
   wire [2:0] nlayer_withhits = countnlayer(layers_withhits);
 
@@ -229,7 +229,6 @@
   reg  [NHITCFEBB-1: 0] nhit_cfeb2_s0 [3:0];
   reg  [NHITCFEBB-1: 0] nhit_cfeb3_s0 [3:0];
   reg  [NHITCFEBB-1: 0] nhit_cfeb4_s0 [3:0];
-  reg  [2:0] nlayer_s0 [3:0];
   always @(posedge clock) begin
       nhit_cfeb0_s0[0] <= nhit_cfeb0;
       nhit_cfeb1_s0[0] <= nhit_cfeb1;
@@ -278,6 +277,8 @@
   wire [NHMTHITB-1:0] nhits_chamber = nhit_cfeb0 + nhit_cfeb1 + nhit_cfeb2 + nhit_cfeb3 + nhit_cfeb4;
   reg  [NHMTHITB-1:0] nhits_trig_s0_srl [7:0];//array 8x10bits
 
+  reg  [2:0] nlayer_s0 [7:0];
+  reg  [2:0] hmt_nhit_thresh = 3'd5;
   always @(posedge clock) begin
       nhits_trig_s0_srl[7] <= nhits_trig_s0_srl[6];
       nhits_trig_s0_srl[6] <= nhits_trig_s0_srl[5];
@@ -309,10 +310,14 @@
   wire nhits_compare_s0_sig_89A = (nhits_trig_s0_srl[3] + nhits_trig_s0_srl[2] >  nhits_trig_s0_srl[0] + nhits_chamber) || (nhits_trig_s0_srl[3] + nhits_trig_s0_srl[2] ==  nhits_trig_s0_srl[0] + nhits_chamber && nhits_trig_s0_srl[2] > nhits_trig_s0_srl[0]);
   wire nhits_trig_s0_sig_peak = nhits_compare_s0_sig_789 && nhits_compare_s0_sig_89A;
 
-  wire hmt_bit0_s0 = ((nhits_trig_s0_sig >= hmt_thresh1) || (nhits_trig_s0_sig >= hmt_thresh3)) & nhits_trig_s0_sig_peak &  (~|hmt_fired_s0_ff) & (~hmt_reset);
-  wire hmt_bit1_s0 = ((nhits_trig_s0_sig >= hmt_thresh2) || (nhits_trig_s0_sig >= hmt_thresh3)) & nhits_trig_s0_sig_peak &  (~|hmt_fired_s0_ff) & (~hmt_reset);
-  wire hmt_bit2_s0 = ((nhits_trig_s0_bkg >= hmt_thresh1) || (nhits_trig_s0_bkg >= hmt_thresh3)) &  (~|hmt_fired_s0_ff) & (~hmt_reset);
-  wire hmt_bit3_s0 = ((nhits_trig_s0_bkg >= hmt_thresh2) || (nhits_trig_s0_bkg >= hmt_thresh3)) &  (~|hmt_fired_s0_ff) & (~hmt_reset);
+  //requirement of num of layers with hit is only in the central BX
+  wire nlayer_pass_thresh_sig = nlayer_s0[2] >= hmt_nhit_thresh;
+  wire nlayer_pass_thresh_bkg = nlayer_s0[5] >= hmt_nhit_thresh;
+
+  wire hmt_bit0_s0 = ((nhits_trig_s0_sig >= hmt_thresh1) || (nhits_trig_s0_sig >= hmt_thresh3)) & nhits_trig_s0_sig_peak &  (~|hmt_fired_s0_ff) & (~hmt_reset) & nlayer_pass_thresh_sig;
+  wire hmt_bit1_s0 = ((nhits_trig_s0_sig >= hmt_thresh2) || (nhits_trig_s0_sig >= hmt_thresh3)) & nhits_trig_s0_sig_peak &  (~|hmt_fired_s0_ff) & (~hmt_reset) & nlayer_pass_thresh_sig;
+  wire hmt_bit2_s0 = ((nhits_trig_s0_bkg >= hmt_thresh1) || (nhits_trig_s0_bkg >= hmt_thresh3)) &  (~|hmt_fired_s0_ff) & (~hmt_reset) & nlayer_pass_thresh_bkg;
+  wire hmt_bit3_s0 = ((nhits_trig_s0_bkg >= hmt_thresh2) || (nhits_trig_s0_bkg >= hmt_thresh3)) &  (~|hmt_fired_s0_ff) & (~hmt_reset) & nlayer_pass_thresh_bkg;
   wire [MXHMTB-1:0] hmt_cathode_s0 = hmt_enable ? {hmt_bit3_s0, hmt_bit2_s0, hmt_bit1_s0, hmt_bit0_s0} : 4'b0;
 
   wire   hmt_fired_bkg_s0 = |hmt_cathode_s0[3:2];
@@ -544,8 +549,8 @@
   // with triggering or readout enabled 
   assign hmt_fired_cathode_only = hmt_cathode_fired && !hmt_anode_fired && (hmt_allow_cathode || hmt_allow_cathode_ro);
   assign hmt_fired_anode_only   =!hmt_cathode_fired &&  hmt_anode_fired && (hmt_allow_anode   || hmt_allow_anode_ro);
-  assign hmt_fired_match        = hmt_cathode_fired &&  hmt_anode_fired &&((hmt_allow_cathode && hmt_allow_anode) || (hmt_allow_cathode_ro && hmt_allow_anode_ro));
-  assign hmt_fired_or           = hmt_cathode_fired ||  hmt_anode_fired && (hmt_allow_cathode || hmt_allow_cathode_ro || hmt_allow_anode   || hmt_allow_anode_ro);
+  assign hmt_fired_match        = hmt_cathode_fired &&  hmt_anode_fired && (hmt_allow_match   || hmt_allow_match_ro);
+  assign hmt_fired_or           =(hmt_cathode_fired && (hmt_allow_cathode || hmt_allow_cathode_ro)) || (hmt_anode_fired && (hmt_allow_anode   || hmt_allow_anode_ro)) || (hmt_cathode_fired &&  hmt_anode_fired && (hmt_allow_match   || hmt_allow_match_ro));
 
   wire [MXHMTB-1    :0] hmt_trigger_cathode    = hmt_cathode_pipe  & {MXHMTB{hmt_allow_cathode}};
   wire [MXHMTB-1    :0] hmt_trigger_anode      = hmt_anode & {MXHMTB{hmt_allow_anode}};

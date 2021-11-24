@@ -756,6 +756,7 @@
         ccLUT_enable, 
         run3_trig_df,
         run3_daq_df, 
+        run3_alct_df, 
 // MPC Status
 	mpc_frame_ff,
 	mpc0_frame0_ff,
@@ -1092,6 +1093,8 @@
         parameter MXPAT   = 5;                 // Number of patterns
         parameter MXHMTB     =  4;// bits for HMT
         parameter NHMTHITB   = 10;
+
+`define RUN3DAQDATAFORAMT 1
 //------------------------------------------------------------------------------------------------------------------
 // I/O Ports:
 //------------------------------------------------------------------------------------------------------------------
@@ -1476,6 +1479,7 @@
         input  ccLUT_enable;
         input  run3_trig_df;
         input  run3_daq_df;  
+        input  run3_alct_df;  
 // MPC Status
 	input					mpc_frame_ff;		// MPC frame latch strobe
 	input	[MXFRAME-1:0]	mpc0_frame0_ff;		// MPC best muon 1st frame
@@ -2856,14 +2860,38 @@
 	assign xpre_wdata[87]		=	buf_stalled;				// All buffer memory space is in use
 
 // Pre-trigger+1bx: store pre-trigger counter 1bx after pretrig to give it time to count current event
+
+`ifdef RUN3DAQDATAFORAMT
+	parameter MXXPRE1 = 45;										// Pre-trig+1bx data bits
+	wire [MXXPRE1-1:0]	xpre1_wdata;							// Mapping array
+	wire [MXXPRE1-1:0]	xpre1_rdata;							// Mapping array
+
+	assign xpre1_wdata[14: 0]	=	pretrig_counter[14:0];		// Pre-trigger counter
+	assign xpre1_wdata[44:15]	=	alct_counter[29:0];			// ALCT counter at pre-trigger
+`else
 	parameter MXXPRE1 = 60;										// Pre-trig+1bx data bits
 	wire [MXXPRE1-1:0]	xpre1_wdata;							// Mapping array
 	wire [MXXPRE1-1:0]	xpre1_rdata;							// Mapping array
 
 	assign xpre1_wdata[29:0]	=	pretrig_counter[29:0];		// Pre-trigger counter
 	assign xpre1_wdata[59:30]	=	alct_counter[29:0];			// ALCT counter at pre-trigger
+`endif
 
 // Post-drift: store CLCT data sent to TMB in RAM mapping array
+`ifdef RUN3DAQDATAFORAMT
+	parameter MXXTMB = 38+4+MXBNDB+MXBNDB;		// Post drift CLCT data, 44+4+10
+	wire [MXXTMB-1:0]	xtmb_wdata;								// Mapping array
+	wire [MXXTMB-1:0]	xtmb_rdata;								// Mapping array
+	
+	assign xtmb_wdata[15:0]		=	clct0_xtmb[15:0];			// CLCT0 after drift
+	assign xtmb_wdata[31:16]	=	clct1_xtmb[15:0];			// CLCT1 after drift
+	assign xtmb_wdata[34:32]	=	clctc_xtmb[2:0];			// CLCT0/1 common after drift
+	assign xtmb_wdata[35]	    =	clcta_xtmb[6];			// CLCT0/1 common after drift
+	assign xtmb_wdata[36]		=	clct_invp[0];				// CLCT had invalid pattern after drift delay
+	assign xtmb_wdata[37]		=	clct_invp[1];				// CLCT had invalid pattern after drift delay
+    //assign xtmb_wdata[81:44]    =   {clct1_bnd_xtmb, clct1_xky_xtmb[1:0], clct1_carry_xtmb, clct0_bnd_xtmb, clct0_xky_xtmb[1:0], clct0_carry_xtmb};
+    assign xtmb_wdata[51:38]    =   {clct1_bnd_xtmb, clct1_xky_xtmb[1:0], clct0_bnd_xtmb, clct0_xky_xtmb[1:0]};
+`else
 	parameter MXXTMB = 44;										// Post drift CLCT data
 	wire [MXXTMB-1:0]	xtmb_wdata;								// Mapping array
 	wire [MXXTMB-1:0]	xtmb_rdata;								// Mapping array
@@ -2874,11 +2902,13 @@
 	assign xtmb_wdata[41:35]	=	clcta_xtmb[6:0];			// CLCT0/1 common after drift
 	assign xtmb_wdata[42]		=	clct_invp[0];				// CLCT had invalid pattern after drift delay
 	assign xtmb_wdata[43]		=	clct_invp[1];				// CLCT had invalid pattern after drift delay
+`endif
 
-      parameter MXCCLUTB = MXPATC+MXPATC+MXBNDB+MXBNDB+MXXKYB+MXXKYB;
-      wire [MXCCLUTB-1:0]  xtmb_cclut_wdata;                // Mapping array
-      wire [MXCCLUTB-1:0]  xtmb_cclut_rdata;                // Mapping array
-      assign xtmb_cclut_wdata = {clct1_bnd_xtmb, clct1_xky_xtmb, clct1_carry_xtmb, clct0_bnd_xtmb, clct0_xky_xtmb, clct0_carry_xtmb};
+
+      //parameter MXCCLUTB = MXPATC+MXPATC+MXBNDB+MXBNDB+MXXKYB+MXXKYB;
+      //wire [MXCCLUTB-1:0]  xtmb_cclut_wdata;                // Mapping array
+      //wire [MXCCLUTB-1:0]  xtmb_cclut_rdata;                // Mapping array
+      //assign xtmb_cclut_wdata = {clct1_bnd_xtmb, clct1_xky_xtmb, clct1_carry_xtmb, clct0_bnd_xtmb, clct0_xky_xtmb, clct0_carry_xtmb};
 
 // Post-drift+1bx: store CLCT counter in RAM mapping array
 	parameter MXXTMB1 = 30;										// Post drift CLCT counter
@@ -2888,7 +2918,7 @@
 	assign xtmb1_wdata[29:0]	=	clct_counter[29:0];			// CLCTs sent to TMB section
 
 // TMB match: store TMB match results in RAM mapping array
-	parameter MXRTMB = 23 + 4 + NHMTHITB;										// TMB match data bits
+	parameter MXRTMB = 36;										// TMB match data bits
 	wire [MXRTMB-1:0]	rtmb_wdata;								// Mapping array
 	wire [MXRTMB-1:0]	rtmb_rdata;								// Mapping array
 
@@ -2915,11 +2945,22 @@
 	assign rtmb_wdata[20]		=	tmb_non_trig_keep;			// TMB said keep non-triggering event
 	assign rtmb_wdata[21]		=	tmb_clct0_discard;			// TMB discarded clct0 from ME1A
 	assign rtmb_wdata[22]		=	tmb_clct1_discard;			// TMB discarded clct1 from ME1A
-
-        assign rtmb_wdata[26:23] = tmb_hmt_match_win[3:0];
-        assign rtmb_wdata[27+NHMTHITB-1:27] = hmt_nhits_sig_ff[NHMTHITB-1:0];
+    assign rtmb_wdata[26:23]    =   tmb_hmt_match_win[3:0];
+    wire [6:0] hmt_nhits_sig_header = (hmt_nhits_sig_ff>=10'h80) ? 7'h7F : hmt_nhits_sig_ff[6:0]
+    assign rtmb_wdata[33:27] = hmt_nhits_sig_header[6:0];
+    assign rtmb_wdata[35:34] = tmb_cathode_hmt[1:0];
 
 // TMB match: store ALCTs sent to MPC in RAM mapping array, arrives same bx as tmb match result
+`ifdef RUN3DAQDATAFORAMT
+	parameter MXALCTD = 11+11+2+2;								// ALCT transmit frame data bits, 2alcts + bxn + tmb stats
+	wire [MXALCTD-1:0]	alct_wdata;								// Mapping array
+	wire [MXALCTD-1:0]	alct_rdata;								// Mapping array
+
+	assign alct_wdata[10:0]		=	tmb_alct0[10:0];			// ALCT best muon latched at trigger
+	assign alct_wdata[21:11]	=	tmb_alct1[10:0];			// ALCT second best muon latched at trigger
+	assign alct_wdata[23:22]	=	tmb_alctb[2:1];				// ALCT shared bxn
+	assign alct_wdata[25:24]	=	tmb_alcte[1:0];				// ALCT ecc error syndrome latched at trigger
+`else
 	parameter MXALCTD = 11+11+5+2;								// ALCT transmit frame data bits, 2alcts + bxn + tmb stats
 	wire [MXALCTD-1:0]	alct_wdata;								// Mapping array
 	wire [MXALCTD-1:0]	alct_rdata;								// Mapping array
@@ -2928,14 +2969,24 @@
 	assign alct_wdata[21:11]	=	tmb_alct1[10:0];			// ALCT second best muon latched at trigger
 	assign alct_wdata[26:22]	=	tmb_alctb[4:0];				// ALCT shared bxn
 	assign alct_wdata[28:27]	=	tmb_alcte[1:0];				// ALCT ecc error syndrome latched at trigger
+`endif
 
 // TMB match+1bx: store TMB match results in RAM mapping array, 1bx later to give it time to count current event
+`ifdef RUN3DAQDATAFORAMT
+	parameter MXRTMB1 = 20;										// Trigger counter
+	wire [MXRTMB1-1:0]	rtmb1_wdata;							// Mapping array
+	wire [MXRTMB1-1:0]	rtmb1_rdata;							// Mapping array
+
+	assign rtmb1_wdata[14:0]	=	trig_counter[14:0];			// TMB trigger counter
+	assign rtmb1_wdata[19:15]	=	tmb_aff_list_ff[4:0];		// Active cfeb list at TMB match, saves 1 ram if put here
+`else
 	parameter MXRTMB1 = 35;										// Trigger counter
 	wire [MXRTMB1-1:0]	rtmb1_wdata;							// Mapping array
 	wire [MXRTMB1-1:0]	rtmb1_rdata;							// Mapping array
 
 	assign rtmb1_wdata[29:0]	=	trig_counter[29:0];			// TMB trigger counter
 	assign rtmb1_wdata[34:30]	=	tmb_aff_list_ff[4:0];		// Active cfeb list at TMB match, saves 1 ram if put here
+`endif
 
 // MPC transmit: store MPC transmit frame data in RAM mapping array
 	parameter MXXMPC = 64;										// MPC transmit frame data bits
@@ -3056,7 +3107,7 @@
 
 // Store CLCT data post-drift on xtmb
 	ramblock #(MXXTMB, MXBADR) uramblock2 (.clock(clock),.wr_wea(wr_en_xtmb ),.wr_adra(wr_adr_xtmb ),.wr_dataa(xtmb_wdata ),.rd_enb(rd_enb),.rd_adrb(rd_buf_adr),.rd_datab(xtmb_rdata ),.dang(dang[2]));
-        ramblock #(MXCCLUTB, MXBADR) uramblock9 (.clock(clock),.wr_wea(wr_en_xtmb ),.wr_adra(wr_adr_xtmb ),.wr_dataa(xtmb_cclut_wdata ),.rd_enb(rd_enb),.rd_adrb(rd_buf_adr),.rd_datab(xtmb_cclut_rdata ),.dang(dang[9]));
+    //ramblock #(MXCCLUTB, MXBADR) uramblock9 (.clock(clock),.wr_wea(wr_en_xtmb ),.wr_adra(wr_adr_xtmb ),.wr_dataa(xtmb_cclut_wdata ),.rd_enb(rd_enb),.rd_adrb(rd_buf_adr),.rd_datab(xtmb_cclut_rdata ),.dang(dang[9]));
 
 // Store CLCT counter post-drift on xtmb+1bx
 	ramblock #(MXXTMB1,MXBADR) uramblock3 (.clock(clock),.wr_wea(wr_en_xtmb1),.wr_adra(wr_adr_xtmb1),.wr_dataa(xtmb1_wdata),.rd_enb(rd_enb),.rd_adrb(rd_buf_adr),.rd_datab(xtmb1_rdata),.dang(dang[3]));
@@ -3071,9 +3122,11 @@
 // Store MPC transmit data
 	ramblock #(MXXMPC, MXBADR) uramblock7 (.clock(clock),.wr_wea(wr_en_xmpc ),.wr_adra(wr_adr_xmpc ),.wr_dataa(xmpc_wdata ),.rd_enb(rd_enb),.rd_adrb(rd_buf_adr),.rd_datab(xmpc_rdata ),.dang(dang[7]));
 
+//`ifndef RUN3DAQDATAFORAMT
 // Store MPC received data on mpc_response
 	ramblock #(MXRMPC, MXBADR) uramblock8 (.clock(clock),.wr_wea(wr_en_rmpc ),.wr_adra(wr_adr_rmpc ),.wr_dataa(rmpc_wdata ),.rd_enb(rd_enb),.rd_adrb(rd_buf_adr),.rd_datab(rmpc_rdata ),.dang(dang[8]));
 
+//`endif
 //------------------------------------------------------------------------------------------------------------------
 // Level 1 Accept Request Section
 //------------------------------------------------------------------------------------------------------------------
@@ -3497,29 +3550,44 @@
 	wire		r_buf_stalled		=	xpre_rdata[87];		// All buffer memory space is in use
 
 // Unpack Pre-trigger +1bx data from RAM mapping array
+`ifdef RUN3DAQDATAFORAMT
+	wire [29:0]	r_pretrig_counter;
+    assign r_pretrig_counter [14:0] =	xpre1_rdata[14:0];	// Pre-trigger counter
+	wire [29:0]	r_alct_counter		=	xpre1_rdata[44:15];	// ALCT counter at pre-trigger
+`else
 	wire [29:0]	r_pretrig_counter	=	xpre1_rdata[29:0];	// Pre-trigger counter
 	wire [29:0]	r_alct_counter		=	xpre1_rdata[59:30];	// ALCT counter at pre-trigger
+`endif
 
 // Unpack CLCT data sent to TMB from RAM mapping array
+      wire [MXBNDB - 1   : 0] r_clct0_bnd_xtmb; // new bending
+      wire [MXXKYB-1     : 0] r_clct0_xky_xtmb; // new position with 1/8 precision
+      //wire [MXPATC-1     : 0] r_clct0_carry_xtmb; // CC code
+      wire [MXBNDB - 1   : 0] r_clct1_bnd_xtmb; // new bending
+      wire [MXXKYB-1     : 0] r_clct1_xky_xtmb; // new position with 1/8 precision
+      //wire [MXPATC-1     : 0] r_clct1_carry_xtmb; // CC code
+      //assign {r_clct1_bnd_xtmb, r_clct1_xky_xtmb, r_clct1_carry_xtmb, r_clct0_bnd_xtmb, r_clct0_xky_xtmb, r_clct0_carry_xtmb}   = xtmb_cclut_rdata;
 	wire [15:0]	r_clct0_xtmb		=	xtmb_rdata[15:0];	// CLCT0 after drift
 	wire [15:0]	r_clct1_xtmb		=	xtmb_rdata[31:16];	// CLCT1 after drift
 	wire [2:0]	r_clctc_xtmb		=	xtmb_rdata[34:32];	// CLCT common after drift
+`ifdef RUN3DAQDATAFORAMT
+    wire [6:0]  r_clcta_xtmb;
+    wire [5:0]  r_layers_hit;
+    assign r_clcta_xtmb[6] = xtmb_rdata[35];
+	wire 		r_clct1_busy		=	r_clcta_xtmb[6];	// CLCT1 busy internal check
+	wire 		r_clct0_invp		=	xtmb_rdata[36];		// CLCT0 had invalid pattern after drift delay
+	wire 		r_clct1_invp		=	xtmb_rdata[37];		// CLCT1 had invalid pattern after drift delay
+    assign {r_clct1_bnd_xtmb, r_clct1_xky_xtmb[1:0], r_clct0_bnd_xtmb, r_clct0_xky_xtmb[1:0]}  = xtmb_rdata[51:38];
+`else
 	wire [6:0]	r_clcta_xtmb		=	xtmb_rdata[41:35];	// CLCT aux after drift
 	wire 		r_clct0_invp		=	xtmb_rdata[42];		// CLCT0 had invalid pattern after drift delay
 	wire 		r_clct1_invp		=	xtmb_rdata[43];		// CLCT1 had invalid pattern after drift delay
 
 	wire [5:0]	r_layers_hit		=	r_clcta_xtmb[5:0];	// Layers hit
 	wire 		r_clct1_busy		=	r_clcta_xtmb[6];	// CLCT1 busy internal check
+`endif
 
       
-      wire [MXBNDB - 1   : 0] r_clct0_bnd_xtmb; // new bending
-      wire [MXXKYB-1     : 0] r_clct0_xky_xtmb; // new position with 1/8 precision
-      wire [MXPATC-1     : 0] r_clct0_carry_xtmb; // CC code
-
-      wire [MXBNDB - 1   : 0] r_clct1_bnd_xtmb; // new bending
-      wire [MXXKYB-1     : 0] r_clct1_xky_xtmb; // new position with 1/8 precision
-      wire [MXPATC-1     : 0] r_clct1_carry_xtmb; // CC code
-      assign {r_clct1_bnd_xtmb, r_clct1_xky_xtmb, r_clct1_carry_xtmb, r_clct0_bnd_xtmb, r_clct0_xky_xtmb, r_clct0_carry_xtmb}   = xtmb_cclut_rdata;
 
 
 // Unpack CLCT counter from RAM mapping array
@@ -3551,15 +3619,25 @@
 	wire		r_tmb_clct0_discard	=	rtmb_rdata[21];		// TMB discarded clct0 from ME1A
 	wire		r_tmb_clct1_discard	=	rtmb_rdata[22];		// TMB discarded clct1 from ME1A
 
-        wire [3:0] r_hmt_match_win  = rtmb_rdata[26:23];// alct/anode hmt in cathode hmt tagged window
-        wire [NHMTHITB-1:0] r_hmt_nhits_sig = rtmb_rdata[27+NHMTHITB-1:27];
-        wire [6:0] r_hmt_nhits_sig_header =  (r_hmt_nhits_sig>=10'h80) ? 7'h7F : r_hmt_nhits_sig[6:0];
+    wire [3:0] r_hmt_match_win        = rtmb_rdata[26:23];// alct/anode hmt in cathode hmt tagged window
+    wire [6:0] r_hmt_nhits_sig_header = rtmb_rdata[33:27];// num of comparator hits
+    wire [1:0] r_tmb_cathode_hmt      = rtmb_rdata[35:34];//cathode HMT bits
+        //wire [NHMTHITB-1:0] r_hmt_nhits_sig = rtmb_rdata[27+NHMTHITB-1:27];
+        //wire [6:0] r_hmt_nhits_sig_header =  (r_hmt_nhits_sig>=10'h80) ? 7'h7F : r_hmt_nhits_sig[6:0];
 
 // Unpack ALCT + extra TMB trigger data from RAM mapping array
 	wire [10:0]	r_tmb_alct0			=	alct_rdata[10:0];	// ALCT0
 	wire [10:0]	r_tmb_alct1			=	alct_rdata[21:11];	// ALCT1
+`ifdef RUN3DAQDATAFORAMT
+	wire [2:1]	r_tmb_alctb			=	alct_rdata[23:22];	// ALCT bxn
+	wire [1:0]	r_tmb_alcte			=	alct_rdata[25:24];	// ALCT ecc error syndrome latched at trigger
+    wire [4:0]  r_alct_bxn;
+	assign r_alct_bxn[2:1]		    =	r_tmb_alctb[2:1];	// ALCT bunch crossing number
+`else
 	wire [4:0]	r_tmb_alctb			=	alct_rdata[26:22];	// ALCT bxn
 	wire [1:0]	r_tmb_alcte			=	alct_rdata[28:27];	// ALCT ecc error syndrome latched at trigger
+	wire	[4:0]	r_alct_bxn		=	r_tmb_alctb[4:0];	// ALCT bunch crossing number
+`endif
 
 	wire			r_alct0_valid	=	r_tmb_alct0[0];		// Valid pattern flag
 	wire	[1:0]	r_alct0_quality	=	r_tmb_alct0[2:1];	// Pattern quality
@@ -3571,12 +3649,17 @@
 	wire			r_alct1_amu		=	r_tmb_alct1[3];		// Accelerator muon
 	wire	[6:0]	r_alct1_key		=	r_tmb_alct1[10:4];	// Key Wire Group
 
-	wire	[4:0]	r_alct_bxn		=	r_tmb_alctb[4:0];	// ALCT bunch crossing number
 	wire	[1:0]	r_alct_ecc_err	=	r_tmb_alcte[1:0];	// ALCT ecc error syndrome code
 
 // Unpack TMB match results from RAM mapping array that was delayed 1bx
+`ifdef RUN3DAQDATAFORAMT
+	wire [29:0]	r_trig_counter;
+    assign r_trig_counter [14:0]    =	rtmb1_rdata[14:0];	// TMB trigger counter
+	wire [4:0]	r_tmb_aff_list		=	rtmb1_rdata[19:15];	// Active cfeb list at TMB match, saves 1 ram
+`else
 	wire [29:0]	r_trig_counter		=	rtmb1_rdata[29:0];	// TMB trigger counter
 	wire [4:0]	r_tmb_aff_list		=	rtmb1_rdata[34:30];	// Active cfeb list at TMB match, saves 1 ram
+`endif
 
 // Unpack MPC transmit frame data from RAM mapping array
 	wire [15:0]	r_mpc0_frame0_ff	=	xmpc_rdata[15: 0];	// MPC muon 0 frame 0
@@ -4163,8 +4246,11 @@
 	assign	header41_[8]		=	r_tmb_match_ro;				// ALCT and CLCT matched in time, non-triggering readout
 	assign	header41_[9]		=	r_tmb_trig_keep;			// Triggering readout event
 	assign	header41_[10]		=	r_tmb_non_trig_keep;		// Non-triggering readout event
-	assign	header41_[13:11]	=	lyr_thresh_pretrig[2:0];	// Layer pre-trigger threshold
-	assign	header41_[14]		=	layer_trig_en;				// Layer trigger mode enabled
+	//assign	header41_[13:11]	=	lyr_thresh_pretrig[2:0];	// Layer pre-trigger threshold
+	//assign	header41_[14]		=	layer_trig_en;				// Layer trigger mode enabled
+    assign  header41_[12:11]  =  run3_daq_df ? r_tmb_cathode_hmt[1:0] : lyr_thresh_pretrig[1:0];  // Layer pre-trigger threshold
+    assign  header41_[13]     =  run3_daq_df ? r_alct_bxn[1] & run3_alct_df : lyr_thresh_pretrig[2];
+    assign  header41_[14]     =  run3_daq_df ? r_alct_bxn[2] & run3_alct_df : layer_trig_en;
 	assign	header41_[18:15]	=	0;							// DDU+DMB control flags
 
 // Store header in parallel shifter
