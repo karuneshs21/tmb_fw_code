@@ -750,6 +750,7 @@
 	tmb_alct1,
 	tmb_alctb,
 	tmb_alcte,
+        tmb_cathode_hmt,
         tmb_hmt_match_win,
         hmt_nhits_sig_ff,
 
@@ -1473,6 +1474,7 @@
 	input	[10:0]			tmb_alct1;			// ALCT second best muon latched at trigger
 	input	[4:0]			tmb_alctb;			// ALCT bxn latched at trigger
 	input	[1:0]			tmb_alcte;			// ALCT ecc error syndrome latched at trigger
+        input  [MXHMTB-1:0] tmb_cathode_hmt;
         input [3:0] tmb_hmt_match_win;
       input [NHMTHITB-1:0] hmt_nhits_sig_ff;// hmt nhits in-time
 
@@ -2946,7 +2948,7 @@
 	assign rtmb_wdata[21]		=	tmb_clct0_discard;			// TMB discarded clct0 from ME1A
 	assign rtmb_wdata[22]		=	tmb_clct1_discard;			// TMB discarded clct1 from ME1A
     assign rtmb_wdata[26:23]    =   tmb_hmt_match_win[3:0];
-    wire [6:0] hmt_nhits_sig_header = (hmt_nhits_sig_ff>=10'h80) ? 7'h7F : hmt_nhits_sig_ff[6:0]
+    wire [6:0] hmt_nhits_sig_header = (hmt_nhits_sig_ff>=10'h80) ? 7'h7F : hmt_nhits_sig_ff[6:0];
     assign rtmb_wdata[33:27] = hmt_nhits_sig_header[6:0];
     assign rtmb_wdata[35:34] = tmb_cathode_hmt[1:0];
 
@@ -3562,10 +3564,10 @@
 // Unpack CLCT data sent to TMB from RAM mapping array
       wire [MXBNDB - 1   : 0] r_clct0_bnd_xtmb; // new bending
       wire [MXXKYB-1     : 0] r_clct0_xky_xtmb; // new position with 1/8 precision
-      //wire [MXPATC-1     : 0] r_clct0_carry_xtmb; // CC code
+      wire [MXPATC-1     : 0] r_clct0_carry_xtmb = 0; // CC code
       wire [MXBNDB - 1   : 0] r_clct1_bnd_xtmb; // new bending
       wire [MXXKYB-1     : 0] r_clct1_xky_xtmb; // new position with 1/8 precision
-      //wire [MXPATC-1     : 0] r_clct1_carry_xtmb; // CC code
+      wire [MXPATC-1     : 0] r_clct1_carry_xtmb = 0; // CC code
       //assign {r_clct1_bnd_xtmb, r_clct1_xky_xtmb, r_clct1_carry_xtmb, r_clct0_bnd_xtmb, r_clct0_xky_xtmb, r_clct0_carry_xtmb}   = xtmb_cclut_rdata;
 	wire [15:0]	r_clct0_xtmb		=	xtmb_rdata[15:0];	// CLCT0 after drift
 	wire [15:0]	r_clct1_xtmb		=	xtmb_rdata[31:16];	// CLCT1 after drift
